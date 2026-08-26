@@ -42,10 +42,10 @@
     "semantic_hash": "dbba265087827f711c0cc4ddea3cd890"
   },
   "backend/app/routers/appliances.py": {
-    "mtime": 1787731981.997096,
-    "seen": 1787732623.6129699,
-    "ast_hash": "cb4749589f2c3a24db079202e0db6b2f",
-    "semantic_hash": ""
+    "mtime": 1787688196.0636225,
+    "seen": 1787689965.568494,
+    "ast_hash": "ce3abd886d4ad5555848891a3c4df2e9",
+    "semantic_hash": "ce3abd886d4ad5555848891a3c4df2e9"
   },
   "backend/app/routers/auth.py": {
     "mtime": 1787687391.5606732,
@@ -132,16 +132,16 @@
     "semantic_hash": "503f46acf78ca605d609542a1571bdbf"
   },
   "backend/tests/test_appliance_sensor.py": {
-    "mtime": 1787731999.814133,
-    "seen": 1787732623.612989,
-    "ast_hash": "2dfc6b81841c24158846c99425435869",
-    "semantic_hash": ""
+    "mtime": 1787687899.0177715,
+    "seen": 1787689965.56851,
+    "ast_hash": "e8ea45b75d6ab5ee47818bb18f3cd458",
+    "semantic_hash": "e8ea45b75d6ab5ee47818bb18f3cd458"
   },
   "backend/tests/test_appliance_state.py": {
-    "mtime": 1787731945.2986,
-    "seen": 1787732623.61299,
-    "ast_hash": "0ef4a4e48e79f748844f00c80df21f95",
-    "semantic_hash": ""
+    "mtime": 1787687866.0281026,
+    "seen": 1787689965.568511,
+    "ast_hash": "711256ca1b15f31ee0ba2ab2883e9a95",
+    "semantic_hash": "711256ca1b15f31ee0ba2ab2883e9a95"
   },
   "backend/tests/test_appliances_crud.py": {
     "mtime": 1787687843.1977608,
@@ -222,10 +222,10 @@
     "semantic_hash": "533288d4545cc792c8f93fc61d1cccb4"
   },
   "backend/tests/test_push_notifications.py": {
-    "mtime": 1787731993.668265,
-    "seen": 1787732623.613007,
-    "ast_hash": "a92df2f19b31efefc31986406b21461d",
-    "semantic_hash": ""
+    "mtime": 1787688223.213568,
+    "seen": 1787689965.568525,
+    "ast_hash": "d51276d42a5e6aa929c2e60f78bbdf4d",
+    "semantic_hash": "d51276d42a5e6aa929c2e60f78bbdf4d"
   },
   "backend/tests/test_websockets.py": {
     "mtime": 1787688065.1281939,
@@ -276,16 +276,16 @@
     "semantic_hash": "75394888e3fbd275bb8de1259cf9a189"
   },
   "frontend/src/components/ApplianceCard.tsx": {
-    "mtime": 1787732040.9716423,
-    "seen": 1787732623.613018,
-    "ast_hash": "d9b0b98b1514dd7a1123fcd9b6373112",
-    "semantic_hash": ""
+    "mtime": 1787688406.7407563,
+    "seen": 1787689965.568534,
+    "ast_hash": "be6fe6f8f3527db4c22dc4477bad1e79",
+    "semantic_hash": "be6fe6f8f3527db4c22dc4477bad1e79"
   },
   "frontend/src/components/ApplianceDashboard.test.tsx": {
-    "mtime": 1787732025.3151917,
-    "seen": 1787732623.613019,
-    "ast_hash": "76b14a815ab1c6ace0702c6d09d83a25",
-    "semantic_hash": ""
+    "mtime": 1787688394.5267944,
+    "seen": 1787689965.568535,
+    "ast_hash": "884f149b02658d8cb47d6676c7d9213d",
+    "semantic_hash": "884f149b02658d8cb47d6676c7d9213d"
   },
   "frontend/src/components/ApplianceDashboard.tsx": {
     "mtime": 1787688564.0574603,
@@ -714,10 +714,10 @@
     "semantic_hash": "592e893fe5c1141b5cb5ba9260734b6a"
   },
   "GEMINI.md": {
-    "mtime": 1787732205.3325663,
-    "seen": 1787732623.613107,
-    "ast_hash": "ab33627a6a9457417e652724ede57b8e",
-    "semantic_hash": ""
+    "mtime": 1787689693.7969897,
+    "seen": 1787689965.568608,
+    "ast_hash": "85669b00ccca8c7373f4dc0e57e44d00",
+    "semantic_hash": "85669b00ccca8c7373f4dc0e57e44d00"
   },
   "README.md": {
     "mtime": 1787689152.2157469,
@@ -798,10 +798,10 @@
     "semantic_hash": "0619863e7ac054c69e0488f929008904"
   },
   "openspec/specs/appliance-tracking/spec.md": {
-    "mtime": 1787732057.5666473,
-    "seen": 1787732623.613127,
-    "ast_hash": "30f9de3ab08c67dee711b02e7b962134",
-    "semantic_hash": ""
+    "mtime": 1787689205.5018997,
+    "seen": 1787689965.568622,
+    "ast_hash": "02d8eaa22394fb0a0f0ebfd85e3e2103",
+    "semantic_hash": "02d8eaa22394fb0a0f0ebfd85e3e2103"
   },
   "openspec/specs/chore-management/spec.md": {
     "mtime": 1787689205.5026164,
@@ -838,11 +838,5 @@
     "seen": 1787689965.568628,
     "ast_hash": "8ffd0ba32057147a82ea1a0ca48f8456",
     "semantic_hash": "8ffd0ba32057147a82ea1a0ca48f8456"
-  },
-  "graphify-out/memory/query_20260825_203518_why_does_member_connect_core_database_models___cho.md": {
-    "mtime": 1787690118.2030754,
-    "seen": 1787732623.613114,
-    "ast_hash": "17543f0108c75b42df23b0ae7ad0979a",
-    "semantic_hash": ""
   }
 }

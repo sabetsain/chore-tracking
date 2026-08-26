@@ -14,6 +14,9 @@ import {
 } from 'lucide-react';
 import { Appliance, ApplianceState, ApplianceType } from '../types';
 import { formatElapsedTime } from '../utils/time';
+import { soundEngine } from '../utils/soundEngine';
+import { PaperCard } from './stationery/PaperCard';
+import { RubberStampBadge } from './stationery/RubberStampBadge';
 
 interface ApplianceCardProps {
   appliance: Appliance;
@@ -97,37 +100,6 @@ function getNextStateConfig(type: ApplianceType, currentState: ApplianceState): 
   }
 }
 
-const STATE_BADGE_MAP: Record<
-  ApplianceState,
-  { label: string; bg: string; text: string; border: string; pulse?: boolean }
-> = {
-  empty: {
-    label: 'Empty',
-    bg: 'bg-slate-100',
-    text: 'text-slate-700',
-    border: 'border-slate-200',
-  },
-  dirty: {
-    label: 'Dirty',
-    bg: 'bg-amber-50',
-    text: 'text-amber-700',
-    border: 'border-amber-200',
-  },
-  running: {
-    label: 'Running',
-    bg: 'bg-blue-50',
-    text: 'text-blue-700',
-    border: 'border-blue-200',
-    pulse: true,
-  },
-  clean_needs_emptying: {
-    label: 'Clean / Needs Emptying',
-    bg: 'bg-emerald-50',
-    text: 'text-emerald-700',
-    border: 'border-emerald-200',
-  },
-};
-
 function getApplianceIcon(type: ApplianceType) {
   switch (type) {
     case 'dishwasher':
@@ -144,13 +116,14 @@ function getApplianceIcon(type: ApplianceType) {
 export function ApplianceCard({ appliance, onUpdateState, onViewHistory }: ApplianceCardProps) {
   const [loading, setLoading] = useState(false);
   const nextConfig = getNextStateConfig(appliance.type, appliance.current_state);
-  const badgeConfig = STATE_BADGE_MAP[appliance.current_state];
   const Icon = getApplianceIcon(appliance.type);
   const ActionIcon = nextConfig.icon;
+  const tilt = appliance.id.charCodeAt(appliance.id.length - 1) % 2 === 0 ? 'left' : 'right';
 
   const handleAction = async () => {
     setLoading(true);
     try {
+      soundEngine.playStampSound();
       await onUpdateState(appliance.id, nextConfig.next);
     } finally {
       setLoading(false);
@@ -158,19 +131,23 @@ export function ApplianceCard({ appliance, onUpdateState, onViewHistory }: Appli
   };
 
   return (
-    <div className="bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow transition p-5 flex flex-col justify-between">
+    <PaperCard
+      variant="card"
+      tilt={tilt}
+      className="p-5 flex flex-col justify-between min-h-[250px] border border-slate-300 dark:border-slate-700"
+    >
       {/* Top section: Title, Icon & History */}
       <div>
         <div className="flex items-start justify-between gap-2 mb-3">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-slate-700">
+            <div className="w-10 h-10 rounded-xl bg-amber-100 dark:bg-[#334155] border border-amber-200 dark:border-slate-600 flex items-center justify-center text-amber-900 dark:text-amber-200 shadow-sm">
               <Icon className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="font-semibold text-slate-900 leading-tight">
+              <h3 className="font-hand font-bold text-xl text-ink-navy dark:text-slate-100 leading-tight">
                 {appliance.name}
               </h3>
-              <span className="text-[11px] text-slate-400 capitalize">
+              <span className="font-mono text-xs text-ink-muted dark:text-slate-400 capitalize">
                 {appliance.type}
               </span>
             </div>
@@ -179,7 +156,7 @@ export function ApplianceCard({ appliance, onUpdateState, onViewHistory }: Appli
           <button
             type="button"
             onClick={() => onViewHistory(appliance)}
-            className="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition"
+            className="p-1.5 text-ink-graphite hover:text-ink-navy dark:text-slate-400 dark:hover:text-slate-200 hover:bg-amber-100/60 dark:hover:bg-slate-700 rounded-lg transition"
             title="View Activity History"
             aria-label="History"
           >
@@ -187,29 +164,26 @@ export function ApplianceCard({ appliance, onUpdateState, onViewHistory }: Appli
           </button>
         </div>
 
-        {/* Status Badge & Elapsed Time */}
-        <div className="flex items-center justify-between gap-2 mb-4">
-          <span
-            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border ${badgeConfig.bg} ${badgeConfig.text} ${badgeConfig.border} ${
-              badgeConfig.pulse ? 'animate-pulse' : ''
-            }`}
-          >
-            <span className="w-1.5 h-1.5 rounded-full bg-current" />
-            {badgeConfig.label}
-          </span>
+        {/* Rubber Stamp Status Badge & Duration */}
+        <div className="flex items-center justify-between gap-3 my-3">
+          <RubberStampBadge
+            status={appliance.current_state}
+            animated={true}
+            size="md"
+          />
 
-          <div className="flex items-center gap-1 text-xs text-slate-500 font-medium">
-            <Clock className="w-3.5 h-3.5 text-slate-400" />
+          <div className="flex items-center gap-1.5 text-xs text-ink-graphite dark:text-slate-400 font-mono font-medium shrink-0">
+            <Clock className="w-3.5 h-3.5 opacity-70" />
             <span>{formatElapsedTime(appliance.state_updated_at)}</span>
           </div>
         </div>
 
         {/* Actor Info */}
-        <div className="flex items-center gap-1.5 text-xs text-slate-500 mb-5">
-          <User className="w-3.5 h-3.5 text-slate-400" />
+        <div className="flex items-center gap-1.5 text-xs text-ink-graphite dark:text-slate-400 mb-4">
+          <User className="w-3.5 h-3.5 text-ink-muted" />
           <span>
             by{' '}
-            <strong className="font-medium text-slate-700">
+            <strong className="font-hand font-bold text-sm text-ink-navy dark:text-slate-200">
               {appliance.updated_by_member ? appliance.updated_by_member.nickname : 'System/Sensor'}
             </strong>
           </span>
@@ -221,11 +195,11 @@ export function ApplianceCard({ appliance, onUpdateState, onViewHistory }: Appli
         type="button"
         disabled={loading}
         onClick={handleAction}
-        className={`w-full py-2.5 px-4 rounded-xl text-sm font-semibold shadow-sm transition flex items-center justify-center gap-2 ${nextConfig.actionBg} disabled:opacity-50`}
+        className={`w-full py-2.5 px-4 rounded-lg font-hand text-base font-bold tracking-wide shadow-paper-sm hover:shadow-paper-md transition-all active:scale-[0.98] flex items-center justify-center gap-2 ${nextConfig.actionBg} disabled:opacity-50`}
       >
         <ActionIcon className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
         <span>{loading ? 'Updating...' : nextConfig.label}</span>
       </button>
-    </div>
+    </PaperCard>
   );
 }

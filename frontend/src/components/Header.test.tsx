@@ -45,9 +45,9 @@ describe('Header Component', () => {
 
     expect(screen.getByText('Sunset Villa')).toBeInTheDocument();
     expect(screen.getByText('Alex')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /appliances/i })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /chores/i })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /settings/i })).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: /appliances/i })).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: /chores/i })).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: /settings/i })).toBeInTheDocument();
     expect(screen.queryByText(/away/i)).not.toBeInTheDocument();
   });
 
@@ -77,10 +77,10 @@ describe('Header Component', () => {
       />
     );
 
-    await user.click(screen.getByRole('button', { name: /chores/i }));
+    await user.click(screen.getByRole('tab', { name: /chores/i }));
     expect(onTabChange).toHaveBeenCalledWith('chores');
 
-    await user.click(screen.getByRole('button', { name: /settings/i }));
+    await user.click(screen.getByRole('tab', { name: /settings/i }));
     expect(onTabChange).toHaveBeenCalledWith('settings');
   });
 

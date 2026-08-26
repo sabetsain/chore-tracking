@@ -13,8 +13,12 @@ import {
   Bell,
   BellOff,
   BellRing,
+  Volume2,
+  VolumeX,
 } from 'lucide-react';
 import { Household, Member } from '../types';
+import { PaperCard } from './stationery/PaperCard';
+import { soundEngine } from '../utils/soundEngine';
 
 interface SettingsViewProps {
   household: Household;
@@ -44,6 +48,13 @@ export function SettingsView({
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [togglingAway, setTogglingAway] = useState(false);
+  const [soundEnabled, setSoundEnabled] = useState<boolean>(() => soundEngine.getEnabled());
+  const [isDark, setIsDark] = useState<boolean>(() => {
+    if (typeof document !== 'undefined') {
+      return document.documentElement.classList.contains('dark');
+    }
+    return false;
+  });
 
   const isAdmin = member.role === 'admin';
   const isAway = member.status === 'away';
@@ -85,77 +96,94 @@ export function SettingsView({
     }
   };
 
+  const toggleSound = () => {
+    const next = !soundEnabled;
+    soundEngine.setEnabled(next);
+    setSoundEnabled(next);
+    if (next) {
+      soundEngine.playStampSound();
+    }
+  };
+
+  const toggleDeskLamp = () => {
+    if (typeof document !== 'undefined') {
+      const next = document.documentElement.classList.toggle('dark');
+      setIsDark(next);
+    }
+  };
+
   return (
     <div className="space-y-6 max-w-2xl mx-auto">
-      <div>
-        <h2 className="text-lg font-bold text-slate-900">Household Settings</h2>
-        <p className="text-xs text-slate-500">
-          Manage your room, invite codes, and roommate preferences.
+      <div className="pb-2 border-b border-slate-200/80 dark:border-slate-700/80">
+        <h2 className="text-2xl sm:text-3xl font-hand font-bold text-ink-navy dark:text-slate-100">Household Settings</h2>
+        <p className="text-xs text-ink-graphite dark:text-slate-400 font-body">
+          Manage your room, invite codes, desk lighting, sound effects, and roommate preferences.
         </p>
       </div>
 
       {error && (
-        <div className="p-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs flex items-center gap-2">
+        <div className="p-3 rounded-lg bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 text-stamp-dirty dark:text-red-300 text-xs flex items-center gap-2 font-hand">
           <AlertCircle className="w-4 h-4 shrink-0" />
           <span>{error}</span>
         </div>
       )}
 
-      {/* Household Info Card */}
-      <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm space-y-4">
-        <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
-          <Home className="w-4 h-4 text-indigo-600" />
+      {/* Household Info Ledger Card */}
+      <PaperCard variant="card" className="p-5 shadow-paper-sm space-y-4 border border-slate-300 dark:border-slate-700">
+        <h3 className="text-xl font-hand font-bold text-ink-navy dark:text-slate-100 flex items-center gap-2">
+          <Home className="w-4 h-4 text-indigo-700 dark:text-indigo-400" />
           <span>Household Info</span>
         </h3>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
-          <div className="p-3 bg-slate-50 rounded-xl">
-            <span className="text-slate-400 block mb-1">House Name</span>
-            <span className="font-semibold text-slate-800 text-sm">{household.name}</span>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs font-body">
+          <div className="p-3 bg-paper-sheet dark:bg-[#1e293b] rounded-lg border border-slate-200 dark:border-slate-700 shadow-paper-sm">
+            <span className="text-ink-muted dark:text-slate-400 block mb-1 font-mono text-[11px]">House Name</span>
+            <span className="font-hand font-bold text-ink-navy dark:text-slate-100 text-lg">{household.name}</span>
           </div>
 
-          <div className="p-3 bg-slate-50 rounded-xl">
-            <span className="text-slate-400 block mb-1">Timezone</span>
-            <span className="font-semibold text-slate-800 text-sm flex items-center gap-1">
-              <Clock className="w-3.5 h-3.5 text-slate-400" />
+          <div className="p-3 bg-paper-sheet dark:bg-[#1e293b] rounded-lg border border-slate-200 dark:border-slate-700 shadow-paper-sm">
+            <span className="text-ink-muted dark:text-slate-400 block mb-1 font-mono text-[11px]">Timezone</span>
+            <span className="font-hand font-bold text-ink-navy dark:text-slate-100 text-lg flex items-center gap-1.5">
+              <Clock className="w-3.5 h-3.5 opacity-70" />
               {household.timezone}
             </span>
           </div>
         </div>
 
         {/* Invite Code */}
-        <div className="p-4 bg-indigo-50/50 border border-indigo-100 rounded-xl">
-          <div className="flex items-center justify-between gap-2">
+        <div className="p-4 bg-paper-manila dark:bg-[#334155] border border-amber-300/80 dark:border-slate-600 rounded-lg shadow-paper-sm">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
-              <span className="text-xs font-semibold text-indigo-950 block">
+              <span className="text-sm font-hand font-bold text-ink-navy dark:text-slate-100 block">
                 Roommate Invite Code
               </span>
-              <p className="text-[11px] text-slate-500 mt-0.5">
+              <p className="text-xs text-ink-graphite dark:text-slate-300 mt-0.5 font-body">
                 Share this 6-letter code with new roommates to let them join.
               </p>
             </div>
-            <div className="flex items-center gap-2">
-              <span className="font-mono text-sm font-bold tracking-wider px-2.5 py-1 bg-white border border-indigo-200 rounded-lg text-indigo-900">
+            <div className="flex items-center gap-2 shrink-0">
+              <span className="font-mono text-base font-bold tracking-wider px-3 py-1 bg-paper-card dark:bg-[#283548] border border-slate-300 dark:border-slate-600 rounded-lg text-ink-navy dark:text-slate-100 shadow-paper-sm">
                 {currentCode}
               </span>
               <button
                 type="button"
                 onClick={handleCopy}
-                className="p-1.5 rounded-lg bg-white border border-indigo-200 hover:bg-indigo-50 text-indigo-700 transition"
+                className="p-2 rounded-lg bg-paper-card dark:bg-[#283548] border border-slate-300 dark:border-slate-600 hover:bg-amber-100/60 dark:hover:bg-slate-700 text-ink-navy dark:text-slate-200 transition shadow-paper-sm active:scale-95"
                 title="Copy Invite Code"
+                aria-label="Copy Invite Code"
               >
-                {copied ? <Check className="w-4 h-4 text-emerald-600" /> : <Copy className="w-4 h-4" />}
+                {copied ? <Check className="w-4 h-4 text-stamp-clean" /> : <Copy className="w-4 h-4 text-ink-graphite" />}
               </button>
             </div>
           </div>
 
           {isAdmin && (
-            <div className="mt-3 pt-3 border-t border-indigo-100/70 flex justify-end">
+            <div className="mt-3 pt-3 border-t border-amber-300/60 dark:border-slate-600 flex justify-end">
               <button
                 type="button"
                 disabled={regenerating}
                 onClick={handleRegenerate}
-                className="inline-flex items-center gap-1.5 text-xs text-indigo-600 hover:text-indigo-800 font-semibold disabled:opacity-50"
+                className="inline-flex items-center gap-1.5 text-xs text-indigo-700 dark:text-indigo-300 hover:underline font-hand font-bold disabled:opacity-50"
               >
                 <RefreshCw className={`w-3.5 h-3.5 ${regenerating ? 'animate-spin' : ''}`} />
                 <span>Regenerate Code</span>
@@ -163,34 +191,34 @@ export function SettingsView({
             </div>
           )}
         </div>
-      </div>
+      </PaperCard>
 
       {/* Member Profile Card */}
-      <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm space-y-4">
-        <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
-          <User className="w-4 h-4 text-indigo-600" />
+      <PaperCard variant="card" className="p-5 shadow-paper-sm space-y-4 border border-slate-300 dark:border-slate-700">
+        <h3 className="text-xl font-hand font-bold text-ink-navy dark:text-slate-100 flex items-center gap-2">
+          <User className="w-4 h-4 text-indigo-700 dark:text-indigo-400" />
           <span>My Profile</span>
         </h3>
 
-        <div className="flex items-center justify-between p-3 bg-slate-50 rounded-xl text-xs">
+        <div className="flex items-center justify-between p-3 bg-paper-sheet dark:bg-[#1e293b] rounded-lg border border-slate-200 dark:border-slate-700 text-xs shadow-paper-sm">
           <div>
-            <span className="text-slate-400 block">Nickname</span>
-            <span className="font-semibold text-slate-800 text-sm">{member.nickname}</span>
+            <span className="text-ink-muted dark:text-slate-400 block font-mono text-[11px]">Nickname</span>
+            <span className="font-hand font-bold text-ink-navy dark:text-slate-100 text-lg">{member.nickname}</span>
           </div>
           <div className="flex items-center gap-2">
-            <span className="px-2 py-0.5 rounded-full bg-slate-200 text-slate-700 font-semibold uppercase text-[10px]">
+            <span className="px-2.5 py-0.5 rounded bg-paper-manila dark:bg-slate-700 border border-amber-300 dark:border-slate-600 text-ink-navy dark:text-slate-200 font-mono font-bold uppercase text-[10px]">
               {member.role}
             </span>
           </div>
         </div>
 
         {/* Away Mode Switch */}
-        <div className="flex items-center justify-between p-3 bg-slate-50 rounded-xl">
+        <div className="flex items-center justify-between p-3 bg-paper-sheet dark:bg-[#1e293b] rounded-lg border border-slate-200 dark:border-slate-700 shadow-paper-sm">
           <div>
-            <span className="text-xs font-semibold text-slate-800 block">
+            <span className="text-sm font-hand font-bold text-ink-navy dark:text-slate-100 block">
               Away Mode
             </span>
-            <p className="text-[11px] text-slate-500">
+            <p className="text-xs text-ink-graphite dark:text-slate-400 font-body">
               Temporarily skip chore rotations and make your duties available to roommates.
             </p>
           </div>
@@ -198,49 +226,109 @@ export function SettingsView({
             type="button"
             disabled={togglingAway}
             onClick={handleToggleAway}
-            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition ${
+            className={`inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-sm font-hand font-bold transition shadow-paper-sm active:scale-95 shrink-0 ${
               isAway
-                ? 'bg-amber-500 text-white hover:bg-amber-600'
-                : 'bg-slate-200 text-slate-700 hover:bg-slate-300'
+                ? 'bg-amber-600 text-white hover:bg-amber-700'
+                : 'bg-paper-card dark:bg-[#283548] text-ink-navy dark:text-slate-200 hover:bg-amber-100/60 dark:hover:bg-slate-700 border border-slate-300 dark:border-slate-600'
             }`}
           >
-            {isAway ? <Sun className="w-3.5 h-3.5" /> : <Moon className="w-3.5 h-3.5" />}
+            {isAway ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4 text-amber-600 dark:text-amber-400" />}
             <span>{isAway ? 'Currently Away' : 'Set Away'}</span>
           </button>
         </div>
-      </div>
+      </PaperCard>
+
+      {/* Desk Stationery & Environment Controls */}
+      <PaperCard variant="card" className="p-5 shadow-paper-sm space-y-4 border border-slate-300 dark:border-slate-700">
+        <h3 className="text-xl font-hand font-bold text-ink-navy dark:text-slate-100 flex items-center gap-2">
+          <Sun className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+          <span>Desk & Atmosphere Controls</span>
+        </h3>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {/* Desk Lamp Night Mode Toggle */}
+          <div className="p-4 bg-paper-sheet dark:bg-[#1e293b] rounded-lg border border-slate-200 dark:border-slate-700 shadow-paper-sm flex items-center justify-between">
+            <div>
+              <span className="text-sm font-hand font-bold text-ink-navy dark:text-slate-100 block">
+                Desk Lamp (Theme)
+              </span>
+              <p className="text-xs text-ink-graphite dark:text-slate-400 mt-0.5 font-body">
+                {isDark ? 'Night journal dark paper' : 'Daytime unbleached bond paper'}
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={toggleDeskLamp}
+              className={`p-2.5 rounded-lg border shadow-paper-sm transition active:scale-95 ${
+                isDark
+                  ? 'bg-amber-500/20 border-amber-500/40 text-amber-300 hover:bg-amber-500/30'
+                  : 'bg-amber-100/80 border-amber-300 text-amber-800 hover:bg-amber-200'
+              }`}
+              title="Toggle Desk Lamp"
+              aria-label="Toggle Desk Lamp"
+            >
+              {isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+            </button>
+          </div>
+
+          {/* Procedural Audio Toggle */}
+          <div className="p-4 bg-paper-sheet dark:bg-[#1e293b] rounded-lg border border-slate-200 dark:border-slate-700 shadow-paper-sm flex items-center justify-between">
+            <div>
+              <span className="text-sm font-hand font-bold text-ink-navy dark:text-slate-100 block">
+                Stationery Audio
+              </span>
+              <p className="text-xs text-ink-graphite dark:text-slate-400 mt-0.5 font-body">
+                {soundEnabled ? 'Paper rustle & stamp clicks active' : 'Audio effects muted'}
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={toggleSound}
+              className={`p-2.5 rounded-lg border shadow-paper-sm transition active:scale-95 ${
+                soundEnabled
+                  ? 'bg-emerald-100 dark:bg-emerald-950/50 border-emerald-300 dark:border-emerald-700 text-stamp-clean dark:text-emerald-300'
+                  : 'bg-paper-card dark:bg-[#283548] border-slate-300 dark:border-slate-600 text-ink-muted'
+              }`}
+              title="Toggle Sound Effects"
+              aria-label="Toggle Sound Effects"
+            >
+              {soundEnabled ? <Volume2 className="w-5 h-5" /> : <VolumeX className="w-5 h-5" />}
+            </button>
+          </div>
+        </div>
+      </PaperCard>
 
       {/* Push Notifications Card */}
-      <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm space-y-4">
-        <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
-          <Bell className="w-4 h-4 text-indigo-600" />
+      <PaperCard variant="card" className="p-5 shadow-paper-sm space-y-4 border border-slate-300 dark:border-slate-700">
+        <h3 className="text-xl font-hand font-bold text-ink-navy dark:text-slate-100 flex items-center gap-2">
+          <Bell className="w-4 h-4 text-indigo-700 dark:text-indigo-400" />
           <span>Push Notifications</span>
         </h3>
 
         {!pushSupported ? (
-          <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl flex items-start gap-3 text-xs">
-            <BellOff className="w-4 h-4 text-slate-400 shrink-0 mt-0.5" />
+          <div className="p-4 bg-paper-sheet dark:bg-[#1e293b] border border-slate-200 dark:border-slate-700 rounded-lg flex items-start gap-3 text-xs shadow-paper-sm">
+            <BellOff className="w-4 h-4 text-ink-muted shrink-0 mt-0.5" />
             <div>
-              <span className="font-semibold text-slate-700 block">Not supported in this browser</span>
-              <p className="text-slate-500 mt-0.5">
+              <span className="font-hand font-bold text-base text-ink-navy dark:text-slate-200 block">Not supported in this browser</span>
+              <p className="text-ink-graphite dark:text-slate-400 mt-0.5 font-body">
                 Web Push requires a modern browser or adding this app to your iOS Home Screen.
               </p>
             </div>
           </div>
         ) : (
-          <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-3">
-            <div className="flex items-center justify-between gap-3">
+          <div className="p-4 bg-paper-sheet dark:bg-[#1e293b] border border-slate-200 dark:border-slate-700 rounded-lg space-y-3 shadow-paper-sm">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div className="flex items-start gap-2.5">
                 {pushEnabled ? (
-                  <BellRing className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                  <BellRing className="w-5 h-5 text-stamp-clean shrink-0 mt-0.5" />
                 ) : (
-                  <BellOff className="w-4 h-4 text-slate-400 shrink-0 mt-0.5" />
+                  <BellOff className="w-5 h-5 text-ink-muted shrink-0 mt-0.5" />
                 )}
                 <div>
-                  <span className="text-xs font-semibold text-slate-800 block">
+                  <span className="text-base font-hand font-bold text-ink-navy dark:text-slate-100 block">
                     {pushEnabled ? 'Active - Receiving Alerts' : 'Push Notifications Disabled'}
                   </span>
-                  <p className="text-[11px] text-slate-500 mt-0.5">
+                  <p className="text-xs text-ink-graphite dark:text-slate-400 mt-0.5 font-body">
                     {pushEnabled
                       ? 'Instant alerts enabled for appliance cycle completions and chore duties.'
                       : 'Get alerted when laundry/dishes finish and new chore shifts start.'}
@@ -253,20 +341,20 @@ export function SettingsView({
                   type="button"
                   disabled={pushLoading}
                   onClick={onTogglePush}
-                  className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-semibold shadow-sm transition disabled:opacity-50 shrink-0 ${
+                  className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-hand font-bold shadow-paper-sm transition disabled:opacity-50 shrink-0 active:scale-95 ${
                     pushEnabled
-                      ? 'bg-slate-200 hover:bg-slate-300 text-slate-700'
-                      : 'bg-indigo-600 hover:bg-indigo-700 text-white'
+                      ? 'bg-paper-card dark:bg-[#283548] hover:bg-slate-100 dark:hover:bg-slate-700 text-ink-navy dark:text-slate-200 border border-slate-300 dark:border-slate-600'
+                      : 'bg-indigo-700 hover:bg-indigo-800 text-white'
                   }`}
                 >
                   {pushEnabled ? (
                     <>
-                      <BellOff className="w-3.5 h-3.5" />
+                      <BellOff className="w-4 h-4" />
                       <span>Disable Push</span>
                     </>
                   ) : (
                     <>
-                      <Bell className="w-3.5 h-3.5" />
+                      <Bell className="w-4 h-4" />
                       <span>Enable Push</span>
                     </>
                   )}
@@ -275,14 +363,14 @@ export function SettingsView({
             </div>
           </div>
         )}
-      </div>
+      </PaperCard>
 
       {/* Logout / Danger Zone */}
       <div className="pt-2">
         <button
           type="button"
           onClick={onLogout}
-          className="w-full py-3 px-4 bg-red-50 hover:bg-red-100 border border-red-200 text-red-700 text-xs font-semibold rounded-xl transition flex items-center justify-center gap-2"
+          className="w-full py-3 px-4 bg-red-50 dark:bg-red-950/30 hover:bg-red-100 dark:hover:bg-red-900/40 border border-red-200 dark:border-red-800 text-stamp-dirty dark:text-red-300 text-sm font-hand font-bold rounded-lg transition flex items-center justify-center gap-2 shadow-paper-sm active:scale-[0.98]"
         >
           <LogOut className="w-4 h-4" />
           <span>Log Out</span>

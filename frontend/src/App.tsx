@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { QueryClient, QueryClientProvider, useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { Header, NavTab } from './components/Header';
@@ -13,6 +13,7 @@ import { useHouseholdWebSocket } from './hooks/useHouseholdWebSocket';
 import { usePushNotifications } from './hooks/usePushNotifications';
 import { api } from './api/client';
 import { ApplianceState, ApplianceType, ChoreAssignment } from './types';
+import { soundEngine } from './utils/soundEngine';
 import { Loader2 } from 'lucide-react';
 
 const queryClient = new QueryClient({
@@ -24,11 +25,19 @@ const queryClient = new QueryClient({
   },
 });
 
+const TAB_ORDER: Record<NavTab, number> = {
+  appliances: 0,
+  chores: 1,
+  settings: 2,
+};
+
 function MainApp() {
   const { member, household, token, logout, updateStatus } = useAuth();
   const [activeTab, setActiveTab] = useState<NavTab>('appliances');
+  const [turnDirection, setTurnDirection] = useState<'forward' | 'backward'>('forward');
   const [swapSourceAssignment, setSwapSourceAssignment] = useState<ChoreAssignment | null>(null);
 
+  const prevTabRef = useRef<NavTab>(activeTab);
   const qc = useQueryClient();
 
   // WebSocket Live Sync
@@ -106,6 +115,15 @@ function MainApp() {
     },
   });
 
+  const handleTabChange = (nextTab: NavTab) => {
+    if (nextTab === activeTab) return;
+    const direction = TAB_ORDER[nextTab] > TAB_ORDER[prevTabRef.current] ? 'forward' : 'backward';
+    setTurnDirection(direction);
+    prevTabRef.current = nextTab;
+    soundEngine.playPageFlipSound();
+    setActiveTab(nextTab);
+  };
+
   if (!member || !household) {
     return null;
   }
@@ -121,79 +139,94 @@ function MainApp() {
     : [];
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col">
-      <Header
-        household={household}
-        member={member}
-        activeTab={activeTab}
-        onTabChange={setActiveTab}
-      />
+    <div className="min-h-screen bg-paper-desk dark:bg-[#070b14] text-ink-navy dark:text-slate-100 flex flex-col items-center py-3 sm:py-6 px-2 sm:px-4 transition-colors duration-200">
+      <div className="w-full max-w-5xl flex flex-col">
+        {/* Tactile Spiral Binder Header */}
+        <Header
+          household={household}
+          member={member}
+          activeTab={activeTab}
+          onTabChange={handleTabChange}
+        />
 
-      <main className="flex-1 max-w-4xl w-full mx-auto px-4 py-6">
-        <PWAInstallPrompt />
-        {activeTab === 'appliances' && (
-          <ApplianceDashboard
-            appliances={appliances}
-            onUpdateState={async (id, toState) => {
-              await updateAppStateMutation.mutateAsync({ id, toState });
-            }}
-            onFetchHistory={async (id) => api.getApplianceHistory(id)}
-            onCreateAppliance={async (data) => {
-              await createApplianceMutation.mutateAsync(data);
-            }}
-          />
-        )}
+        {/* 3D Perspective Viewport for Page Turns */}
+        <div className="notebook-viewport w-full relative -mt-0.5 px-2 sm:px-4">
+          <main
+            id={`panel-${activeTab}`}
+            role="tabpanel"
+            aria-labelledby={`tab-${activeTab}`}
+            key={activeTab}
+            className={`notebook-page-leaf bg-paper-sheet dark:bg-[#1e293b] page-stack min-h-[750px] sm:min-h-[850px] rounded-b-xl border-x-2 border-b-2 border-slate-300 dark:border-slate-700 shadow-binder-spine relative overflow-hidden p-4 sm:p-8 ${
+              turnDirection === 'forward' ? 'page-flip-forward-enter' : 'page-flip-backward-enter'
+            }`}
+          >
+            <PWAInstallPrompt />
 
-        {activeTab === 'chores' && (
-          <div className="space-y-8">
-            <ChoreDutyView
-              currentMember={member}
-              assignments={assignments}
-              onCompleteChore={async (id) => {
-                await completeChoreMutation.mutateAsync(id);
-              }}
-              onLogDuty={async (id, note) => {
-                await logDutyMutation.mutateAsync({ assignmentId: id, note });
-              }}
-              onToggleAway={async (status) => {
-                await updateStatus(status);
-                qc.invalidateQueries({ queryKey: ['members'] });
-                qc.invalidateQueries({ queryKey: ['chores'] });
-              }}
-              onOpenSwap={(assignment) => setSwapSourceAssignment(assignment)}
-            />
+            {activeTab === 'appliances' && (
+              <ApplianceDashboard
+                appliances={appliances}
+                onUpdateState={async (id, toState) => {
+                  await updateAppStateMutation.mutateAsync({ id, toState });
+                }}
+                onFetchHistory={async (id) => api.getApplianceHistory(id)}
+                onCreateAppliance={async (data) => {
+                  await createApplianceMutation.mutateAsync(data);
+                }}
+              />
+            )}
 
-            <UpForGrabsPool
-              chores={upForGrabs}
-              onClaimChore={async (id) => {
-                await claimChoreMutation.mutateAsync(id);
-              }}
-            />
-          </div>
-        )}
+            {activeTab === 'chores' && (
+              <div className="space-y-8">
+                <ChoreDutyView
+                  currentMember={member}
+                  assignments={assignments}
+                  onCompleteChore={async (id) => {
+                    await completeChoreMutation.mutateAsync(id);
+                  }}
+                  onLogDuty={async (id, note) => {
+                    await logDutyMutation.mutateAsync({ assignmentId: id, note });
+                  }}
+                  onToggleAway={async (status) => {
+                    await updateStatus(status);
+                    qc.invalidateQueries({ queryKey: ['members'] });
+                    qc.invalidateQueries({ queryKey: ['chores'] });
+                  }}
+                  onOpenSwap={(assignment) => setSwapSourceAssignment(assignment)}
+                />
 
-        {activeTab === 'settings' && (
-          <SettingsView
-            household={household}
-            member={member}
-            onRegenerateCode={async () => {
-              const res = await api.regenerateInviteCode();
-              qc.invalidateQueries({ queryKey: ['members', 'me'] });
-              return res.invite_code;
-            }}
-            onLogout={logout}
-            onToggleAway={async (status) => {
-              await updateStatus(status);
-              qc.invalidateQueries({ queryKey: ['members'] });
-              qc.invalidateQueries({ queryKey: ['chores'] });
-            }}
-            pushEnabled={push.isSubscribed}
-            pushSupported={push.isSupported}
-            pushLoading={push.isLoading}
-            onTogglePush={push.toggleSubscription}
-          />
-        )}
-      </main>
+                <UpForGrabsPool
+                  chores={upForGrabs}
+                  onClaimChore={async (id) => {
+                    await claimChoreMutation.mutateAsync(id);
+                  }}
+                />
+              </div>
+            )}
+
+            {activeTab === 'settings' && (
+              <SettingsView
+                household={household}
+                member={member}
+                onRegenerateCode={async () => {
+                  const res = await api.regenerateInviteCode();
+                  qc.invalidateQueries({ queryKey: ['members', 'me'] });
+                  return res.invite_code;
+                }}
+                onLogout={logout}
+                onToggleAway={async (status) => {
+                  await updateStatus(status);
+                  qc.invalidateQueries({ queryKey: ['members'] });
+                  qc.invalidateQueries({ queryKey: ['chores'] });
+                }}
+                pushEnabled={push.isSubscribed}
+                pushSupported={push.isSupported}
+                pushLoading={push.isLoading}
+                onTogglePush={push.toggleSubscription}
+              />
+            )}
+          </main>
+        </div>
+      </div>
 
       {/* Chore Swap Modal */}
       {swapSourceAssignment && (
@@ -215,8 +248,8 @@ function RootView() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
-        <Loader2 className="w-8 h-8 text-indigo-600 animate-spin" />
+      <div className="min-h-screen bg-paper-desk dark:bg-[#070b14] flex items-center justify-center">
+        <Loader2 className="w-8 h-8 text-amber-700 animate-spin" />
       </div>
     );
   }
@@ -245,3 +278,4 @@ export function App() {
 }
 
 export default App;
+

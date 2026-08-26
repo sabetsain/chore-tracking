@@ -113,13 +113,13 @@ describe('App Integration', () => {
     });
 
     // Navigate to Chores tab
-    await user.click(screen.getByRole('button', { name: /chores/i }));
+    await user.click(screen.getByRole('tab', { name: /chores/i }));
     await waitFor(() => {
       expect(screen.getByText('Clean Kitchen Counters')).toBeInTheDocument();
     });
 
     // Navigate to Settings tab
-    await user.click(screen.getByRole('button', { name: /settings/i }));
+    await user.click(screen.getByRole('tab', { name: /settings/i }));
     await waitFor(() => {
       expect(screen.getByText('Household Settings')).toBeInTheDocument();
     });

@@ -80,7 +80,7 @@ describe('ApplianceDashboard Component', () => {
     expect(screen.getByText('Kitchen Dishwasher')).toBeInTheDocument();
     expect(screen.getByText('Main Washing Machine')).toBeInTheDocument();
     expect(screen.getByText(/dirty/i)).toBeInTheDocument();
-    expect(screen.getByText(/clean \/ needs emptying/i)).toBeInTheDocument();
+    expect(screen.getByText(/clean.*needs emptying/i)).toBeInTheDocument();
     expect(screen.getByText(/Sam/i)).toBeInTheDocument();
     expect(screen.getByText(/Alex/i)).toBeInTheDocument();
   });

@@ -73,6 +73,7 @@ export interface ChoreAssignment {
   status: 'pending' | 'completed' | 'skipped' | 'swapped';
   completed_at?: string | null;
   completed_by_member_id?: string | null;
+  duty_instances_count?: number;
   chore: Chore;
   member?: Member | null;
   completed_by_member?: Member | null;
