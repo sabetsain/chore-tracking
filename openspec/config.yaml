@@ -1,0 +1,12 @@
+schema: spec-driven
+
+# Project context
+context: |
+  Tech stack: Python 3.12+ (FastAPI, SQLAlchemy 2.0 async, Alembic, Pydantic v2), PostgreSQL 16, React 19 (Vite, TypeScript, Tailwind CSS, TanStack Query), WebSockets, Web Push (pywebpush), Docker Compose.
+  Testing: pytest / pytest-asyncio for backend, Vitest / React Testing Library for frontend.
+  Methodology: ALWAYS use Test-Driven Development (TDD / red-green-refactor loop) for implementation tasks. Tests must be written first against public seams (API endpoints and UI user interactions) before writing production code.
+
+rules:
+  tasks:
+    - ALWAYS follow the /tdd skill workflow: write failing tests at public seams before implementing features (Red -> Green -> Refactor)
+    - Break implementation into vertical slices (one test -> one implementation -> repeat)

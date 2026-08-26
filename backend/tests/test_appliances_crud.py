@@ -1,0 +1,162 @@
+import uuid
+import pytest
+from httpx import AsyncClient
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
+from app.models import Appliance
+
+
+@pytest.mark.asyncio
+async def test_list_appliances_default_seeded(client: AsyncClient):
+    # Create household
+    create_hh = await client.post(
+        "/api/v1/households",
+        json={"name": "Appliance House", "nickname": "Alice"},
+    )
+    assert create_hh.status_code == 201
+    token = create_hh.json()["access_token"]
+    hh_id = create_hh.json()["household"]["id"]
+
+    # List appliances
+    res = await client.get(
+        "/api/v1/appliances",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    assert res.status_code == 200
+    appliances = res.json()
+    assert len(appliances) == 3
+
+    names = [a["name"] for a in appliances]
+    assert "Dishwasher" in names
+    assert "Washer" in names
+    assert "Dryer" in names
+
+    for app in appliances:
+        assert app["household_id"] == hh_id
+        assert app["current_state"] == "empty"
+        assert app["state_updated_at"] is not None
+        assert "id" in app
+        assert app["type"] in ["dishwasher", "washer", "dryer"]
+
+
+@pytest.mark.asyncio
+async def test_create_custom_appliance_success(client: AsyncClient, db_session: AsyncSession):
+    create_hh = await client.post(
+        "/api/v1/households",
+        json={"name": "Custom Appliance House", "nickname": "Bob"},
+    )
+    token = create_hh.json()["access_token"]
+    member_id = create_hh.json()["member"]["id"]
+    hh_id = create_hh.json()["household"]["id"]
+
+    payload = {
+        "name": "Espresso Machine",
+        "type": "custom",
+    }
+    res = await client.post(
+        "/api/v1/appliances",
+        headers={"Authorization": f"Bearer {token}"},
+        json=payload,
+    )
+    assert res.status_code == 201
+    data = res.json()
+    assert data["name"] == "Espresso Machine"
+    assert data["type"] == "custom"
+    assert data["current_state"] == "empty"
+    assert data["household_id"] == hh_id
+    assert data["state_updated_at"] is not None
+    assert data["updated_by_member_id"] == member_id
+    assert data["updated_by_member"] is not None
+    assert data["updated_by_member"]["nickname"] == "Bob"
+
+    # Verify in DB
+    app_id = uuid.UUID(data["id"])
+    db_app = await db_session.get(Appliance, app_id)
+    assert db_app is not None
+    assert db_app.name == "Espresso Machine"
+    assert db_app.current_state == "empty"
+
+
+@pytest.mark.asyncio
+async def test_create_custom_appliance_default_type(client: AsyncClient):
+    create_hh = await client.post(
+        "/api/v1/households",
+        json={"name": "Default Type House", "nickname": "Charlie"},
+    )
+    token = create_hh.json()["access_token"]
+
+    payload = {"name": "Robovac"}
+    res = await client.post(
+        "/api/v1/appliances",
+        headers={"Authorization": f"Bearer {token}"},
+        json=payload,
+    )
+    assert res.status_code == 201
+    data = res.json()
+    assert data["name"] == "Robovac"
+    assert data["type"] == "custom"
+    assert data["current_state"] == "empty"
+
+
+@pytest.mark.asyncio
+async def test_list_appliances_cross_household_isolation(client: AsyncClient):
+    # Household 1
+    h1 = await client.post(
+        "/api/v1/households",
+        json={"name": "House 1", "nickname": "User1"},
+    )
+    token1 = h1.json()["access_token"]
+
+    # Household 2
+    h2 = await client.post(
+        "/api/v1/households",
+        json={"name": "House 2", "nickname": "User2"},
+    )
+    token2 = h2.json()["access_token"]
+
+    # Add custom appliance to House 1
+    await client.post(
+        "/api/v1/appliances",
+        headers={"Authorization": f"Bearer {token1}"},
+        json={"name": "H1 Air Fryer"},
+    )
+
+    # Add custom appliance to House 2
+    await client.post(
+        "/api/v1/appliances",
+        headers={"Authorization": f"Bearer {token2}"},
+        json={"name": "H2 Blender"},
+    )
+
+    # House 1 list: 3 default + 1 custom = 4
+    res1 = await client.get(
+        "/api/v1/appliances",
+        headers={"Authorization": f"Bearer {token1}"},
+    )
+    assert res1.status_code == 200
+    apps1 = res1.json()
+    assert len(apps1) == 4
+    names1 = [a["name"] for a in apps1]
+    assert "H1 Air Fryer" in names1
+    assert "H2 Blender" not in names1
+
+    # House 2 list: 3 default + 1 custom = 4
+    res2 = await client.get(
+        "/api/v1/appliances",
+        headers={"Authorization": f"Bearer {token2}"},
+    )
+    assert res2.status_code == 200
+    apps2 = res2.json()
+    assert len(apps2) == 4
+    names2 = [a["name"] for a in apps2]
+    assert "H2 Blender" in names2
+    assert "H1 Air Fryer" not in names2
+
+
+@pytest.mark.asyncio
+async def test_appliances_unauthenticated_returns_401(client: AsyncClient):
+    res_get = await client.get("/api/v1/appliances")
+    assert res_get.status_code == 401
+
+    res_post = await client.post("/api/v1/appliances", json={"name": "Test"})
+    assert res_post.status_code == 401
