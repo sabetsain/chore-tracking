@@ -12,3 +12,6 @@ When starting a session on this repository, please read the project handoff docu
 - When extending the codebase with new features, models, endpoints, or OpenSpec specifications, run `/graphify --update` to refresh `graphify-out/graph.json`, `graph.html`, and `GRAPH_REPORT.md`.
 - A git post-commit hook is installed to automatically re-extract AST relationships on each commit.
 
+## 4. Implementation Delegation
+- **Always delegate implementation to subagents**: Execute code changes via subagents to keep their context window free of conversational planning clutter.
+

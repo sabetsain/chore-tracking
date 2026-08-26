@@ -21,35 +21,81 @@ interface ApplianceCardProps {
   onViewHistory: (appliance: Appliance) => void;
 }
 
-const NEXT_STATE_MAP: Record<
-  ApplianceState,
-  { next: ApplianceState; label: string; actionBg: string; icon: React.ComponentType<{ className?: string }> }
-> = {
-  empty: {
-    next: 'dirty',
-    label: 'Mark Dirty',
-    actionBg: 'bg-amber-600 hover:bg-amber-700 text-white',
-    icon: RotateCw,
-  },
-  dirty: {
-    next: 'running',
-    label: 'Start Cycle',
-    actionBg: 'bg-blue-600 hover:bg-blue-700 text-white',
-    icon: Play,
-  },
-  running: {
-    next: 'clean_needs_emptying',
-    label: 'Mark Clean',
-    actionBg: 'bg-emerald-600 hover:bg-emerald-700 text-white',
-    icon: CheckCircle2,
-  },
-  clean_needs_emptying: {
-    next: 'empty',
-    label: 'Mark Emptied',
-    actionBg: 'bg-slate-700 hover:bg-slate-800 text-white',
-    icon: Trash2,
-  },
-};
+interface NextStateConfig {
+  next: ApplianceState;
+  label: string;
+  actionBg: string;
+  icon: React.ComponentType<{ className?: string }>;
+}
+
+function getNextStateConfig(type: ApplianceType, currentState: ApplianceState): NextStateConfig {
+  if (type === 'washer' || type === 'dryer') {
+    switch (currentState) {
+      case 'empty':
+        return {
+          next: 'running',
+          label: 'Start Cycle',
+          actionBg: 'bg-blue-600 hover:bg-blue-700 text-white',
+          icon: Play,
+        };
+      case 'running':
+        return {
+          next: 'clean_needs_emptying',
+          label: 'Mark Clean',
+          actionBg: 'bg-emerald-600 hover:bg-emerald-700 text-white',
+          icon: CheckCircle2,
+        };
+      case 'clean_needs_emptying':
+        return {
+          next: 'empty',
+          label: 'Mark Emptied',
+          actionBg: 'bg-slate-700 hover:bg-slate-800 text-white',
+          icon: Trash2,
+        };
+      case 'dirty':
+      default:
+        return {
+          next: 'running',
+          label: 'Start Cycle',
+          actionBg: 'bg-blue-600 hover:bg-blue-700 text-white',
+          icon: Play,
+        };
+    }
+  }
+
+  // Dishwasher & custom appliances
+  switch (currentState) {
+    case 'empty':
+      return {
+        next: 'dirty',
+        label: 'Mark Dirty',
+        actionBg: 'bg-amber-600 hover:bg-amber-700 text-white',
+        icon: RotateCw,
+      };
+    case 'dirty':
+      return {
+        next: 'running',
+        label: 'Start Cycle',
+        actionBg: 'bg-blue-600 hover:bg-blue-700 text-white',
+        icon: Play,
+      };
+    case 'running':
+      return {
+        next: 'clean_needs_emptying',
+        label: 'Mark Clean',
+        actionBg: 'bg-emerald-600 hover:bg-emerald-700 text-white',
+        icon: CheckCircle2,
+      };
+    case 'clean_needs_emptying':
+    default:
+      return {
+        next: 'empty',
+        label: 'Mark Emptied',
+        actionBg: 'bg-slate-700 hover:bg-slate-800 text-white',
+        icon: Trash2,
+      };
+  }
+}
 
 const STATE_BADGE_MAP: Record<
   ApplianceState,
@@ -97,7 +143,7 @@ function getApplianceIcon(type: ApplianceType) {
 
 export function ApplianceCard({ appliance, onUpdateState, onViewHistory }: ApplianceCardProps) {
   const [loading, setLoading] = useState(false);
-  const nextConfig = NEXT_STATE_MAP[appliance.current_state];
+  const nextConfig = getNextStateConfig(appliance.type, appliance.current_state);
   const badgeConfig = STATE_BADGE_MAP[appliance.current_state];
   const Icon = getApplianceIcon(appliance.type);
   const ActionIcon = nextConfig.icon;

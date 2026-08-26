@@ -236,3 +236,91 @@ async def test_appliance_state_cross_household_returns_404(client: AsyncClient):
         headers={"Authorization": f"Bearer {token2}"},
     )
     assert hist_res.status_code == 404
+
+
+@pytest.mark.asyncio
+async def test_washer_and_dryer_transitions_skip_dirty(client: AsyncClient, db_session: AsyncSession):
+    hh_res = await client.post(
+        "/api/v1/households",
+        json={"name": "Laundry House", "nickname": "Alice"},
+    )
+    token = hh_res.json()["access_token"]
+
+    list_res = await client.get(
+        "/api/v1/appliances",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    appliances = list_res.json()
+    washer = next(a for a in appliances if a["type"] == "washer")
+    dryer = next(a for a in appliances if a["type"] == "dryer")
+
+    # Washer: empty -> running (Start Cycle directly)
+    res_washer_run = await client.post(
+        f"/api/v1/appliances/{washer['id']}/state",
+        headers={"Authorization": f"Bearer {token}"},
+        json={"to_state": "running"},
+    )
+    assert res_washer_run.status_code == 200
+    assert res_washer_run.json()["current_state"] == "running"
+
+    # Washer: running -> clean_needs_emptying
+    res_washer_clean = await client.post(
+        f"/api/v1/appliances/{washer['id']}/state",
+        headers={"Authorization": f"Bearer {token}"},
+        json={"to_state": "clean_needs_emptying"},
+    )
+    assert res_washer_clean.status_code == 200
+    assert res_washer_clean.json()["current_state"] == "clean_needs_emptying"
+
+    # Washer: clean_needs_emptying -> empty
+    res_washer_empty = await client.post(
+        f"/api/v1/appliances/{washer['id']}/state",
+        headers={"Authorization": f"Bearer {token}"},
+        json={"to_state": "empty"},
+    )
+    assert res_washer_empty.status_code == 200
+    assert res_washer_empty.json()["current_state"] == "empty"
+
+    # Dryer: empty -> running (Start Cycle directly)
+    res_dryer_run = await client.post(
+        f"/api/v1/appliances/{dryer['id']}/state",
+        headers={"Authorization": f"Bearer {token}"},
+        json={"to_state": "running"},
+    )
+    assert res_dryer_run.status_code == 200
+    assert res_dryer_run.json()["current_state"] == "running"
+
+
+@pytest.mark.asyncio
+async def test_washer_and_dryer_reject_dirty_state(client: AsyncClient):
+    hh_res = await client.post(
+        "/api/v1/households",
+        json={"name": "Reject Dirty House", "nickname": "Alice"},
+    )
+    token = hh_res.json()["access_token"]
+
+    list_res = await client.get(
+        "/api/v1/appliances",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    washer = next(a for a in list_res.json() if a["type"] == "washer")
+    dryer = next(a for a in list_res.json() if a["type"] == "dryer")
+
+    # Washer empty -> dirty should fail
+    res_washer = await client.post(
+        f"/api/v1/appliances/{washer['id']}/state",
+        headers={"Authorization": f"Bearer {token}"},
+        json={"to_state": "dirty"},
+    )
+    assert res_washer.status_code == 400
+    assert "Invalid state transition" in res_washer.json()["detail"]
+
+    # Dryer empty -> dirty should fail
+    res_dryer = await client.post(
+        f"/api/v1/appliances/{dryer['id']}/state",
+        headers={"Authorization": f"Bearer {token}"},
+        json={"to_state": "dirty"},
+    )
+    assert res_dryer.status_code == 400
+    assert "Invalid state transition" in res_dryer.json()["detail"]
+

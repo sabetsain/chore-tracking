@@ -20,11 +20,25 @@ from app.websocket import ws_manager
 
 router = APIRouter(prefix="/api/v1/appliances", tags=["appliances"])
 
-ALLOWED_TRANSITIONS: dict[str, list[str]] = {
-    "empty": ["dirty"],
-    "dirty": ["running"],
-    "running": ["clean_needs_emptying"],
-    "clean_needs_emptying": ["empty"],
+ALLOWED_TRANSITIONS: dict[str, dict[str, list[str]]] = {
+    "washer": {
+        "empty": ["running"],
+        "running": ["clean_needs_emptying"],
+        "clean_needs_emptying": ["empty"],
+        "dirty": ["running"],
+    },
+    "dryer": {
+        "empty": ["running"],
+        "running": ["clean_needs_emptying"],
+        "clean_needs_emptying": ["empty"],
+        "dirty": ["running"],
+    },
+    "default": {
+        "empty": ["dirty"],
+        "dirty": ["running"],
+        "running": ["clean_needs_emptying"],
+        "clean_needs_emptying": ["empty"],
+    },
 }
 
 
@@ -92,12 +106,13 @@ async def update_appliance_state(
         )
 
     if not data.force:
-        allowed = ALLOWED_TRANSITIONS.get(appliance.current_state, [])
+        transitions = ALLOWED_TRANSITIONS.get(appliance.type, ALLOWED_TRANSITIONS["default"])
+        allowed = transitions.get(appliance.current_state, [])
         if data.to_state not in allowed:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail=(
-                    f"Invalid state transition from '{appliance.current_state}' to '{data.to_state}'. "
+                    f"Invalid state transition from '{appliance.current_state}' to '{data.to_state}' for appliance type '{appliance.type}'. "
                     f"Allowed transitions: {allowed}. Use force=true to override."
                 ),
             )

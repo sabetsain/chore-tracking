@@ -236,11 +236,6 @@ async def test_appliance_clean_triggers_push_dispatch(client: AsyncClient, db_se
     # Transition washer to running
     await client.post(
         f"/api/v1/appliances/{washer_id}/state",
-        json={"to_state": "dirty"},
-        headers=headers,
-    )
-    await client.post(
-        f"/api/v1/appliances/{washer_id}/state",
         json={"to_state": "running"},
         headers=headers,
     )

@@ -108,11 +108,6 @@ async def test_sensor_event_completes_cycle_from_running(client: AsyncClient, db
     await client.post(
         f"/api/v1/appliances/{app_id}/state",
         headers={"Authorization": f"Bearer {token}"},
-        json={"to_state": "dirty"},
-    )
-    await client.post(
-        f"/api/v1/appliances/{app_id}/state",
-        headers={"Authorization": f"Bearer {token}"},
         json={"to_state": "running"},
     )
 
@@ -131,11 +126,13 @@ async def test_sensor_event_completes_cycle_from_running(client: AsyncClient, db
         .order_by(ApplianceStateLog.created_at.asc())
     )
     logs = (await db_session.execute(stmt)).scalars().all()
-    assert len(logs) == 3
-    assert logs[2].from_state == "running"
-    assert logs[2].to_state == "clean_needs_emptying"
-    assert logs[2].trigger_source == "sensor_webhook"
-    assert logs[2].actor_member_id is None
+    assert len(logs) == 2
+    assert logs[0].from_state == "empty"
+    assert logs[0].to_state == "running"
+    assert logs[1].from_state == "running"
+    assert logs[1].to_state == "clean_needs_emptying"
+    assert logs[1].trigger_source == "sensor_webhook"
+    assert logs[1].actor_member_id is None
 
 
 @pytest.mark.asyncio

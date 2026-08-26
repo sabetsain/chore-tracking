@@ -14,15 +14,21 @@ The system SHALL support predefined appliance presets (Dishwasher, Washing Machi
 - **WHEN** a member creates a custom appliance with a custom name and type
 - **THEN** the system initializes the appliance with the default 'empty' state and makes it visible to all household members.
 
-### Requirement: 4-State Core Appliance State Machine
-The system SHALL manage appliance lifecycle across four standardized states: 'empty', 'dirty' (or loaded/in-use), 'running', and 'clean_needs_emptying' (or wet/dry ready for attention).
+### Requirement: Core Appliance State Machine
+The system SHALL manage appliance lifecycles across standardized states:
+- **Dishwasher & Custom Appliances**: 4-state lifecycle (`empty` -> `dirty` -> `running` -> `clean_needs_emptying` -> `empty`).
+- **Washing Machine & Dryer**: Streamlined 3-state lifecycle (`empty` -> `running` -> `clean_needs_emptying` -> `empty`), assuming laundry appliances start immediately without a `dirty` holding state.
 
-#### Scenario: Advancing appliance through complete cycle
-- **WHEN** a member triggers successive state transitions ('empty' -> 'dirty' -> 'running' -> 'clean_needs_emptying' -> 'empty')
+#### Scenario: Advancing dishwasher through complete cycle
+- **WHEN** a member triggers successive state transitions on a dishwasher ('empty' -> 'dirty' -> 'running' -> 'clean_needs_emptying' -> 'empty')
 - **THEN** the system validates each transition, updates the current state and timestamp, appends an entry to the appliance state log, and broadcasts the new state over WebSockets.
 
+#### Scenario: Advancing washer or dryer through streamlined cycle
+- **WHEN** a member starts an empty washing machine or dryer ('empty' -> 'running')
+- **THEN** the system directly transitions the appliance to 'running' without requiring a 'dirty' state.
+
 #### Scenario: Preventing invalid direct state transition
-- **WHEN** a transition request bypasses the state machine logic without an override flag
+- **WHEN** a transition request bypasses the state machine logic for that appliance type without an override flag (e.g. attempting 'empty' -> 'dirty' on a washing machine or 'empty' -> 'clean_needs_emptying' on any appliance)
 - **THEN** the system rejects the transition with a 400 Bad Request error.
 
 ### Requirement: Real-Time Elapsed Time and Activity Logging

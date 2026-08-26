@@ -156,4 +156,62 @@ describe('ApplianceDashboard Component', () => {
       })
     );
   });
+
+  it('renders "Start Cycle" directly for empty Washer and Dryer, but "Mark Dirty" for Dishwasher', async () => {
+    const user = userEvent.setup();
+    mockOnUpdateState.mockResolvedValue(undefined);
+
+    const emptyAppliances: Appliance[] = [
+      {
+        id: 'washer-1',
+        household_id: 'h-1',
+        name: 'Main Washing Machine',
+        type: 'washer',
+        current_state: 'empty',
+        state_updated_at: new Date().toISOString(),
+      },
+      {
+        id: 'dryer-1',
+        household_id: 'h-1',
+        name: 'Main Clothes Dryer',
+        type: 'dryer',
+        current_state: 'empty',
+        state_updated_at: new Date().toISOString(),
+      },
+      {
+        id: 'dw-1',
+        household_id: 'h-1',
+        name: 'Kitchen Dishwasher',
+        type: 'dishwasher',
+        current_state: 'empty',
+        state_updated_at: new Date().toISOString(),
+      },
+    ];
+
+    render(
+      <ApplianceDashboard
+        appliances={emptyAppliances}
+        onUpdateState={mockOnUpdateState}
+        onFetchHistory={mockOnFetchHistory}
+        onCreateAppliance={mockOnCreateAppliance}
+      />
+    );
+
+    // Washer: Button should say "Start Cycle"
+    const startCycleBtns = screen.getAllByRole('button', { name: /start cycle/i });
+    expect(startCycleBtns.length).toBe(2); // One for Washer, one for Dryer
+
+    // Click Washer "Start Cycle" -> calls onUpdateState with 'running'
+    await user.click(startCycleBtns[0]);
+    expect(mockOnUpdateState).toHaveBeenCalledWith('washer-1', 'running');
+
+    // Click Dryer "Start Cycle" -> calls onUpdateState with 'running'
+    await user.click(startCycleBtns[1]);
+    expect(mockOnUpdateState).toHaveBeenCalledWith('dryer-1', 'running');
+
+    // Dishwasher: Button should say "Mark Dirty"
+    const markDirtyBtn = screen.getByRole('button', { name: /mark dirty/i });
+    await user.click(markDirtyBtn);
+    expect(mockOnUpdateState).toHaveBeenCalledWith('dw-1', 'dirty');
+  });
 });
