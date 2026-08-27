@@ -952,17 +952,5 @@
     "seen": 1787752550.45504,
     "ast_hash": "bba3ddb1e0f15117f695d930c73c4d88",
     "semantic_hash": "bba3ddb1e0f15117f695d930c73c4d88"
-  },
-  "openspec/changes/tactile-ui-revamp/.openspec.yaml": {
-    "mtime": 1787859909.4207413,
-    "seen": 1787859931.8004851,
-    "ast_hash": "f97fd577ea4d8cb30b12050ab2b411e5",
-    "semantic_hash": ""
-  },
-  "openspec/changes/tactile-ui-revamp/proposal.md": {
-    "mtime": 1787859922.675911,
-    "seen": 1787859931.8004858,
-    "ast_hash": "947b9e071bb7fe73760b5ff5c49f0cdf",
-    "semantic_hash": ""
   }
 }
