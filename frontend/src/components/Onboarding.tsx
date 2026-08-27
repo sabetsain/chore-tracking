@@ -135,11 +135,11 @@ export function Onboarding({ onLogin, onJoin, onCreate }: OnboardingProps) {
   const currentCover = COVER_STYLES[coverStyle];
 
   return (
-    <div className="min-h-screen bg-paper-desk dark:bg-[#070b14] text-ink-navy dark:text-slate-100 flex flex-col justify-center items-center px-3 sm:px-6 py-8 transition-colors duration-300">
+    <div className="min-h-screen bg-paper-desk dark:bg-[#080D17] text-ink-navy dark:text-slate-100 flex flex-col justify-center items-center px-3 sm:px-6 py-8 transition-colors duration-300">
       {/* Top Desk Lamp & Material Switcher Toolbar */}
       <div className="max-w-xl w-full flex items-center justify-between mb-4 px-2">
         {/* Cover Material Switcher */}
-        <div className="flex items-center gap-1.5 bg-paper-card dark:bg-[#1e293b] p-1.5 rounded-lg border border-slate-300 dark:border-slate-700 shadow-paper-sm text-xs font-hand font-bold">
+        <div className="flex items-center gap-1.5 bg-paper-card dark:bg-[#1A2234] p-1.5 rounded-lg border border-stone-300 dark:border-slate-700 shadow-paper-sm text-xs font-sans font-bold">
           <BookOpen className="w-4 h-4 text-ink-graphite dark:text-slate-400 ml-1 mr-0.5" />
           <button
             type="button"
@@ -180,7 +180,7 @@ export function Onboarding({ onLogin, onJoin, onCreate }: OnboardingProps) {
         <button
           type="button"
           onClick={toggleDeskLamp}
-          className="inline-flex items-center gap-2 px-3 py-1.5 bg-paper-card dark:bg-[#1e293b] hover:bg-amber-100/60 dark:hover:bg-slate-700 border border-slate-300 dark:border-slate-700 rounded-lg text-xs font-hand font-bold text-ink-navy dark:text-slate-200 shadow-paper-sm transition-all active:scale-95"
+          className="inline-flex items-center gap-2 px-3 py-1.5 bg-paper-card dark:bg-[#1A2234] hover:bg-amber-100/60 dark:hover:bg-slate-700 border border-stone-300 dark:border-slate-700 rounded-lg text-xs font-sans font-bold text-ink-navy dark:text-slate-200 shadow-paper-sm transition-all active:scale-95"
           title="Toggle Desk Lamp (Night Mode)"
           aria-label="Toggle Desk Lamp"
         >
@@ -207,11 +207,11 @@ export function Onboarding({ onLogin, onJoin, onCreate }: OnboardingProps) {
           <div className="w-14 h-14 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center mx-auto mb-3 shadow-inner">
             <Home className={`w-7 h-7 ${currentCover.crestColor}`} />
           </div>
-          <h1 className={`text-3xl sm:text-4xl font-hand font-bold tracking-tight ${currentCover.titleColor}`}>
+          <h1 className={`text-3xl sm:text-4xl font-serif font-bold tracking-tight ${currentCover.titleColor}`}>
             Household Coordination
           </h1>
-          <p className={`text-sm font-hand mt-1 ${currentCover.subtitleColor}`}>
-            * Kitchen Table Logbook & Roommate Ledger *
+          <p className={`text-sm font-serif italic mt-1 tracking-wide ${currentCover.subtitleColor}`}>
+            Kitchen Table Logbook & Roommate Ledger
           </p>
         </div>
 
@@ -220,13 +220,13 @@ export function Onboarding({ onLogin, onJoin, onCreate }: OnboardingProps) {
           <PaperclipFastener position="top-left" />
           <PaperCard
             variant="sheet"
-            className="p-6 shadow-paper-lifted border border-slate-300 dark:border-slate-700"
+            className="p-6 shadow-paper-lifted border border-stone-300 dark:border-slate-700"
           >
             {/* Tab Selector */}
             <div
               role="tablist"
               aria-label="Onboarding Options"
-              className="flex p-1 bg-paper-manila dark:bg-slate-800 rounded-xl mb-6 text-xs font-hand font-bold border border-amber-200/80 dark:border-slate-700"
+              className="flex p-1 bg-paper-manila dark:bg-slate-800 rounded-xl mb-6 text-xs font-sans font-bold border border-amber-200/80 dark:border-slate-700"
             >
               <button
                 type="button"
@@ -235,7 +235,7 @@ export function Onboarding({ onLogin, onJoin, onCreate }: OnboardingProps) {
                 onClick={() => handleTabChange('join')}
                 className={`flex-1 py-2 text-sm rounded-lg transition-all ${
                   tab === 'join'
-                    ? 'bg-paper-sheet dark:bg-[#1e293b] text-ink-navy dark:text-slate-100 shadow-paper-sm'
+                    ? 'bg-paper-sheet dark:bg-[#1A2234] text-ink-navy dark:text-slate-100 shadow-paper-sm'
                     : 'text-ink-graphite dark:text-slate-400 hover:text-ink-navy dark:hover:text-slate-200'
                 }`}
               >
@@ -248,7 +248,7 @@ export function Onboarding({ onLogin, onJoin, onCreate }: OnboardingProps) {
                 onClick={() => handleTabChange('create')}
                 className={`flex-1 py-2 text-sm rounded-lg transition-all ${
                   tab === 'create'
-                    ? 'bg-paper-sheet dark:bg-[#1e293b] text-ink-navy dark:text-slate-100 shadow-paper-sm'
+                    ? 'bg-paper-sheet dark:bg-[#1A2234] text-ink-navy dark:text-slate-100 shadow-paper-sm'
                     : 'text-ink-graphite dark:text-slate-400 hover:text-ink-navy dark:hover:text-slate-200'
                 }`}
               >
@@ -261,7 +261,7 @@ export function Onboarding({ onLogin, onJoin, onCreate }: OnboardingProps) {
                 onClick={() => handleTabChange('login')}
                 className={`flex-1 py-2 text-sm rounded-lg transition-all ${
                   tab === 'login'
-                    ? 'bg-paper-sheet dark:bg-[#1e293b] text-ink-navy dark:text-slate-100 shadow-paper-sm'
+                    ? 'bg-paper-sheet dark:bg-[#1A2234] text-ink-navy dark:text-slate-100 shadow-paper-sm'
                     : 'text-ink-graphite dark:text-slate-400 hover:text-ink-navy dark:hover:text-slate-200'
                 }`}
               >
@@ -270,7 +270,7 @@ export function Onboarding({ onLogin, onJoin, onCreate }: OnboardingProps) {
             </div>
 
             {error && (
-              <div className="mb-4 p-3 rounded-lg bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 text-stamp-dirty dark:text-red-300 text-xs flex items-center gap-2 font-hand">
+              <div className="mb-4 p-3 rounded-lg bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 text-stamp-dirty dark:text-red-300 text-xs flex items-center gap-2 font-sans font-medium">
                 <AlertCircle className="w-4 h-4 shrink-0" />
                 <span>{error}</span>
               </div>
@@ -279,7 +279,7 @@ export function Onboarding({ onLogin, onJoin, onCreate }: OnboardingProps) {
             <form onSubmit={handleSubmit} className="space-y-4">
               {tab === 'create' && (
                 <div>
-                  <label className="block text-xs font-semibold text-ink-navy dark:text-slate-200 mb-1 font-body">
+                  <label className="block text-xs font-semibold text-ink-navy dark:text-slate-200 mb-1 font-sans">
                     Household Name
                   </label>
                   <input
@@ -288,14 +288,14 @@ export function Onboarding({ onLogin, onJoin, onCreate }: OnboardingProps) {
                     placeholder="House or apartment name (e.g. Maple Grove)"
                     value={householdName}
                     onChange={(e) => setHouseholdName(e.target.value)}
-                    className="w-full px-3.5 py-2.5 bg-paper-card dark:bg-[#283548] border border-slate-300 dark:border-slate-600 rounded-lg text-sm text-ink-navy dark:text-slate-100 placeholder:text-ink-muted dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-amber-700 dark:focus:ring-amber-500 transition font-body"
+                    className="w-full px-3.5 py-2.5 bg-paper-card dark:bg-[#222D42] border border-stone-300 dark:border-slate-600 rounded-lg text-sm text-ink-navy dark:text-slate-100 placeholder:text-ink-muted dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-amber-700 dark:focus:ring-amber-500 transition font-sans"
                   />
                 </div>
               )}
 
               {(tab === 'join' || tab === 'login') && (
                 <div>
-                  <label className="block text-xs font-semibold text-ink-navy dark:text-slate-200 mb-1 font-body">
+                  <label className="block text-xs font-semibold text-ink-navy dark:text-slate-200 mb-1 font-sans">
                     Invite Code {tab === 'login' && <span className="font-normal text-ink-muted dark:text-slate-400">(optional)</span>}
                   </label>
                   <input
@@ -305,13 +305,13 @@ export function Onboarding({ onLogin, onJoin, onCreate }: OnboardingProps) {
                     placeholder="6-letter code (e.g. ABC123)"
                     value={inviteCode}
                     onChange={(e) => setInviteCode(e.target.value.toUpperCase())}
-                    className="w-full px-3.5 py-2.5 bg-paper-card dark:bg-[#283548] border border-slate-300 dark:border-slate-600 rounded-lg text-sm font-mono tracking-wider uppercase text-ink-navy dark:text-slate-100 placeholder:text-ink-muted dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-amber-700 dark:focus:ring-amber-500 transition"
+                    className="w-full px-3.5 py-2.5 bg-paper-card dark:bg-[#222D42] border border-stone-300 dark:border-slate-600 rounded-lg text-sm font-mono tracking-wider uppercase text-ink-navy dark:text-slate-100 placeholder:text-ink-muted dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-amber-700 dark:focus:ring-amber-500 transition"
                   />
                 </div>
               )}
 
               <div>
-                <label className="block text-xs font-semibold text-ink-navy dark:text-slate-200 mb-1 font-body">
+                <label className="block text-xs font-semibold text-ink-navy dark:text-slate-200 mb-1 font-sans">
                   Your Nickname
                 </label>
                 <input
@@ -320,13 +320,13 @@ export function Onboarding({ onLogin, onJoin, onCreate }: OnboardingProps) {
                   placeholder="Your nickname (e.g. Alex, Sam)"
                   value={nickname}
                   onChange={(e) => setNickname(e.target.value)}
-                  className="w-full px-3.5 py-2.5 bg-paper-card dark:bg-[#283548] border border-slate-300 dark:border-slate-600 rounded-lg text-sm text-ink-navy dark:text-slate-100 placeholder:text-ink-muted dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-amber-700 dark:focus:ring-amber-500 transition font-body"
+                  className="w-full px-3.5 py-2.5 bg-paper-card dark:bg-[#222D42] border border-stone-300 dark:border-slate-600 rounded-lg text-sm text-ink-navy dark:text-slate-100 placeholder:text-ink-muted dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-amber-700 dark:focus:ring-amber-500 transition font-sans"
                 />
               </div>
 
               <div>
                 <div className="flex justify-between items-center mb-1">
-                  <label className="block text-xs font-semibold text-ink-navy dark:text-slate-200 font-body">
+                  <label className="block text-xs font-semibold text-ink-navy dark:text-slate-200 font-sans">
                     4-Digit PIN <span className="font-normal text-ink-muted dark:text-slate-400">(optional)</span>
                   </label>
                 </div>
@@ -337,14 +337,14 @@ export function Onboarding({ onLogin, onJoin, onCreate }: OnboardingProps) {
                   placeholder="4-digit PIN (optional)"
                   value={pin}
                   onChange={(e) => setPin(e.target.value)}
-                  className="w-full px-3.5 py-2.5 bg-paper-card dark:bg-[#283548] border border-slate-300 dark:border-slate-600 rounded-lg text-sm font-mono text-ink-navy dark:text-slate-100 placeholder:text-ink-muted dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-amber-700 dark:focus:ring-amber-500 transition"
+                  className="w-full px-3.5 py-2.5 bg-paper-card dark:bg-[#222D42] border border-stone-300 dark:border-slate-600 rounded-lg text-sm font-mono text-ink-navy dark:text-slate-100 placeholder:text-ink-muted dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-amber-700 dark:focus:ring-amber-500 transition"
                 />
               </div>
 
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full mt-3 py-3 px-4 bg-indigo-700 hover:bg-indigo-800 disabled:opacity-50 text-white font-hand font-bold text-base rounded-lg shadow-paper-sm hover:shadow-paper-md transition-all flex items-center justify-center gap-2 active:scale-[0.98]"
+                className="w-full mt-3 py-3 px-4 bg-indigo-700 hover:bg-indigo-800 disabled:opacity-50 text-white font-sans font-bold text-sm tracking-wide rounded-lg shadow-paper-sm hover:shadow-paper-md transition-all flex items-center justify-center gap-2 active:scale-[0.98]"
               >
                 {loading ? (
                   <span>Loading...</span>

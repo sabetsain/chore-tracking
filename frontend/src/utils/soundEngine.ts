@@ -1,6 +1,7 @@
 export class StationerySoundEngine {
   private ctx: AudioContext | null = null;
   private isEnabled: boolean = false;
+  private lastScribbleTime: number = 0;
 
   constructor() {
     if (typeof window !== 'undefined' && window.localStorage) {
@@ -46,21 +47,40 @@ export class StationerySoundEngine {
     return ctx;
   }
 
-  public playStampSound(): void {
+  public triggerHaptic(pattern: number | number[]): void {
+    if (typeof navigator !== 'undefined' && typeof navigator.vibrate === 'function') {
+      try {
+        navigator.vibrate(pattern);
+      } catch {
+        // Gracefully ignore vibration errors
+      }
+    }
+  }
+
+  /**
+   * Resonant Rubber Stamp Impact Synthesis.
+   * Produces a ~65Hz sub-bass desk thud and ~1.6kHz rubber snap with ±5% procedural pitch jitter.
+   */
+  public playStampSound(velocity: number = 1.0): void {
+    // Haptic trigger for stamps
+    this.triggerHaptic([20, 40, 30]);
+
     const ctx = this.getContext();
     if (!ctx) return;
 
     try {
       const now = ctx.currentTime;
+      const safeVelocity = Math.min(1.8, Math.max(0.4, velocity));
 
-      // Sub-bass thud (desk resonance)
+      // 65Hz Sub-bass thud (desk resonance)
       const osc = ctx.createOscillator();
       const oscGain = ctx.createGain();
       osc.type = 'sine';
-      osc.frequency.setValueAtTime(70, now);
+      osc.frequency.setValueAtTime(65, now);
       osc.frequency.exponentialRampToValueAtTime(25, now + 0.09);
 
-      oscGain.gain.setValueAtTime(0.45, now);
+      const targetGain = 0.45 * safeVelocity;
+      oscGain.gain.setValueAtTime(targetGain, now);
       oscGain.gain.exponentialRampToValueAtTime(0.001, now + 0.09);
 
       osc.connect(oscGain);
@@ -69,7 +89,7 @@ export class StationerySoundEngine {
       osc.start(now);
       osc.stop(now + 0.09);
 
-      // Rubber slap click
+      // Rubber snap click with ±5% procedural pitch jitter
       const bufferSize = Math.floor(ctx.sampleRate * 0.03);
       if (bufferSize > 0) {
         const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
@@ -83,10 +103,12 @@ export class StationerySoundEngine {
 
         const filter = ctx.createBiquadFilter();
         filter.type = 'bandpass';
-        filter.frequency.value = 1400;
+        // 1.6kHz center with ±5% procedural jitter
+        const jitter = 1 + (Math.random() * 0.1 - 0.05);
+        filter.frequency.value = 1600 * jitter;
 
         const noiseGain = ctx.createGain();
-        noiseGain.gain.setValueAtTime(0.3, now);
+        noiseGain.gain.setValueAtTime(0.3 * safeVelocity, now);
         noiseGain.gain.exponentialRampToValueAtTime(0.001, now + 0.03);
 
         noise.connect(filter);
@@ -95,17 +117,18 @@ export class StationerySoundEngine {
 
         noise.start(now);
       }
-
-      // Mobile Haptic Trigger
-      if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
-        navigator.vibrate?.([20, 30, 25]);
-      }
     } catch {
       // Gracefully ignore audio synthesis errors
     }
   }
 
+  /**
+   * 3D Page Turn Paper Rustle Synthesis.
+   * Sweeps bandpass filter from 900Hz to 2200Hz.
+   */
   public playPageFlipSound(): void {
+    this.triggerHaptic([10, 15, 10]);
+
     const ctx = this.getContext();
     if (!ctx) return;
 
@@ -143,17 +166,28 @@ export class StationerySoundEngine {
     }
   }
 
-  public playPencilScribbleSound(): void {
+  /**
+   * Pencil Scribble Scratch Synthesis.
+   * Modulates highpass filter cutoff and attack decay on rapid repetitions.
+   */
+  public playPencilScribbleSound(velocity: number = 1.0): void {
+    this.triggerHaptic([12]);
+
     const ctx = this.getContext();
     if (!ctx) return;
 
     try {
       const now = ctx.currentTime;
-      const pulseDuration = 0.04;
+      const nowMs = Date.now();
+      const isRapid = nowMs - this.lastScribbleTime < 400;
+      this.lastScribbleTime = nowMs;
+
+      const pulseDuration = isRapid ? 0.035 : 0.04;
       const pulseCount = 3;
+      const safeVelocity = Math.min(1.8, Math.max(0.4, velocity));
 
       for (let p = 0; p < pulseCount; p++) {
-        const startTime = now + p * 0.045;
+        const startTime = now + p * (isRapid ? 0.038 : 0.045);
         const bufferSize = Math.floor(ctx.sampleRate * pulseDuration);
         if (bufferSize <= 0) continue;
 
@@ -168,10 +202,11 @@ export class StationerySoundEngine {
 
         const filter = ctx.createBiquadFilter();
         filter.type = 'highpass';
-        filter.frequency.value = 3200 + p * 200;
+        const variation = isRapid ? 300 : 0;
+        filter.frequency.value = 3200 + p * 200 + variation;
 
         const gain = ctx.createGain();
-        gain.gain.setValueAtTime(0.15, startTime);
+        gain.gain.setValueAtTime(0.15 * safeVelocity, startTime);
         gain.gain.exponentialRampToValueAtTime(0.001, startTime + pulseDuration);
 
         noise.connect(filter);
@@ -186,7 +221,13 @@ export class StationerySoundEngine {
     }
   }
 
+  /**
+   * Washi Tape Peel Sound Synthesis.
+   * Sweeps bandpass filter from 1800Hz to 3600Hz.
+   */
   public playTapePeelSound(): void {
+    this.triggerHaptic([12]);
+
     const ctx = this.getContext();
     if (!ctx) return;
 
@@ -226,3 +267,4 @@ export class StationerySoundEngine {
 }
 
 export const soundEngine = new StationerySoundEngine();
+export default soundEngine;

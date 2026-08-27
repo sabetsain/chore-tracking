@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
 import clsx from 'clsx';
+import { motion } from 'framer-motion';
 
 export type StampStatus = 'clean' | 'dirty' | 'running' | 'empty' | 'clean_needs_emptying' | (string & {});
 
@@ -64,37 +65,44 @@ export const RubberStampBadge: React.FC<RubberStampBadgeProps> = ({
   }, [normalizedStatus]);
 
   const sizeClasses = {
-    sm: 'text-xs px-2 py-0.5 border tracking-wider',
-    md: 'text-sm px-3 py-1 border-2 tracking-widest',
+    sm: 'text-xs px-2.5 py-0.5 border-[1.5px] tracking-wider',
+    md: 'text-sm px-3.5 py-1 border-2 tracking-widest',
     lg: 'text-base sm:text-lg px-4 py-2 border-[2.5px] tracking-widest',
   }[size];
 
   const ariaLabel = `Status: ${displayLabel}${sublabel ? ` - ${sublabel}` : ''}`;
 
   return (
-    <span
+    <motion.span
       key={animated ? `${status}-${displayLabel}` : undefined}
       role="status"
       aria-label={ariaLabel}
+      initial={animated ? { scale: 1.45, opacity: 0, rotate: angle } : { rotate: angle }}
+      animate={{ scale: 1, opacity: 1, rotate: angle }}
+      transition={{
+        type: 'spring',
+        stiffness: 400,
+        damping: 25,
+        mass: 0.8,
+      }}
       style={{
         transform: `rotate(${angle}deg)`,
         ['--stamp-angle' as string]: `${angle}deg`,
       }}
       className={clsx(
-        'rubber-stamp inline-flex flex-col items-center justify-center font-display font-extrabold uppercase select-none transition-transform',
+        'rubber-stamp inline-flex flex-col items-center justify-center font-hand font-bold uppercase select-none transition-transform rounded',
         statusClass,
         sizeClasses,
-        animated && 'animate-stamp-thud',
         className
       )}
     >
       <span className="leading-tight text-center">{displayLabel}</span>
       {sublabel && (
-        <span className="text-[0.65em] font-sans font-bold tracking-normal opacity-90 leading-tight mt-0.5 text-center">
+        <span className="text-[0.7em] font-sans font-semibold tracking-normal opacity-90 leading-tight mt-0.5 text-center">
           {sublabel}
         </span>
       )}
-    </span>
+    </motion.span>
   );
 };
 

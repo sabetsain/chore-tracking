@@ -1,8 +1,8 @@
-# Household Coordination App — Paper Notebook Design System
+# Household Coordination App — Luxury Editorial Stationery Design System
 
-> **Document Version**: 2.0.0  
+> **Document Version**: 2.1.0  
 > **Status**: Approved Design Specification  
-> **Design Philosophy**: Tactile Domestic Stationery & Living Paper Notebook  
+> **Design Philosophy**: Tactile Luxury Stationery, Editorial Typography & Living Desk Journal (Midori MD / Moleskine / Field Notes)  
 > **Target Platform**: Responsive Web & PWA (Desktop, Tablet, Mobile)  
 
 ---
@@ -12,30 +12,34 @@
 ### 1.1 The Physical Notebook Metaphor
 Modern digital task managers and household coordination software suffer from a common affliction: **sterile corporate SaaS aesthetic fatigue**. Standard flat interfaces—filled with rounded generic cards, neutral gray borders, and cold synthetic gradients—feel like Jira for the home. Roommates and families do not want to manage their living spaces with an enterprise productivity tool; domestic life is tactile, personal, collaborative, and grounded in shared physical reality.
 
-The **Paper Notebook Design System** transforms the Household Coordination App into a warm, inviting, living kitchen-table binder. The entire user interface is conceptualized as an authentic physical spiral-bound notebook or ring binder resting on a domestic desk surface.
+The **Luxury Editorial Stationery Design System** transforms the Household Coordination App into a warm, inviting, editorial kitchen-table journal. The entire user interface is conceptualized as an authentic physical spiral-bound notebook or Smyth-sewn ring binder resting on a warm linen desk surface, combining the tactile charm of Midori MD Paper and Japanese notebooks with high-craft editorial serif headings and crisp modern typography.
 
 ```
 +-------------------------------------------------------------------------------+
-|  DESK SURFACE (Wood Grain / Warm Slate / Natural Linen)                       |
+|  DESK SURFACE (Warm Linen Desk Mat / Natural Oak #FAF7F0 / #080D17)           |
 |                                                                               |
 |  +-------------------------------------------------------------------------+  |
-|  | [===] SPIRAL / RIVET BINDING SPINE                                      |  |
-|  |                                                [Appliances] [Chores] [P]|  |
+|  | [===] SPIRAL / BRASS EYELET BINDING SPINE                               |  |
+|  |                                                [Appliances] [Chores] [S]|  |
 |  |  +-------------------------------------------------------------------+  |  |
 |  |  | |                                                         |       |  |  |
-|  |  | |  ROOMMATE LOGBOOK                            AUG 2026   |       |  |  |
+|  |  | |  HOUSEHOLD LOGBOOK                           AUG 2026   |       |  |  |
+|  |  | |  (Editorial Fraunces Serif Heading)                     | [TAB] |  |  |
 |  |  | |---------------------------------------------------------| [TAB] |  |  |
 |  |  | |                                                         |       |  |  |
 |  |  | |  APPLIANCE DASHBOARD                                    | [TAB] |  |  |
 |  |  | |                                                         |       |  |  |
-|  |  | |  +--------------------+      +--------------------+     | [TAB] |  |  |
-|  |  | |  | DISHWASHER         |      | WASHING MACHINE    |     |       |  |  |
+|  |  | |  +--------------------+      +--------------------+     |       |  |  |
+|  |  | |  | Dishwasher         |      | Washing Machine    |     |       |  |  |
+|  |  | |  | (Fraunces Serif)   |      | (Fraunces Serif)   |     |       |  |  |
 |  |  | |  | [ STAMP: CLEAN ]   |      | [ STAMP: RUNNING ] |     |       |  |  |
-|  |  | |  | Tap to empty...    |      | Finishes in 32m    |     |       |  |  |
+|  |  | |  | (Caveat Hand Stamp)|      | (Caveat Hand Stamp)|     |       |  |  |
+|  |  | |  | [START CYCLE BTN]  |      | [EMPTY MACH. BTN]  |     |       |  |  |
+|  |  | |  | (Plus Jakarta Sans)|      | (Plus Jakarta Sans)|     |       |  |  |
 |  |  | |  +--------------------+      +--------------------+     |       |  |  |
 |  |  | |                                                         |       |  |  |
 |  |  | |  ====================================================== |       |  |  |
-|  |  | |  Ruled Blue Margin Line & Warm Cream Heavyweight Paper  |       |  |  |
+|  |  | |  Ruled Blue Margin Line & Warm Cotton Heavyweight Paper |       |  |  |
 |  |  +-------------------------------------------------------------------+  |  |
 |  +-------------------------------------------------------------------------+  |
 +-------------------------------------------------------------------------------+
@@ -43,41 +47,41 @@ The **Paper Notebook Design System** transforms the Household Coordination App i
 
 ### 1.2 Materiality, Paper Textures & Physics
 The interface treats every visual element as a tangible piece of domestic stationery:
-- **Heavyweight Paper Pages**: Unbleached, warm-cream fibrous stock with subtle tactile tooth and organic noise rather than sterile stark white.
+- **300gsm Cotton Paper Pages**: Unbleached, warm-cream fibrous stock (`#FFFDF9`) with subtle tactile tooth and organic noise rather than sterile stark white.
 - **Ruled Paper & Margin Rules**: Faint blue horizontal guide rules aligned with an exact baseline grid, complemented by classic vertical red left-margin lines.
-- **Stationery Index Dividers**: Die-cut tab dividers protruding from page edges with manila or pastel cardstock colors, creating an intuitive multi-section binder.
-- **Fasteners & Adhesives**: Translucent matte washi tape strips holding memo notes, brass binder rings/rivets along the spine, and metallic paperclips binding dialog slips.
+- **Stationery Index Dividers**: Die-cut tab dividers protruding from page edges with crisp modern sans typography (`Plus Jakarta Sans`), connecting seamlessly with the active page sheet.
+- **Fasteners & Adhesives**: Translucent matte washi tape strips holding memo notes, metallic double-loop coils with specular chrome reflections and twin brass eyelet rivets along the spine, and metallic paperclips binding dialog slips.
 - **Inks, Pencils & Stamps**:
-  - **Ballpoint/Fountain Navy Ink**: Crisp, dark navy for primary headings, written records, and deliberate actions.
-  - **Graphite Pencil**: Soft, slightly grainy slate for secondary metadata, timestamps, and transient notes.
-  - **Distressed Rubber Stamps**: Inked rubber stamp impressions with weathered bleed textures, angled rotational skews ($\pm 1.5^{\circ}$ to $\pm 4^{\circ}$), and authentic stamped borders for state indicators (`CLEAN`, `DIRTY`, `RUNNING`, `EMPTYING`).
+  - **Ballpoint/Fountain Navy Ink (`#0F172A`)**: Deep rich navy for primary editorial headings and high-contrast letterpress actions.
+  - **Graphite Pencil (`#475569`)**: Soft slate lead for secondary metadata, descriptions, and functional icons.
+  - **Distressed Rubber Stamps (`Caveat`)**: Inked rubber stamp impressions with weathered bleed textures, angled rotational skews ($\pm 1.5^{\circ}$ to $\pm 4^{\circ}$), and authentic stamped borders for state indicators (`CLEAN`, `DIRTY`, `RUNNING`, `NEEDS EMPTYING`).
   - **Highlighter Overlays**: Semi-transparent, multiply-blended pastel highlighter strokes accentuating active statuses or current member assignments.
 
 ### 1.3 Lighting, Elevation & Natural Imperfection
 Depth is achieved through **soft directional ambient lighting** (simulating an overhead desk lamp positioned at top-left) rather than generic computer drop-shadows:
-- **Page Lift**: Subtle ambient occlusion beneath page corners and lifted card edges.
-- **Paper Stack Layering**: Multiple stacked sheet borders creating physical sheet depth along the right and bottom edges.
-- **Natural Organic Imperfection**: Elements feature slight rotational variations ($\pm 0.4^{\circ}$ to $\pm 1.8^{\circ}$) to eliminate uncanny computational symmetry.
+- **Page Lift**: Subtle ambient occlusion beneath page corners and lifted card edges (`shadow-paper-sheet`, `shadow-paper-card`).
+- **Paper Stack Layering**: Multiple stacked sheet borders (`2px/4px/6px` cascading shadows) creating physical sheet depth along the right and bottom edges.
+- **Tactile Letterpress Physics**: Buttons feature physical depth (`shadow-[0_2px_0_rgba(15,23,42,0.15)]`) that compresses on `:active` tap (`translate-y-[1px] shadow-none`).
 
 ---
 
 ## 2. Color Palette & Surface Semantics
 
-The color palette is derived directly from physical artist and stationery materials, organized into clear functional roles.
+The color palette is derived directly from luxury cotton paper, archival inks, and physical stationery materials.
 
 ```
 +-------------------------------------------------------------------------------+
-|                             STATIONERY PALETTE                                |
+|                        LUXURY COTTON STATIONERY PALETTE                       |
 |                                                                               |
-|   Cream Page       Manila Card      Navy Pen Ink     Graphite Pencil  Margin  |
-|   [ #FAF6EE ]      [ #FEF7E0 ]      [ #1E293B ]        [ #475569 ]    [#EF4444|
+|   Paper Sheet      Paper Card       Manila Card      Navy Pen Ink    Graphite |
+|   [ #FFFDF9 ]      [ #FAF6EE ]      [ #F5EEDB ]      [ #0F172A ]     [#475569]|
 |                                                                               |
 |   STAMP INKS:                                                                 |
-|   [ Clean Green ]  [ Dirty Red ]    [ Running Blue ]   [ Empty Amber ]        |
-|   [ #15803D ]      [ #B91C1C ]      [ #1D4ED8 ]        [ #B45309 ]            |
+|   [ Clean Green ]  [ Dirty Oxblood ][ Running Cobalt][ Empty Amber ]          |
+|   [ #15803D ]      [ #BE123C ]      [ #1D4ED8 ]      [ #D97706 ]              |
 |                                                                               |
 |   HIGHLIGHTERS (multiply blend):                                              |
-|   [ #FEF08A (Y) ]  [ #BBF7D0 (G) ]  [ #FECDD3 (P) ]    [ #BAE6FD (B) ]        |
+|   [ #FEF08A (Y) ]  [ #BBF7D0 (G) ]  [ #FECDD3 (P) ]  [ #BAE6FD (B) ]          |
 +-------------------------------------------------------------------------------+
 ```
 
@@ -85,21 +89,21 @@ The color palette is derived directly from physical artist and stationery materi
 
 | Role | Color Value | Physical Metaphor & Visual Function |
 | :--- | :--- | :--- |
-| **Base Page Surface** | `#FAF6EE` | Base warm cream sketchbook paper framing the workspace. |
-| **Active Sheet** | `#FCFBF7` | Crisp heavyweight bond paper representing the active working sheet. |
-| **Index Cardstock** | `#FFFDF9` | Dense cardstock surface for appliance and chore units. |
-| **Manila Folder** | `#FEF7E0` | Manila cardstock used for divider tabs and proposed swap slips. |
+| **Base Page Surface** | `#FAF7F0` | Base warm cream paper framing the workspace. |
+| **Active Sheet** | `#FFFDF9` | 300gsm unbleached cotton paper representing the active working sheet. |
+| **Index Cardstock** | `#FAF6EE` | Dense cardstock surface for appliance and chore units. |
+| **Manila Folder** | `#F5EEDB` | Manila cardstock used for divider tabs and proposed swap slips. |
 | **Post-It Memo** | `#FEF9C3` | Canary yellow sticky note paper for up-for-grabs tasks. |
-| **Desk Mat Backdrop** | `#EAE4D5` | Warm linen / bleached oak desk framing the notebook. |
-| **Navy Ink (Primary)** | `#1E293B` | Dark blue ballpoint ink for primary headings and major actions. |
+| **Desk Mat Backdrop** | `#EFE9DC` | Warm linen desk mat framing the notebook. |
+| **Navy Ink (Primary)** | `#0F172A` | Deep archival navy ink for primary editorial headings and text. |
 | **Graphite Pencil** | `#475569` | 2B pencil lead for secondary text, borders, and functional icons. |
 | **Muted Lead** | `#94A3B8` | Light pencil guidelines, inactive states, and timestamps. |
-| **Notebook Rule Line** | `rgba(148, 163, 184, 0.35)` | Faint blue ruled guidelines for horizontal text alignment. |
-| **Margin Guideline** | `rgba(239, 68, 68, 0.65)` | Classic vertical red left-margin rule. |
-| **Stamp Clean** | `#15803D` | Forest green ink for `CLEAN` appliance state badges. |
-| **Stamp Dirty** | `#B91C1C` | Crimson oxblood ink for `DIRTY` appliance state badges. |
-| **Stamp Running** | `#1D4ED8` | Indigo blueprint ink for `RUNNING` appliance cycle badges. |
-| **Stamp Empty** | `#B45309` | Rust amber ink for `EMPTYING` appliance transition badges. |
+| **Notebook Rule Line** | `rgba(148, 163, 184, 0.30)` | Faint blue ruled guidelines for horizontal text alignment. |
+| **Margin Guideline** | `rgba(239, 68, 68, 0.50)` | Classic vertical red left-margin rule. |
+| **Stamp Clean** | `#15803D` | Forest green archival ink for `CLEAN` appliance state badges. |
+| **Stamp Dirty** | `#BE123C` | Oxblood crimson ink for `DIRTY` appliance state badges. |
+| **Stamp Running** | `#1D4ED8` | Cobalt blueprint ink for `RUNNING` appliance cycle badges. |
+| **Stamp Empty** | `#D97706` | Deep amber ink for `NEEDS EMPTYING` appliance badges. |
 
 ### 2.2 Pastel Highlighter Palette (Multiply Blend Overlays)
 Used with optical multiply blending on light surfaces to emulate real felt-tip highlighter markers:
@@ -113,19 +117,20 @@ Used with optical multiply blending on light surfaces to emulate real felt-tip h
 | **Orange Highlighter** | `rgba(254, 215, 170, 0.60)` | Up-for-grabs pool markers, voluntary tasks. |
 
 ### 2.3 Night Journal Palette (Dark Mode)
-Night mode is conceptualized as an **artist's night journal** worked with white gel pens, metallic inks, and luminous graphite under dim desk lamp illumination:
+Night mode is conceptualized as an **artist's dark notebook** worked with white gel pens, metallic inks, and luminous graphite under dim desk lamp illumination:
 
 | Role | Color Value | Physical Metaphor & Visual Function |
 | :--- | :--- | :--- |
-| **Night Desk Surface** | `#0B1120` | Dark slate desk surface under low room lighting. |
-| **Night Journal Page** | `#1E293B` | Charcoal black-paper sketchbook page. |
-| **Night Cardstock** | `#283548` | Dense dark cardstock card for individual modules. |
+| **Night Desk Surface** | `#080D17` | Dark slate desk surface under low room lighting. |
+| **Night Journal Page** | `#1A2234` | Midnight navy cotton paper sketchbook page. |
+| **Night Cardstock** | `#222D42` | Dense dark cardstock card for individual modules. |
+| **Night Manila Card** | `#2C3952` | Darkened manila slip cardstock. |
 | **White Gel Pen Ink** | `#F8FAFC` | Opaque white gel pen ink for primary headings and text. |
 | **Silver Graphite** | `#CBD5E1` | Luminous silver-gray pencil lead for secondary text and borders. |
-| **Night Rule Line** | `rgba(255, 255, 255, 0.08)` | Faint ruled lines on dark paper. |
-| **Night Margin Guideline**| `rgba(248, 113, 113, 0.40)` | Muted coral red margin rule. |
+| **Night Rule Line** | `rgba(255, 255, 255, 0.06)` | Faint ruled lines on dark paper. |
+| **Night Margin Guideline**| `rgba(248, 113, 113, 0.35)` | Muted coral red margin rule. |
 | **Night Stamp Clean** | `#34D399` | Luminous emerald stamp ink on dark paper. |
-| **Night Stamp Dirty** | `#F87171` | Phosphor coral stamp ink on dark paper. |
+| **Night Stamp Dirty** | `#FB7185` | Phosphor coral stamp ink on dark paper. |
 | **Night Stamp Running** | `#60A5FA` | Electric cyan stamp ink on dark paper. |
 | **Night Stamp Empty** | `#FBBF24` | Warm amber stamp ink on dark paper. |
 
@@ -137,66 +142,53 @@ Night mode is conceptualized as an **artist's night journal** worked with white 
 +-------------------------------------------------------------------------------+
 |                             TYPOGRAPHIC HIERARCHY                             |
 |                                                                               |
-|  [H1]  Patrick Hand (28px - 34px)          - "Household Logbook"              |
-|  [H2]  Patrick Hand (22px - 26px)          - "Weekly Duty Schedule"           |
-|  [H3]  Nunito Bold (17px - 19px)           - "Dishwasher (Main Kitchen)"      |
-|  [Body] Nunito Regular (15px / 24px pitch) - "Please empty before dinner."    |
-|  [Meta] Nunito / Mono (12px - 13px)        - "Turned on by Alex at 14:32"     |
-|  [Stamp] Caveat / Sans Bold (14px)         - "CLEAN - NEEDS EMPTYING"         |
+|  [H1]  Fraunces Bold (28px - 34px)         - "Household Logbook"              |
+|  [H2]  Fraunces Bold (22px - 26px)         - "Weekly Chore Duties"            |
+|  [H3]  Fraunces Bold (18px - 20px)         - "Kitchen Dishwasher"             |
+|  [UI]  Plus Jakarta Sans Bold (14px)       - "Start Cycle" / "Mark Done"      |
+|  [Body] Plus Jakarta Sans (14px - 15px)    - "Please empty before dinner."    |
+|  [Meta] Plus Jakarta Sans / JetBrains Mono - "Alex - 14:32 - 6-letter PIN"    |
+|  [Stamp] Caveat Bold Uppercase (14px)      - "CLEAN - NEEDS EMPTYING"         |
 +-------------------------------------------------------------------------------+
 ```
 
 ### 3.1 Typeface Selection Rules
-1. **Display & Section Titles (`Patrick Hand` & `Caveat`)**:
-   - Natural, organic, open letterforms that mimic neat penmanship on paper.
-   - High legibility even at fast scanning speeds, avoiding illegible script while maintaining warmth and personality.
-2. **Body Copy & Form Controls (`Nunito`)**:
-   - A humanist sans-serif with rounded terminals that mirrors the friendly geometry of paper typography without causing reading fatigue.
-3. **Monospace Metadata (`JetBrains Mono`)**:
-   - Evokes typewriter or stamped numeric codes for PINs, household invite codes, and elapsed time counters.
+1. **Editorial Headings (`Fraunces` / `Lora`)**:
+   - High-contrast, optical-size variable editorial serif with crisp serifs and elegant letterforms.
+   - Used for Household Title in Header, Appliance Card Titles, Chore Section Headings, Modal Headings, and Book Cover Titles.
+2. **Modern Interface & Body Copy (`Plus Jakarta Sans`)**:
+   - Crisp, ultra-readable modern geometric sans-serif for UI controls, letterpress action buttons (`Start Cycle`, `Mark Done`, `Claim Chore`), tab labels, profile information, and form controls.
+3. **Rubber Stamp Impressions & Signatures (`Caveat`)**:
+   - Expressive handwritten pen strokes strictly reserved for rubber stamps (`CLEAN`, `DIRTY`, `RUNNING`, `NEEDS EMPTYING`) and personal signatures.
+4. **Monospace Metadata & Machine Codes (`JetBrains Mono`)**:
+   - Technical monospace font for invite codes, PIN codes, timestamps, and tally counters.
 
 ### 3.2 Baseline Grid & Ruled Pitch Rules
-- All standard body text must lock to a **24px line-height baseline pitch**.
-- Ruled horizontal guide lines must coincide exactly with the text baseline grid to maintain the illusion of handwriting on ruled stationary.
-- Margin guidelines must maintain consistent left-hand clearance (red vertical margin line positioned 42px from sheet edge with text indented accordingly).
+- All standard body text locks to a **24px line-height baseline pitch**.
+- Ruled horizontal guide lines coincide with the text baseline grid to maintain the illusion of printing on stationery.
+- Margin guidelines maintain consistent left-hand clearance (red vertical margin line positioned 42px from sheet edge).
 
 ### 3.3 Type Scale Hierarchy
 
 | Hierarchy Level | Typeface | Size / Line-Height | Weight / Tracking | Design Application |
 | :--- | :--- | :--- | :--- | :--- |
-| **Title / H1** | `Patrick Hand` | 32px / 36px | Regular / `-0.01em` | Notebook Cover title, Main View header |
-| **Section / H2** | `Patrick Hand` | 24px / 28px | Regular / `0` | Card group titles, Tab headers |
-| **Card / H3** | `Nunito` | 18px / 24px | Bold (700) / `0` | Appliance names, Chore task titles |
-| **Body (Lead)** | `Nunito` | 16px / 24px | SemiBold (600) / `0` | Important instructions, callouts |
-| **Body (Standard)** | `Nunito` | 15px / 24px | Regular (400) / `0` | Descriptions, roommate duty notes |
-| **Caption / Meta** | `Nunito` | 13px / 20px | Regular (400) / `+0.01em` | Timestamps, secondary actor metadata |
-| **Stamp Badge** | `Caveat` / `Nunito` | 14px / 16px | ExtraBold (800) / `+0.12em` | Rubber stamp state badges (uppercase) |
-| **Numeric Code** | `JetBrains Mono` | 15px / 20px | Medium (500) / `+0.08em` | Household invite codes, PIN codes |
+| **Title / H1** | `Fraunces` | 30px / 36px | Bold (700) / `-0.02em` | Notebook Cover title, Main View header |
+| **Section / H2** | `Fraunces` | 24px / 28px | Bold (700) / `-0.01em` | Card group titles, Section headers |
+| **Card / H3** | `Fraunces` | 18px / 24px | Bold (700) / `0` | Appliance names, Chore task titles |
+| **Button / Action** | `Plus Jakarta Sans` | 14px / 20px | Bold (700) / `+0.02em` | Letterpress action buttons, tabs |
+| **Body (Lead)** | `Plus Jakarta Sans` | 15px / 24px | SemiBold (600) / `0` | Important instructions, callouts |
+| **Body (Standard)** | `Plus Jakarta Sans` | 14px / 22px | Regular (400) / `0` | Descriptions, roommate duty notes |
+| **Caption / Meta** | `Plus Jakarta Sans` | 12px / 18px | Medium (500) / `+0.01em` | Timestamps, secondary actor metadata |
+| **Stamp Badge** | `Caveat` | 14px / 16px | Bold (700) / `+0.10em` | Rubber stamp state badges (uppercase) |
+| **Numeric Code** | `JetBrains Mono` | 14px / 20px | Medium (500) / `+0.06em` | Household invite codes, PIN codes |
 
 ---
 
 ## 4. Motion, Spring Physics & Interaction Rules
 
-```
-       PAGE TURN PHYSICS (Perspective 1400px)
-       
-       Left Tab (Origin: 0% 50%)              Right Tab (Origin: 100% 50%)
-          [========]                              [========]
-          /        /                                \        \
-         /   3D   /                                  \   3D   \
-        /  Flip  /                                    \  Flip  \
-       +--------+                                      +--------+
-       RotateY(0 -> -90deg) -> Swap -> RotateY(90deg -> 0)
-       Dynamic shadow gradient simulates paper bowing during turn
-```
-
-### 4.1 3D Page Turn Mechanics
-- Navigation between primary tabs (`Appliances`, `Chores`, `Settings`) triggers a 3D skeletal page turn.
-- **Directional Continuity**:
-  - Moving forward (left to right tab): Page leaves rotating forward to the left (`rotateY(-90deg)`), enter page unfolds from the right (`rotateY(90deg -> 0deg)`).
-  - Moving backward (right to left tab): Page leaves rotating backward to the right (`rotateY(90deg)`), enter page unfolds from the left (`rotateY(-90deg -> 0deg)`).
-- **Curvature Shadowing**: As the page turns through the 3D plane, dynamic gradient overlays simulate physical paper bowing and shadow casting.
-- **Spring & Timing Profile**: Fast, crisp execution (approx. `380ms`) with natural deceleration to feel physical yet snappy.
+### 4.1 Section Tab Navigation
+- Navigation between primary tabs (`Appliances`, `Chores`, `Settings`) uses clean, immediate tab selection with subtle spring elevation on the active tab index.
+- Tab panels transition seamlessly without disorienting 3D skews or rotating page flips, keeping focus immediately on the selected workspace.
 
 ### 4.2 Tactile Micro-Interactions
 

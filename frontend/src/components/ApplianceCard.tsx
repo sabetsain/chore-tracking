@@ -134,20 +134,21 @@ export function ApplianceCard({ appliance, onUpdateState, onViewHistory }: Appli
     <PaperCard
       variant="card"
       tilt={tilt}
-      className="p-5 flex flex-col justify-between min-h-[250px] border border-slate-300 dark:border-slate-700"
+      layoutId={`appliance-${appliance.id}`}
+      className="p-5 flex flex-col justify-between min-h-[250px] border border-stone-200/80 dark:border-slate-700/80 shadow-paper-sm"
     >
       {/* Top section: Title, Icon & History */}
       <div>
         <div className="flex items-start justify-between gap-2 mb-3">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-amber-100 dark:bg-[#334155] border border-amber-200 dark:border-slate-600 flex items-center justify-center text-amber-900 dark:text-amber-200 shadow-sm">
+            <div className="w-10 h-10 rounded-xl bg-amber-100/80 dark:bg-[#2C3952] border border-amber-200/80 dark:border-slate-600 flex items-center justify-center text-amber-900 dark:text-amber-200 shadow-sm">
               <Icon className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="font-hand font-bold text-xl text-ink-navy dark:text-slate-100 leading-tight">
+              <h3 className="font-serif font-bold text-xl text-ink-navy dark:text-slate-100 leading-tight">
                 {appliance.name}
               </h3>
-              <span className="font-mono text-xs text-ink-muted dark:text-slate-400 capitalize">
+              <span className="font-mono text-[11px] text-ink-muted dark:text-slate-400 capitalize tracking-wider">
                 {appliance.type}
               </span>
             </div>
@@ -179,11 +180,11 @@ export function ApplianceCard({ appliance, onUpdateState, onViewHistory }: Appli
         </div>
 
         {/* Actor Info */}
-        <div className="flex items-center gap-1.5 text-xs text-ink-graphite dark:text-slate-400 mb-4">
+        <div className="flex items-center gap-1.5 text-xs text-ink-graphite dark:text-slate-400 mb-4 font-sans">
           <User className="w-3.5 h-3.5 text-ink-muted" />
           <span>
             by{' '}
-            <strong className="font-hand font-bold text-sm text-ink-navy dark:text-slate-200">
+            <strong className="font-sans font-semibold text-xs text-ink-navy dark:text-slate-200">
               {appliance.updated_by_member ? appliance.updated_by_member.nickname : 'System/Sensor'}
             </strong>
           </span>
@@ -195,7 +196,7 @@ export function ApplianceCard({ appliance, onUpdateState, onViewHistory }: Appli
         type="button"
         disabled={loading}
         onClick={handleAction}
-        className={`w-full py-2.5 px-4 rounded-lg font-hand text-base font-bold tracking-wide shadow-paper-sm hover:shadow-paper-md transition-all active:scale-[0.98] flex items-center justify-center gap-2 ${nextConfig.actionBg} disabled:opacity-50`}
+        className={`w-full py-2.5 px-4 rounded-lg font-sans text-sm font-bold tracking-wide shadow-paper-sm hover:shadow-paper-md transition-all active:scale-[0.98] flex items-center justify-center gap-2 ${nextConfig.actionBg} disabled:opacity-50`}
       >
         <ActionIcon className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
         <span>{loading ? 'Updating...' : nextConfig.label}</span>

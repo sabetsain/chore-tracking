@@ -49,7 +49,7 @@ describe('Stationery Primitives', () => {
       expect(badge).toHaveTextContent('ALL CLEAN');
       expect(badge).toHaveTextContent('DONE BY ALEX');
       expect(badge).toHaveAttribute('aria-label', 'Status: ALL CLEAN - DONE BY ALEX');
-      expect(badge.style.transform).toBe('rotate(4.5deg)');
+      expect(badge.style.transform).toContain('rotate(4.5deg)');
     });
   });
 

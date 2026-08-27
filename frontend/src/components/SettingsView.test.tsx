@@ -159,5 +159,48 @@ describe('SettingsView Component', () => {
 
     expect(screen.getByText(/Not supported in this browser/i)).toBeInTheDocument();
   });
-});
 
+  it('shares invite code using navigator.share when supported', async () => {
+    const user = userEvent.setup();
+    const shareMock = vi.fn().mockResolvedValue(undefined);
+    Object.defineProperty(navigator, 'share', {
+      writable: true,
+      configurable: true,
+      value: shareMock,
+    });
+
+    render(
+      <SettingsView
+        household={mockHousehold}
+        member={adminMember}
+        onRegenerateCode={mockOnRegenerateCode}
+        onLogout={mockOnLogout}
+        onToggleAway={mockOnToggleAway}
+      />
+    );
+
+    const shareBtn = screen.getByRole('button', { name: /share invite code/i });
+    await user.click(shareBtn);
+
+    expect(shareMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        title: expect.stringContaining('Sunset Villa'),
+        text: expect.stringContaining('ABC123'),
+      })
+    );
+  });
+
+  it('renders Countertop Fridge Kiosk Mode section', () => {
+    render(
+      <SettingsView
+        household={mockHousehold}
+        member={adminMember}
+        onRegenerateCode={mockOnRegenerateCode}
+        onLogout={mockOnLogout}
+        onToggleAway={mockOnToggleAway}
+      />
+    );
+
+    expect(screen.getByText('Countertop Fridge Kiosk Mode')).toBeInTheDocument();
+  });
+});

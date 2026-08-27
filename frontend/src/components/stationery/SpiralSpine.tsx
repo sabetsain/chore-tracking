@@ -32,7 +32,7 @@ export const SpiralSpine: React.FC<SpiralSpineProps> = ({
         {rings.map((_, idx) => (
           <div
             key={idx}
-            className="w-4 h-4 rounded-full bg-gradient-to-br from-amber-200 via-amber-600 to-amber-900 shadow-md border border-amber-950 flex items-center justify-center"
+            className="w-3.5 h-3.5 rounded-full bg-gradient-to-br from-amber-200 via-amber-600 to-amber-900 shadow-md border border-amber-950/60 flex items-center justify-center"
           >
             <div className="w-1.5 h-1.5 rounded-full bg-slate-900 shadow-inner" />
           </div>
@@ -64,15 +64,15 @@ export const SpiralSpine: React.FC<SpiralSpineProps> = ({
           {/* Paper Hole */}
           <div
             className={clsx(
-              'rounded-full bg-[#3d332a] dark:bg-black shadow-inner',
-              orientation === 'vertical' ? 'w-3 h-3' : 'w-3 h-3'
+              'rounded-full bg-[#2A231C] dark:bg-black shadow-inner',
+              orientation === 'vertical' ? 'w-2.5 h-2.5' : 'w-2.5 h-2.5'
             )}
           />
 
           {/* Metal Wire Loop */}
           <svg
             className={clsx(
-              'absolute drop-shadow-[0_2px_2px_rgba(0,0,0,0.3)]',
+              'absolute drop-shadow-[0_2px_3px_rgba(15,23,42,0.25)]',
               orientation === 'vertical' ? '-left-1 w-8 h-4' : '-top-1 w-4 h-8'
             )}
             viewBox="0 0 32 16"
@@ -83,7 +83,7 @@ export const SpiralSpine: React.FC<SpiralSpineProps> = ({
             <path
               d="M2 8 C 8 0, 24 0, 30 8"
               stroke="#64748b"
-              strokeWidth="3.5"
+              strokeWidth="3.2"
               strokeLinecap="round"
             />
             {/* Metallic chrome highlight */}
@@ -92,7 +92,7 @@ export const SpiralSpine: React.FC<SpiralSpineProps> = ({
               stroke="#f8fafc"
               strokeWidth="1.2"
               strokeLinecap="round"
-              className="opacity-80"
+              className="opacity-90"
             />
           </svg>
         </div>

@@ -3,56 +3,56 @@
 @tailwind utilities;
 
 :root {
-  /* Paper Surfaces */
-  --paper-bg: #faf6ee;
-  --paper-sheet: #fcfbf7;
-  --paper-card: #fffdf9;
-  --paper-manila: #fef7e0;
-  --paper-postit: #fef9c3;
-  --desk-surface: #eae4d5;
+  /* Luxury Cotton Paper Surfaces */
+  --paper-bg: #FAF7F0;
+  --paper-sheet: #FFFDF9;
+  --paper-card: #FAF6EE;
+  --paper-manila: #F5EEDB;
+  --paper-postit: #FEF9C3;
+  --paper-desk: #EFE9DC;
 
-  /* Inks */
-  --ink-navy: #1e293b;
+  /* Editorial Inks */
+  --ink-navy: #0F172A;
   --ink-graphite: #475569;
-  --ink-muted: #94a3b8;
-  --rule-line: rgba(148, 163, 184, 0.35);
-  --rule-margin: rgba(239, 68, 68, 0.65);
+  --ink-muted: #94A3B8;
+  --rule-line: rgba(148, 163, 184, 0.22);
+  --rule-margin: rgba(225, 29, 72, 0.45);
 
   /* Stamp Inks */
-  --stamp-clean: #15803d;
-  --stamp-dirty: #b91c1c;
-  --stamp-running: #1d4ed8;
-  --stamp-empty: #b45309;
+  --stamp-clean: #15803D;
+  --stamp-dirty: #BE123C;
+  --stamp-running: #1D4ED8;
+  --stamp-empty: #D97706;
 
   /* Highlighters */
-  --hl-yellow: rgba(254, 240, 138, 0.65);
-  --hl-green: rgba(187, 247, 208, 0.60);
-  --hl-pink: rgba(254, 205, 211, 0.60);
-  --hl-blue: rgba(186, 230, 253, 0.60);
-  --hl-orange: rgba(254, 215, 170, 0.60);
+  --hl-yellow: rgba(254, 240, 138, 0.55);
+  --hl-green: rgba(187, 247, 208, 0.50);
+  --hl-pink: rgba(254, 205, 211, 0.50);
+  --hl-blue: rgba(186, 230, 253, 0.50);
+  --hl-orange: rgba(254, 215, 170, 0.50);
 }
 
 .dark {
-  /* Paper Surfaces */
-  --paper-bg: #0b1120;
-  --paper-sheet: #1e293b;
-  --paper-card: #283548;
-  --paper-manila: #334155;
-  --paper-postit: #3b4252;
-  --desk-surface: #070b14;
+  /* Night Journal Surfaces */
+  --paper-bg: #0D131F;
+  --paper-sheet: #1A2234;
+  --paper-card: #222D42;
+  --paper-manila: #2C3952;
+  --paper-postit: #37435B;
+  --paper-desk: #080D17;
 
-  /* Inks */
-  --ink-navy: #f8fafc;
-  --ink-graphite: #cbd5e1;
-  --ink-muted: #64748b;
-  --rule-line: rgba(255, 255, 255, 0.08);
-  --rule-margin: rgba(248, 113, 113, 0.40);
+  /* Night Inks */
+  --ink-navy: #F8FAFC;
+  --ink-graphite: #CBD5E1;
+  --ink-muted: #64748B;
+  --rule-line: rgba(255, 255, 255, 0.06);
+  --rule-margin: rgba(244, 63, 94, 0.35);
 
-  /* Stamp Inks */
-  --stamp-clean: #34d399;
-  --stamp-dirty: #f87171;
-  --stamp-running: #60a5fa;
-  --stamp-empty: #fbbf24;
+  /* Night Stamp Inks */
+  --stamp-clean: #22C55E;
+  --stamp-dirty: #FB7185;
+  --stamp-running: #60A5FA;
+  --stamp-empty: #FBBF24;
 }
 
 /* Exact 24px Ruled Line Alignment */
@@ -84,7 +84,7 @@
   pointer-events: none;
 }
 
-/* Rubber Stamp Styling */
+/* Rubber Stamp Styling with bold uppercase Caveat */
 .rubber-stamp {
   display: inline-flex;
   flex-direction: column;
@@ -92,8 +92,8 @@
   justify-content: center;
   padding: 0.35rem 0.85rem;
   text-transform: uppercase;
-  font-family: 'Caveat', 'Patrick Hand', cursive, sans-serif;
-  font-weight: 800;
+  font-family: 'Caveat', cursive;
+  font-weight: 700;
   letter-spacing: 0.12em;
   border: 2.5px solid currentColor;
   border-radius: 4px;
@@ -156,88 +156,6 @@
   animation: pencilStrikethrough 320ms ease-in-out forwards;
 }
 
-/* 3D Page Turn Engine */
-.notebook-viewport {
-  perspective: 1400px;
-  perspective-origin: 50% 50%;
-}
-
-.notebook-page-leaf {
-  transform-style: preserve-3d;
-  backface-visibility: hidden;
-  transition: transform 380ms cubic-bezier(0.25, 1, 0.5, 1), box-shadow 380ms ease-out;
-}
-
-.page-flip-forward-exit {
-  transform-origin: left center;
-  animation: pageFlipLeft 380ms cubic-bezier(0.25, 1, 0.5, 1) forwards;
-}
-
-.page-flip-forward-enter {
-  transform-origin: right center;
-  animation: pageRevealRight 380ms cubic-bezier(0.25, 1, 0.5, 1) forwards;
-}
-
-.page-flip-backward-exit {
-  transform-origin: right center;
-  animation: pageFlipRight 380ms cubic-bezier(0.25, 1, 0.5, 1) forwards;
-}
-
-.page-flip-backward-enter {
-  transform-origin: left center;
-  animation: pageRevealLeft 380ms cubic-bezier(0.25, 1, 0.5, 1) forwards;
-}
-
-@keyframes pageFlipLeft {
-  0% {
-    transform: rotateY(0deg);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-  }
-  50% {
-    box-shadow: -12px 16px 24px rgba(0,0,0,0.18);
-  }
-  100% {
-    transform: rotateY(-90deg);
-    box-shadow: -20px 24px 30px rgba(0,0,0,0.02);
-  }
-}
-
-@keyframes pageRevealRight {
-  0% {
-    transform: rotateY(90deg);
-    opacity: 0.8;
-  }
-  100% {
-    transform: rotateY(0deg);
-    opacity: 1;
-  }
-}
-
-@keyframes pageFlipRight {
-  0% {
-    transform: rotateY(0deg);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-  }
-  50% {
-    box-shadow: 12px 16px 24px rgba(0,0,0,0.18);
-  }
-  100% {
-    transform: rotateY(90deg);
-    box-shadow: 20px 24px 30px rgba(0,0,0,0.02);
-  }
-}
-
-@keyframes pageRevealLeft {
-  0% {
-    transform: rotateY(-90deg);
-    opacity: 0.8;
-  }
-  100% {
-    transform: rotateY(0deg);
-    opacity: 1;
-  }
-}
-
 /* Focus Indicators & Keyboard Navigation */
 :focus-visible {
   outline: 2px dashed #1e293b;
@@ -252,14 +170,6 @@
 
 /* Reduced Motion Fallback */
 @media (prefers-reduced-motion: reduce) {
-  .notebook-viewport {
-    perspective: none !important;
-  }
-  .notebook-page-leaf,
-  .page-flip-forward-exit,
-  .page-flip-forward-enter,
-  .page-flip-backward-exit,
-  .page-flip-backward-enter,
   .animate-stamp-thud,
   .animate-scribble-check {
     animation: none !important;

@@ -8,9 +8,17 @@ describe('StationerySoundEngine', () => {
   let mockBufferSource: any;
   let mockBiquadFilter: any;
   let mockAudioBuffer: any;
+  let vibrateMock: any;
 
   beforeEach(() => {
     localStorage.clear();
+
+    vibrateMock = vi.fn();
+    Object.defineProperty(navigator, 'vibrate', {
+      writable: true,
+      configurable: true,
+      value: vibrateMock,
+    });
 
     mockGain = {
       gain: {
@@ -109,19 +117,23 @@ describe('StationerySoundEngine', () => {
     expect(window.AudioContext).not.toHaveBeenCalled();
   });
 
-  it('synthesizes stamp sound when enabled', () => {
+  it('synthesizes stamp sound with velocity scaling and triggers haptics', () => {
     const engine = new StationerySoundEngine();
     engine.setEnabled(true);
 
-    engine.playStampSound();
+    engine.playStampSound(1.2);
 
     expect(mockAudioContext.createOscillator).toHaveBeenCalled();
     expect(mockAudioContext.createGain).toHaveBeenCalled();
     expect(mockOscillator.start).toHaveBeenCalled();
     expect(mockBufferSource.start).toHaveBeenCalled();
+    // Sub-bass frequency starting at 65Hz
+    expect(mockOscillator.frequency.setValueAtTime).toHaveBeenCalledWith(65, 0);
+    // Haptic vibration pattern [20, 40, 30]
+    expect(vibrateMock).toHaveBeenCalledWith([20, 40, 30]);
   });
 
-  it('synthesizes page flip sound when enabled', () => {
+  it('synthesizes page flip sound and triggers haptics', () => {
     const engine = new StationerySoundEngine();
     engine.setEnabled(true);
 
@@ -130,20 +142,22 @@ describe('StationerySoundEngine', () => {
     expect(mockAudioContext.createBufferSource).toHaveBeenCalled();
     expect(mockAudioContext.createBiquadFilter).toHaveBeenCalled();
     expect(mockBufferSource.start).toHaveBeenCalled();
+    expect(vibrateMock).toHaveBeenCalledWith([10, 15, 10]);
   });
 
-  it('synthesizes pencil scribble sound when enabled', () => {
+  it('synthesizes pencil scribble sound and triggers haptics', () => {
     const engine = new StationerySoundEngine();
     engine.setEnabled(true);
 
-    engine.playPencilScribbleSound();
+    engine.playPencilScribbleSound(1.5);
 
     expect(mockAudioContext.createBufferSource).toHaveBeenCalled();
     expect(mockAudioContext.createBiquadFilter).toHaveBeenCalled();
     expect(mockBufferSource.start).toHaveBeenCalled();
+    expect(vibrateMock).toHaveBeenCalledWith([12]);
   });
 
-  it('synthesizes washi tape peel sound when enabled', () => {
+  it('synthesizes washi tape peel sound and triggers haptics', () => {
     const engine = new StationerySoundEngine();
     engine.setEnabled(true);
 
@@ -152,5 +166,13 @@ describe('StationerySoundEngine', () => {
     expect(mockAudioContext.createBufferSource).toHaveBeenCalled();
     expect(mockAudioContext.createBiquadFilter).toHaveBeenCalled();
     expect(mockBufferSource.start).toHaveBeenCalled();
+    expect(vibrateMock).toHaveBeenCalledWith([12]);
+  });
+
+  it('handles triggerHaptic safely when navigator.vibrate is unavailable', () => {
+    // @ts-ignore
+    delete navigator.vibrate;
+    const engine = new StationerySoundEngine();
+    expect(() => engine.triggerHaptic([10, 20])).not.toThrow();
   });
 });

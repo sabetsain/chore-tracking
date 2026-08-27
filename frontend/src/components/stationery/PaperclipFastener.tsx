@@ -22,7 +22,7 @@ export const PaperclipFastener: React.FC<PaperclipFastenerProps> = ({
   return (
     <svg
       className={clsx(
-        'w-8 h-14 z-30 drop-shadow-[1px_3px_2px_rgba(0,0,0,0.25)] pointer-events-none select-none',
+        'w-8 h-14 z-30 drop-shadow-[1px_4px_4px_rgba(15,23,42,0.22)] pointer-events-none select-none',
         positionClasses[position],
         className
       )}
@@ -34,8 +34,8 @@ export const PaperclipFastener: React.FC<PaperclipFastenerProps> = ({
       {/* Outer Loop / Metal Wire Shadow & Body */}
       <path
         d="M10 20 V48 C10 54 22 54 22 48 V12 C22 4 4 4 4 12 V50 C4 60 28 60 28 50 V18"
-        stroke="#94a3b8"
-        strokeWidth="3.5"
+        stroke="#64748b"
+        strokeWidth="3.2"
         strokeLinecap="round"
         strokeLinejoin="round"
       />
@@ -46,7 +46,7 @@ export const PaperclipFastener: React.FC<PaperclipFastenerProps> = ({
         strokeWidth="1.2"
         strokeLinecap="round"
         strokeLinejoin="round"
-        className="opacity-70"
+        className="opacity-80"
       />
     </svg>
   );

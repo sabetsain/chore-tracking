@@ -1,7 +1,7 @@
 // Household Coordination Service Worker
-// Handles background push notifications and notification interactions
+// Handles background push notifications and interactive notification action clicks
 
-self.addEventListener('install', (event) => {
+self.addEventListener('install', () => {
   // Activate worker immediately
   self.skipWaiting();
 });
@@ -16,7 +16,7 @@ self.addEventListener('push', (event) => {
   if (event.data) {
     try {
       payload = event.data.json();
-    } catch (e) {
+    } catch {
       payload = {
         title: 'Household Update',
         body: event.data.text(),
@@ -32,6 +32,10 @@ self.addEventListener('push', (event) => {
     tag: payload.tag || 'household-notification',
     data: payload.data || { url: '/' },
     renotify: true,
+    actions: payload.actions || (payload.data?.applianceId ? [
+      { action: 'empty', title: 'Mark Emptied' },
+      { action: 'open', title: 'Open Logbook' }
+    ] : []),
   };
 
   event.waitUntil(self.registration.showNotification(title, options));
@@ -39,6 +43,21 @@ self.addEventListener('push', (event) => {
 
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
+
+  // If action is to empty appliance directly from notification
+  if (event.action === 'empty' || event.action === 'empty_appliance') {
+    const applianceId = event.notification.data && event.notification.data.applianceId;
+    if (applianceId) {
+      event.waitUntil(
+        fetch(`/api/v1/appliances/${applianceId}/state`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ state: 'empty' }),
+        }).catch(() => {})
+      );
+      return;
+    }
+  }
 
   const targetUrl = (event.notification.data && event.notification.data.url) || '/';
 

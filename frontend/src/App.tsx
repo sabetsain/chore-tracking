@@ -1,5 +1,6 @@
-import { useState, useRef } from 'react';
+import { useState } from 'react';
 import { QueryClient, QueryClientProvider, useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useDrag } from '@use-gesture/react';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { Header, NavTab } from './components/Header';
 import { Onboarding } from './components/Onboarding';
@@ -11,6 +12,7 @@ import { SettingsView } from './components/SettingsView';
 import { PWAInstallPrompt } from './components/PWAInstallPrompt';
 import { useHouseholdWebSocket } from './hooks/useHouseholdWebSocket';
 import { usePushNotifications } from './hooks/usePushNotifications';
+import { useAppBadging } from './hooks/useAppBadging';
 import { api } from './api/client';
 import { ApplianceState, ApplianceType, ChoreAssignment } from './types';
 import { soundEngine } from './utils/soundEngine';
@@ -25,19 +27,13 @@ const queryClient = new QueryClient({
   },
 });
 
-const TAB_ORDER: Record<NavTab, number> = {
-  appliances: 0,
-  chores: 1,
-  settings: 2,
-};
-
 function MainApp() {
   const { member, household, token, logout, updateStatus } = useAuth();
   const [activeTab, setActiveTab] = useState<NavTab>('appliances');
-  const [turnDirection, setTurnDirection] = useState<'forward' | 'backward'>('forward');
   const [swapSourceAssignment, setSwapSourceAssignment] = useState<ChoreAssignment | null>(null);
+  const [dragOffset, setDragOffset] = useState<number>(0);
+  const [isDragging, setIsDragging] = useState<boolean>(false);
 
-  const prevTabRef = useRef<NavTab>(activeTab);
   const qc = useQueryClient();
 
   // WebSocket Live Sync
@@ -68,6 +64,13 @@ function MainApp() {
     queryFn: () => api.listUpForGrabs(),
     enabled: !!household,
   });
+
+  // Dynamic OS App Badging
+  const pendingAppliancesCount = appliances.filter((a) => a.current_state === 'clean_needs_emptying').length;
+  const myPendingChoresCount = member
+    ? assignments.filter((a) => a.member_id === member.id && a.status === 'pending').length
+    : 0;
+  useAppBadging(pendingAppliancesCount + myPendingChoresCount);
 
   // Mutations
   const updateAppStateMutation = useMutation({
@@ -117,12 +120,43 @@ function MainApp() {
 
   const handleTabChange = (nextTab: NavTab) => {
     if (nextTab === activeTab) return;
-    const direction = TAB_ORDER[nextTab] > TAB_ORDER[prevTabRef.current] ? 'forward' : 'backward';
-    setTurnDirection(direction);
-    prevTabRef.current = nextTab;
     soundEngine.playPageFlipSound();
     setActiveTab(nextTab);
   };
+
+  // Inertial horizontal swipe gestures with spring rubber-banding
+  const bindSwipe = useDrag(
+    ({ movement: [mx], velocity: [vx], down, tap }) => {
+      if (tap) return;
+      const tabs: NavTab[] = ['appliances', 'chores', 'settings'];
+      const currentIndex = tabs.indexOf(activeTab);
+
+      if (down) {
+        setIsDragging(true);
+        let offset = mx;
+        // Rubber-band damping past edges
+        if ((currentIndex === 0 && mx > 0) || (currentIndex === tabs.length - 1 && mx < 0)) {
+          offset = mx * 0.25;
+        }
+        setDragOffset(offset);
+      } else {
+        setIsDragging(false);
+        setDragOffset(0);
+
+        const threshold = Math.min(typeof window !== 'undefined' ? window.innerWidth * 0.25 : 100, 120);
+        if ((mx < -threshold || (vx < -0.4 && mx < -30)) && currentIndex < tabs.length - 1) {
+          handleTabChange(tabs[currentIndex + 1]);
+        } else if ((mx > threshold || (vx > 0.4 && mx > 30)) && currentIndex > 0) {
+          handleTabChange(tabs[currentIndex - 1]);
+        }
+      }
+    },
+    {
+      axis: 'x',
+      filterTaps: true,
+      pointer: { touch: true },
+    }
+  );
 
   if (!member || !household) {
     return null;
@@ -139,7 +173,7 @@ function MainApp() {
     : [];
 
   return (
-    <div className="min-h-screen bg-paper-desk dark:bg-[#070b14] text-ink-navy dark:text-slate-100 flex flex-col items-center py-3 sm:py-6 px-2 sm:px-4 transition-colors duration-200">
+    <div className="min-h-screen bg-paper-desk dark:bg-[#080D17] text-ink-navy dark:text-slate-100 flex flex-col items-center py-3 sm:py-6 px-2 sm:px-4 transition-colors duration-200">
       <div className="w-full max-w-5xl flex flex-col">
         {/* Tactile Spiral Binder Header */}
         <Header
@@ -149,16 +183,21 @@ function MainApp() {
           onTabChange={handleTabChange}
         />
 
-        {/* 3D Perspective Viewport for Page Turns */}
-        <div className="notebook-viewport w-full relative -mt-0.5 px-2 sm:px-4">
+        {/* Main Working Sheet Container */}
+        <div
+          {...bindSwipe()}
+          className="w-full relative -mt-0.5 px-2 sm:px-4 touch-pan-y select-none sm:select-auto"
+          style={{
+            transform: dragOffset !== 0 ? `translateX(${dragOffset}px)` : undefined,
+            transition: isDragging ? 'none' : 'transform 250ms cubic-bezier(0.25, 1, 0.5, 1)',
+          }}
+        >
           <main
             id={`panel-${activeTab}`}
             role="tabpanel"
             aria-labelledby={`tab-${activeTab}`}
             key={activeTab}
-            className={`notebook-page-leaf bg-paper-sheet dark:bg-[#1e293b] page-stack min-h-[750px] sm:min-h-[850px] rounded-b-xl border-x-2 border-b-2 border-slate-300 dark:border-slate-700 shadow-binder-spine relative overflow-hidden p-4 sm:p-8 ${
-              turnDirection === 'forward' ? 'page-flip-forward-enter' : 'page-flip-backward-enter'
-            }`}
+            className="bg-paper-sheet dark:bg-[#1A2234] page-stack min-h-[750px] sm:min-h-[850px] rounded-b-xl border-x-2 border-b-2 border-stone-300 dark:border-slate-700 shadow-binder-spine relative overflow-hidden p-4 sm:p-8"
           >
             <PWAInstallPrompt />
 
@@ -248,7 +287,7 @@ function RootView() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-paper-desk dark:bg-[#070b14] flex items-center justify-center">
+      <div className="min-h-screen bg-paper-desk dark:bg-[#080D17] flex items-center justify-center">
         <Loader2 className="w-8 h-8 text-amber-700 animate-spin" />
       </div>
     );
@@ -278,4 +317,3 @@ export function App() {
 }
 
 export default App;
-

@@ -1,5 +1,6 @@
-import React, { useId } from 'react';
+import React, { useId, useMemo } from 'react';
 import clsx from 'clsx';
+import rough from 'roughjs';
 
 export interface ScribbleCheckboxProps {
   checked: boolean;
@@ -10,6 +11,7 @@ export interface ScribbleCheckboxProps {
   className?: string;
   strikethrough?: boolean;
   size?: 'sm' | 'md' | 'lg';
+  seed?: number;
 }
 
 export const ScribbleCheckbox: React.FC<ScribbleCheckboxProps> = ({
@@ -21,6 +23,7 @@ export const ScribbleCheckbox: React.FC<ScribbleCheckboxProps> = ({
   className,
   strikethrough = true,
   size = 'md',
+  seed,
 }) => {
   const generatedId = useId();
   const inputId = customId || `scribble-check-${generatedId}`;
@@ -30,6 +33,57 @@ export const ScribbleCheckbox: React.FC<ScribbleCheckboxProps> = ({
     md: { box: 'w-5 h-5', text: 'text-base' },
     lg: { box: 'w-6 h-6', text: 'text-lg' },
   }[size];
+
+  const boxPathData = useMemo(() => {
+    try {
+      const gen = rough.generator();
+      const s = seed ?? (typeof customId === 'string' ? customId.length + 42 : 42);
+      const rect = gen.rectangle(2.5, 2.5, 19, 19, {
+        roughness: 1.2,
+        bowing: 1.5,
+        strokeWidth: 2,
+        seed: s,
+      });
+      const paths = gen.toPaths(rect);
+      return paths[0]?.d || 'M3 4 C 8 3.5, 17 3.5, 21 4 C 21.5 9, 21.5 17, 21 21 C 16 21.5, 8 21.5, 3 21 C 2.5 16, 2.5 8, 3 4';
+    } catch {
+      return 'M3 4 C 8 3.5, 17 3.5, 21 4 C 21.5 9, 21.5 17, 21 21 C 16 21.5, 8 21.5, 3 21 C 2.5 16, 2.5 8, 3 4';
+    }
+  }, [seed, customId]);
+
+  const checkPathData = useMemo(() => {
+    try {
+      const gen = rough.generator();
+      const s = (seed ?? 101) + 7;
+      const check = gen.path('M 4.5 12.5 C 7 15, 8.5 17.5, 10 20 C 13.5 14, 17.5 8, 22 4', {
+        roughness: 1.1,
+        bowing: 1.2,
+        strokeWidth: 2.75,
+        seed: s,
+      });
+      const paths = gen.toPaths(check);
+      return paths[0]?.d || 'M4.5 12.5 C 7 15, 8.5 17.5, 10 20 C 13.5 14, 17.5 8, 22 4';
+    } catch {
+      return 'M4.5 12.5 C 7 15, 8.5 17.5, 10 20 C 13.5 14, 17.5 8, 22 4';
+    }
+  }, [seed]);
+
+  const strikePathData = useMemo(() => {
+    try {
+      const gen = rough.generator();
+      const s = (seed ?? 202) + 13;
+      const strike = gen.path('M 0 6 Q 25 3, 50 7 T 100 6', {
+        roughness: 1.3,
+        bowing: 2,
+        strokeWidth: 2,
+        seed: s,
+      });
+      const paths = gen.toPaths(strike);
+      return paths[0]?.d || 'M 0 6 Q 25 3, 50 7 T 100 6';
+    } catch {
+      return 'M 0 6 Q 25 3, 50 7 T 100 6';
+    }
+  }, [seed]);
 
   return (
     <label
@@ -60,9 +114,9 @@ export const ScribbleCheckbox: React.FC<ScribbleCheckboxProps> = ({
         >
           {/* Organic Uneven Box Outline */}
           <path
-            d="M3 4 C 8 3.5, 17 3.5, 21 4 C 21.5 9, 21.5 17, 21 21 C 16 21.5, 8 21.5, 3 21 C 2.5 16, 2.5 8, 3 4"
+            d={boxPathData}
             stroke="currentColor"
-            strokeWidth="2"
+            strokeWidth="1.8"
             strokeLinecap="round"
             strokeLinejoin="round"
           />
@@ -70,7 +124,7 @@ export const ScribbleCheckbox: React.FC<ScribbleCheckboxProps> = ({
           {/* Organic Hand-Drawn Checkmark */}
           {checked && (
             <path
-              d="M4.5 12.5 C 7 15, 8.5 17.5, 10 20 C 13.5 14, 17.5 8, 22 4"
+              d={checkPathData}
               stroke="#15803d"
               strokeWidth="2.75"
               strokeLinecap="round"
@@ -86,9 +140,9 @@ export const ScribbleCheckbox: React.FC<ScribbleCheckboxProps> = ({
       {label && (
         <span
           className={clsx(
-            'relative font-body transition-colors text-ink-navy dark:text-ink-navy',
+            'relative font-sans text-ink-navy dark:text-slate-100 transition-colors',
             sizeDimensions.text,
-            checked && 'text-ink-muted dark:text-ink-muted'
+            checked && 'text-ink-muted dark:text-slate-400'
           )}
         >
           {label}
@@ -102,12 +156,12 @@ export const ScribbleCheckbox: React.FC<ScribbleCheckboxProps> = ({
               aria-hidden="true"
             >
               <path
-                d="M 0 6 Q 25 3, 50 7 T 100 6"
+                d={strikePathData}
                 stroke="currentColor"
                 strokeWidth="2"
                 strokeLinecap="round"
                 fill="none"
-                className="animate-scribble-check text-ink-graphite opacity-80"
+                className="animate-scribble-check text-ink-graphite dark:text-slate-400 opacity-80"
                 pathLength="100"
               />
             </svg>

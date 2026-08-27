@@ -44,8 +44,8 @@ export const WashiTape: React.FC<WashiTapeProps> = ({
       aria-hidden="true"
       style={rotationStyle}
       className={clsx(
-        'absolute -top-3 left-1/2 -translate-x-1/2 h-6 backdrop-blur-[0.5px] shadow-sm z-10 opacity-85 select-none pointer-events-none',
-        'border-y border-white/50',
+        'absolute -top-3 left-1/2 -translate-x-1/2 h-6 backdrop-blur-[0.5px] shadow-[0_2px_4px_rgba(15,23,42,0.12)] z-10 opacity-90 select-none pointer-events-none',
+        'border-y border-white/60',
         '[clip-path:polygon(0%_15%,4%_0%,96%_0%,100%_18%,97%_82%,100%_100%,3%_96%,0%_78%)]',
         width,
         tiltClass,
