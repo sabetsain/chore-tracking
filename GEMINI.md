@@ -15,3 +15,7 @@ When starting a session on this repository, please read the project handoff docu
 ## 4. Implementation Delegation
 - **Always delegate implementation to subagents**: Execute code changes via subagents to keep their context window free of conversational planning clutter.
 
+## 5. Future Roadmap & Product Specifications
+- Consult `ROADMAP.md` for long-term product vision, architectural specifications for future capabilities (such as the Custom Appliance Engine, E-Ink Kiosk hardware, Smart Plug power profiling, and Chore Karma economics), and upcoming roadmap priorities.
+- Keep `ROADMAP.md` updated whenever new ideas, advanced feature architectures, or deferred capabilities are identified.
+

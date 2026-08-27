@@ -298,6 +298,14 @@ async def create_chore(
     db.add(chore)
     await db.commit()
     await db.refresh(chore)
+
+    # Auto-provision assignment for the active current week
+    await get_or_generate_weekly_assignments(
+        db=db,
+        household_id=chore.household_id,
+        week_start_date=get_current_week_start(),
+    )
+
     await ws_manager.broadcast(
         household_id=chore.household_id,
         event="CHORE_UPDATED",

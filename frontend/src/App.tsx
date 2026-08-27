@@ -14,7 +14,7 @@ import { useHouseholdWebSocket } from './hooks/useHouseholdWebSocket';
 import { usePushNotifications } from './hooks/usePushNotifications';
 import { useAppBadging } from './hooks/useAppBadging';
 import { api } from './api/client';
-import { ApplianceState, ApplianceType, ChoreAssignment } from './types';
+import { ApplianceState, ApplianceType, ChoreAssignment, ChoreCompletionType } from './types';
 import { soundEngine } from './utils/soundEngine';
 import { Loader2 } from 'lucide-react';
 
@@ -90,6 +90,18 @@ function MainApp() {
 
   const completeChoreMutation = useMutation({
     mutationFn: (assignmentId: string) => api.completeChore(assignmentId),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['chores'] });
+    },
+  });
+
+  const createChoreMutation = useMutation({
+    mutationFn: (data: {
+      title: string;
+      description?: string;
+      effort_weight: number;
+      completion_type: ChoreCompletionType;
+    }) => api.createChore(data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['chores'] });
     },
@@ -231,6 +243,9 @@ function MainApp() {
                     qc.invalidateQueries({ queryKey: ['chores'] });
                   }}
                   onOpenSwap={(assignment) => setSwapSourceAssignment(assignment)}
+                  onCreateChore={async (data) => {
+                    await createChoreMutation.mutateAsync(data);
+                  }}
                 />
 
                 <UpForGrabsPool

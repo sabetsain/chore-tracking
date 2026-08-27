@@ -33,6 +33,12 @@ ALLOWED_TRANSITIONS: dict[str, dict[str, list[str]]] = {
         "clean_needs_emptying": ["empty"],
         "dirty": ["running"],
     },
+    "dishwasher": {
+        "empty": ["dirty", "running"],
+        "dirty": ["running"],
+        "running": ["clean_needs_emptying"],
+        "clean_needs_emptying": ["dirty", "empty"],
+    },
     "default": {
         "empty": ["dirty"],
         "dirty": ["running"],

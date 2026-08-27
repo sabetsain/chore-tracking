@@ -33,7 +33,7 @@ export function ApplianceDashboard({
   // Add appliance modal state
   const [showAddModal, setShowAddModal] = useState<boolean>(false);
   const [newAppName, setNewAppName] = useState('');
-  const [newAppType, setNewAppType] = useState<ApplianceType>('custom');
+  const [newAppType, setNewAppType] = useState<ApplianceType>('dishwasher');
   const [submittingAdd, setSubmittingAdd] = useState(false);
   const [addError, setAddError] = useState<string | null>(null);
 
@@ -61,7 +61,7 @@ export function ApplianceDashboard({
         type: newAppType,
       });
       setNewAppName('');
-      setNewAppType('custom');
+      setNewAppType('dishwasher');
       setShowAddModal(false);
     } catch (err: any) {
       setAddError(err.message || 'Failed to add appliance');
@@ -285,7 +285,6 @@ export function ApplianceDashboard({
                       <option value="dishwasher">Dishwasher</option>
                       <option value="washer">Washing Machine</option>
                       <option value="dryer">Clothes Dryer</option>
-                      <option value="custom">Custom Appliance</option>
                     </select>
                   </div>
 

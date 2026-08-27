@@ -18,7 +18,7 @@ const DEFAULT_LABELS: Record<string, string> = {
   clean: 'CLEAN',
   dirty: 'DIRTY',
   running: 'RUNNING',
-  empty: 'NEEDS EMPTYING',
+  empty: 'READY TO RUN!',
   clean_needs_emptying: 'CLEAN - NEEDS EMPTYING',
 };
 
@@ -26,7 +26,7 @@ const DEFAULT_ROTATIONS: Record<string, number> = {
   clean: -2.5,
   dirty: 3.2,
   running: -1.2,
-  empty: 1.8,
+  empty: -2.0,
   clean_needs_emptying: 1.8,
 };
 
@@ -57,6 +57,7 @@ export const RubberStampBadge: React.FC<RubberStampBadgeProps> = ({
       case 'running':
         return 'stamp-running text-stamp-running border-stamp-running';
       case 'empty':
+        return 'stamp-clean text-stamp-clean border-stamp-clean';
       case 'clean_needs_emptying':
         return 'stamp-empty text-stamp-empty border-stamp-empty';
       default:

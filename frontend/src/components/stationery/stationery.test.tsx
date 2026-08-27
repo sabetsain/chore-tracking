@@ -33,7 +33,7 @@ describe('Stationery Primitives', () => {
       expect(screen.getByRole('status')).toHaveTextContent('CLEAN - NEEDS EMPTYING');
 
       rerender(<RubberStampBadge status="empty" />);
-      expect(screen.getByRole('status')).toHaveTextContent('NEEDS EMPTYING');
+      expect(screen.getByRole('status')).toHaveTextContent('READY TO RUN!');
     });
 
     it('renders with custom label, sublabel, and rotation', () => {

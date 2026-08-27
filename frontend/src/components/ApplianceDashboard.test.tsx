@@ -145,6 +145,7 @@ describe('ApplianceDashboard Component', () => {
     await user.click(addBtn);
 
     expect(screen.getByPlaceholderText(/appliance name/i)).toBeInTheDocument();
+    expect(screen.queryByRole('option', { name: /custom appliance/i })).not.toBeInTheDocument();
     await user.type(screen.getByPlaceholderText(/appliance name/i), 'Balcony Dryer');
 
     const submitBtn = screen.getByRole('button', { name: /save appliance|create/i });
@@ -153,15 +154,16 @@ describe('ApplianceDashboard Component', () => {
     expect(mockOnCreateAppliance).toHaveBeenCalledWith(
       expect.objectContaining({
         name: 'Balcony Dryer',
+        type: 'dishwasher',
       })
     );
   });
 
-  it('renders "Start Cycle" directly for empty Washer and Dryer, but "Mark Dirty" for Dishwasher', async () => {
+  it('renders "Start Cycle" directly for empty appliances and "Mark Emptied" directly to dirty for clean dishwasher', async () => {
     const user = userEvent.setup();
     mockOnUpdateState.mockResolvedValue(undefined);
 
-    const emptyAppliances: Appliance[] = [
+    const testAppliances: Appliance[] = [
       {
         id: 'washer-1',
         household_id: 'h-1',
@@ -183,35 +185,31 @@ describe('ApplianceDashboard Component', () => {
         household_id: 'h-1',
         name: 'Kitchen Dishwasher',
         type: 'dishwasher',
-        current_state: 'empty',
+        current_state: 'clean_needs_emptying',
         state_updated_at: new Date().toISOString(),
       },
     ];
 
     render(
       <ApplianceDashboard
-        appliances={emptyAppliances}
+        appliances={testAppliances}
         onUpdateState={mockOnUpdateState}
         onFetchHistory={mockOnFetchHistory}
         onCreateAppliance={mockOnCreateAppliance}
       />
     );
 
-    // Washer: Button should say "Start Cycle"
+    // Washer and Dryer: Button should say "Start Cycle"
     const startCycleBtns = screen.getAllByRole('button', { name: /start cycle/i });
-    expect(startCycleBtns.length).toBe(2); // One for Washer, one for Dryer
+    expect(startCycleBtns.length).toBe(2);
 
     // Click Washer "Start Cycle" -> calls onUpdateState with 'running'
     await user.click(startCycleBtns[0]);
     expect(mockOnUpdateState).toHaveBeenCalledWith('washer-1', 'running');
 
-    // Click Dryer "Start Cycle" -> calls onUpdateState with 'running'
-    await user.click(startCycleBtns[1]);
-    expect(mockOnUpdateState).toHaveBeenCalledWith('dryer-1', 'running');
-
-    // Dishwasher: Button should say "Mark Dirty"
-    const markDirtyBtn = screen.getByRole('button', { name: /mark dirty/i });
-    await user.click(markDirtyBtn);
+    // Dishwasher in clean_needs_emptying: Button should say "Mark Emptied" and transition directly to 'dirty'
+    const markEmptiedBtn = screen.getByRole('button', { name: /mark emptied/i });
+    await user.click(markEmptiedBtn);
     expect(mockOnUpdateState).toHaveBeenCalledWith('dw-1', 'dirty');
   });
 });

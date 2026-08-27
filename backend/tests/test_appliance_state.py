@@ -94,24 +94,15 @@ async def test_appliance_invalid_transition_without_force_fails(client: AsyncCli
         headers={"Authorization": f"Bearer {token}"},
     )
     app_id = list_res.json()[0]["id"]
-    # Currently "empty"
-
-    # Attempt empty -> running without force -> 400
-    res = await client.post(
-        f"/api/v1/appliances/{app_id}/state",
-        headers={"Authorization": f"Bearer {token}"},
-        json={"to_state": "running"},
-    )
-    assert res.status_code == 400
-    assert "Invalid state transition" in res.json()["detail"]
 
     # Attempt empty -> clean_needs_emptying without force -> 400
-    res2 = await client.post(
+    res = await client.post(
         f"/api/v1/appliances/{app_id}/state",
         headers={"Authorization": f"Bearer {token}"},
         json={"to_state": "clean_needs_emptying"},
     )
-    assert res2.status_code == 400
+    assert res.status_code == 400
+    assert "Invalid state transition" in res.json()["detail"]
 
     # Attempt empty -> empty (same state) -> 400
     res3 = await client.post(
@@ -323,4 +314,54 @@ async def test_washer_and_dryer_reject_dirty_state(client: AsyncClient):
     )
     assert res_dryer.status_code == 400
     assert "Invalid state transition" in res_dryer.json()["detail"]
+
+
+@pytest.mark.asyncio
+async def test_dishwasher_transition_clean_to_dirty(client: AsyncClient, db_session: AsyncSession):
+    hh_res = await client.post(
+        "/api/v1/households",
+        json={"name": "Dishwasher Cycle House", "nickname": "Alice"},
+    )
+    token = hh_res.json()["access_token"]
+
+    list_res = await client.get(
+        "/api/v1/appliances",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    dishwasher = next(a for a in list_res.json() if a["type"] == "dishwasher")
+    app_id = dishwasher["id"]
+
+    # 1. empty -> dirty
+    res1 = await client.post(
+        f"/api/v1/appliances/{app_id}/state",
+        headers={"Authorization": f"Bearer {token}"},
+        json={"to_state": "dirty"},
+    )
+    assert res1.status_code == 200
+
+    # 2. dirty -> running
+    res2 = await client.post(
+        f"/api/v1/appliances/{app_id}/state",
+        headers={"Authorization": f"Bearer {token}"},
+        json={"to_state": "running"},
+    )
+    assert res2.status_code == 200
+
+    # 3. running -> clean_needs_emptying
+    res3 = await client.post(
+        f"/api/v1/appliances/{app_id}/state",
+        headers={"Authorization": f"Bearer {token}"},
+        json={"to_state": "clean_needs_emptying"},
+    )
+    assert res3.status_code == 200
+
+    # 4. clean_needs_emptying -> dirty (Directly emptied back to dirty for new load)
+    res4 = await client.post(
+        f"/api/v1/appliances/{app_id}/state",
+        headers={"Authorization": f"Bearer {token}"},
+        json={"to_state": "dirty"},
+    )
+    assert res4.status_code == 200
+    assert res4.json()["current_state"] == "dirty"
+
 

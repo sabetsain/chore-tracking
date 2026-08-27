@@ -176,4 +176,50 @@ describe('ChoreDutyView Component', () => {
 
     expect(mockOnToggleAway).toHaveBeenCalledWith('away');
   });
+
+  it('opens Add Chore modal and successfully creates a new chore', async () => {
+    const user = userEvent.setup();
+    const mockOnCreateChore = vi.fn().mockResolvedValueOnce(undefined);
+
+    render(
+      <ChoreDutyView
+        currentMember={currentMember}
+        assignments={mockAssignments}
+        onCompleteChore={mockOnCompleteChore}
+        onLogDuty={mockOnLogDuty}
+        onToggleAway={mockOnToggleAway}
+        onOpenSwap={mockOnOpenSwap}
+        onCreateChore={mockOnCreateChore}
+      />
+    );
+
+    const addChoreBtn = screen.getByRole('button', { name: /add chore/i });
+    expect(addChoreBtn).toBeInTheDocument();
+    await user.click(addChoreBtn);
+
+    expect(screen.getByRole('heading', { name: /add new chore/i })).toBeInTheDocument();
+    expect(screen.getByLabelText(/chore title/i)).toBeInTheDocument();
+
+    await user.type(screen.getByLabelText(/chore title/i), 'Water Houseplants');
+    await user.type(screen.getByLabelText(/description/i), 'Water ferns and succulents');
+
+    // Choose 3 points
+    const threePtsBtn = screen.getByRole('button', { name: /3 pts/i });
+    await user.click(threePtsBtn);
+
+    // Choose Continuous Duty
+    const continuousBtn = screen.getByRole('button', { name: /continuous duty/i });
+    await user.click(continuousBtn);
+
+    const saveBtn = screen.getByRole('button', { name: /save chore/i });
+    await user.click(saveBtn);
+
+    expect(mockOnCreateChore).toHaveBeenCalledWith({
+      title: 'Water Houseplants',
+      description: 'Water ferns and succulents',
+      effort_weight: 3,
+      completion_type: 'continuous_duty',
+    });
+  });
 });
+

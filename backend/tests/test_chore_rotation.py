@@ -145,17 +145,17 @@ async def test_weekly_rotation_all_away_sets_member_none(client: AsyncClient):
     )
     admin_token = create_res.json()["access_token"]
 
-    await client.post(
-        "/api/v1/chores",
-        headers={"Authorization": f"Bearer {admin_token}"},
-        json={"title": "Dusting", "effort_weight": 1},
-    )
-
     # Alice sets away
     await client.patch(
         "/api/v1/members/me/status",
         headers={"Authorization": f"Bearer {admin_token}"},
         json={"status": "away"},
+    )
+
+    await client.post(
+        "/api/v1/chores",
+        headers={"Authorization": f"Bearer {admin_token}"},
+        json={"title": "Dusting", "effort_weight": 1},
     )
 
     week1 = "2026-08-23"

@@ -8,8 +8,9 @@ import {
   User,
   Star,
 } from 'lucide-react';
-import { ChoreAssignment, Member } from '../types';
+import { ChoreAssignment, ChoreCompletionType, Member } from '../types';
 import { ChoreLogModal } from './ChoreLogModal';
+import { CreateChoreModal } from './CreateChoreModal';
 import { PaperCard } from './stationery/PaperCard';
 import { ScribbleCheckbox } from './stationery/ScribbleCheckbox';
 import { TallyCounter } from './stationery/TallyCounter';
@@ -23,6 +24,12 @@ interface ChoreDutyViewProps {
   onLogDuty: (assignmentId: string, note?: string) => Promise<void>;
   onToggleAway: (status: 'active' | 'away') => Promise<void>;
   onOpenSwap?: (assignment: ChoreAssignment) => void;
+  onCreateChore?: (data: {
+    title: string;
+    description?: string;
+    effort_weight: number;
+    completion_type: ChoreCompletionType;
+  }) => Promise<void>;
 }
 
 export function ChoreDutyView({
@@ -32,8 +39,10 @@ export function ChoreDutyView({
   onLogDuty,
   onToggleAway,
   onOpenSwap,
+  onCreateChore,
 }: ChoreDutyViewProps) {
   const [activeLogAssignment, setActiveLogAssignment] = useState<ChoreAssignment | null>(null);
+  const [showCreateModal, setShowCreateModal] = useState<boolean>(false);
   const [completingId, setCompletingId] = useState<string | null>(null);
   const [togglingAway, setTogglingAway] = useState<boolean>(false);
 
@@ -103,28 +112,41 @@ export function ChoreDutyView({
           </p>
         </div>
 
-        <button
-          type="button"
-          disabled={togglingAway}
-          onClick={handleAwayToggle}
-          className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-sans font-bold transition border shadow-paper-sm active:scale-95 ${
-            isAway
-              ? 'bg-amber-600 hover:bg-amber-700 text-white border-amber-700'
-              : 'bg-paper-card dark:bg-[#222D42] hover:bg-amber-100/60 dark:hover:bg-slate-700 text-ink-navy dark:text-slate-200 border-stone-300 dark:border-slate-600'
-          }`}
-        >
-          {isAway ? (
-            <>
-              <Sun className="w-4 h-4" />
-              <span>{togglingAway ? 'Updating...' : 'I Am Back (Active)'}</span>
-            </>
-          ) : (
-            <>
-              <Moon className="w-4 h-4 text-amber-600 dark:text-amber-400" />
-              <span>{togglingAway ? 'Updating...' : 'Set Away'}</span>
-            </>
+        <div className="flex items-center gap-2">
+          {onCreateChore && (
+            <button
+              type="button"
+              onClick={() => setShowCreateModal(true)}
+              className="inline-flex items-center gap-1.5 px-4 py-2 bg-indigo-700 hover:bg-indigo-800 text-white text-sm font-sans font-bold rounded-lg shadow-paper-sm hover:shadow-paper-md transition-all active:scale-95"
+            >
+              <Plus className="w-4 h-4" />
+              <span>Add Chore</span>
+            </button>
           )}
-        </button>
+
+          <button
+            type="button"
+            disabled={togglingAway}
+            onClick={handleAwayToggle}
+            className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-sans font-bold transition border shadow-paper-sm active:scale-95 ${
+              isAway
+                ? 'bg-amber-600 hover:bg-amber-700 text-white border-amber-700'
+                : 'bg-paper-card dark:bg-[#222D42] hover:bg-amber-100/60 dark:hover:bg-slate-700 text-ink-navy dark:text-slate-200 border-stone-300 dark:border-slate-600'
+            }`}
+          >
+            {isAway ? (
+              <>
+                <Sun className="w-4 h-4" />
+                <span>{togglingAway ? 'Updating...' : 'I Am Back (Active)'}</span>
+              </>
+            ) : (
+              <>
+                <Moon className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+                <span>{togglingAway ? 'Updating...' : 'Set Away'}</span>
+              </>
+            )}
+          </button>
+        </div>
       </PaperCard>
 
       {/* My Duties Section */}
@@ -348,6 +370,14 @@ export function ChoreDutyView({
           assignment={activeLogAssignment}
           onClose={() => setActiveLogAssignment(null)}
           onSubmitLog={onLogDuty}
+        />
+      )}
+
+      {/* Create Chore Modal */}
+      {showCreateModal && onCreateChore && (
+        <CreateChoreModal
+          onClose={() => setShowCreateModal(false)}
+          onCreateChore={onCreateChore}
         />
       )}
     </div>

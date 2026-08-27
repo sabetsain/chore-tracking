@@ -297,3 +297,42 @@ async def test_delete_chore_cross_household_returns_404(client: AsyncClient):
 async def test_chore_unauthenticated_returns_401(client: AsyncClient):
     res = await client.get("/api/v1/chores")
     assert res.status_code == 401
+
+
+@pytest.mark.asyncio
+async def test_create_chore_auto_generates_weekly_assignment(client: AsyncClient):
+    # Setup household with member
+    create_hh = await client.post(
+        "/api/v1/households",
+        json={"name": "Auto Assign House", "nickname": "Alice"},
+    )
+    token = create_hh.json()["access_token"]
+    alice_id = create_hh.json()["member"]["id"]
+
+    # Create a new chore
+    res = await client.post(
+        "/api/v1/chores",
+        headers={"Authorization": f"Bearer {token}"},
+        json={
+            "title": "Clean Refrigerator",
+            "description": "Throw out expired food",
+            "effort_weight": 2,
+            "completion_type": "single_weekly",
+        },
+    )
+    assert res.status_code == 201
+    chore_id = res.json()["id"]
+
+    # Verify that assignments for the current week now include this newly created chore
+    asg_res = await client.get(
+        "/api/v1/chores/assignments",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    assert asg_res.status_code == 200
+    assignments = asg_res.json()
+    new_asg = next((a for a in assignments if a["chore_id"] == chore_id), None)
+    assert new_asg is not None
+    assert new_asg["status"] == "pending"
+    assert new_asg["member_id"] == alice_id
+    assert new_asg["chore"]["title"] == "Clean Refrigerator"
+

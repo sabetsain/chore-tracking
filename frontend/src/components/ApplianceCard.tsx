@@ -4,7 +4,6 @@ import {
   Clock,
   User,
   History,
-  RotateCw,
   Play,
   CheckCircle2,
   Trash2,
@@ -70,10 +69,10 @@ function getNextStateConfig(type: ApplianceType, currentState: ApplianceState): 
   switch (currentState) {
     case 'empty':
       return {
-        next: 'dirty',
-        label: 'Mark Dirty',
-        actionBg: 'bg-amber-600 hover:bg-amber-700 text-white',
-        icon: RotateCw,
+        next: 'running',
+        label: 'Start Cycle',
+        actionBg: 'bg-blue-600 hover:bg-blue-700 text-white',
+        icon: Play,
       };
     case 'dirty':
       return {
@@ -92,7 +91,7 @@ function getNextStateConfig(type: ApplianceType, currentState: ApplianceState): 
     case 'clean_needs_emptying':
     default:
       return {
-        next: 'empty',
+        next: 'dirty',
         label: 'Mark Emptied',
         actionBg: 'bg-slate-700 hover:bg-slate-800 text-white',
         icon: Trash2,

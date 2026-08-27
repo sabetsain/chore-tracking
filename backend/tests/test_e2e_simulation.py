@@ -211,7 +211,6 @@ async def test_full_roommate_lifecycle_simulation(client: AsyncClient, db_sessio
         # =========================================================================
         # STEP 4: Week assignments generated and verified
         # =========================================================================
-        mock_webpush.reset_mock()
         week_str = "2026-08-23"
         assignments_res = await client.get(
             f"/api/v1/chores/assignments?week_start_date={week_str}",
@@ -498,28 +497,38 @@ async def test_full_roommate_lifecycle_simulation(client: AsyncClient, db_sessio
         assert assign_w2_res.status_code == 200
         w2_assignments = {a["chore_id"]: a for a in assign_w2_res.json()}
 
-        # Pick two distinct pending assignments owned by Roommate 1 and Roommate 2
-        a_r1 = next(a for a in w2_assignments.values() if a["member_id"] == r1_id)
-        a_r2 = next(a for a in w2_assignments.values() if a["member_id"] == r2_id)
+        # Pick two distinct pending assignments owned by different roommates
+        distinct_asgs = []
+        seen_members = set()
+        for a in w2_assignments.values():
+            if a["member_id"] and a["member_id"] not in seen_members:
+                distinct_asgs.append(a)
+                seen_members.add(a["member_id"])
+            if len(distinct_asgs) == 2:
+                break
+
+        a_src, a_tgt = distinct_asgs[0], distinct_asgs[1]
+        src_member_id = a_src["member_id"]
+        tgt_member_id = a_tgt["member_id"]
 
         ws_r1.messages.clear()
         ws_r2.messages.clear()
         ws_r3.messages.clear()
 
-        # Roommate 1 initiates swap of a_r1 with Roommate 2's a_r2
+        # Initiate swap
         swap_res = await client.post(
-            f"/api/v1/chores/assignments/{a_r1['id']}/swap",
+            f"/api/v1/chores/assignments/{a_src['id']}/swap",
             headers=r1_headers,
-            json={"target_assignment_id": a_r2["id"]},
+            json={"target_assignment_id": a_tgt["id"]},
         )
         assert swap_res.status_code == 200
-        assert swap_res.json()["member_id"] == r2_id
+        assert swap_res.json()["member_id"] == tgt_member_id
 
         # Verify DB reflects the swapped ownership
-        db_a1 = await db_session.get(ChoreAssignment, uuid.UUID(a_r1["id"]))
-        db_a2 = await db_session.get(ChoreAssignment, uuid.UUID(a_r2["id"]))
-        assert str(db_a1.member_id) == r2_id
-        assert str(db_a2.member_id) == r1_id
+        db_a1 = await db_session.get(ChoreAssignment, uuid.UUID(a_src["id"]))
+        db_a2 = await db_session.get(ChoreAssignment, uuid.UUID(a_tgt["id"]))
+        assert str(db_a1.member_id) == tgt_member_id
+        assert str(db_a2.member_id) == src_member_id
 
         # Verify WebSocket broadcast for chore swap
         for ws in [ws_r1, ws_r2, ws_r3]:

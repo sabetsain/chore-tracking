@@ -16,18 +16,18 @@ async def test_up_for_grabs_pool_and_claim_unassigned(client: AsyncClient, db_se
     alice_token = hh_res.json()["access_token"]
     invite_code = hh_res.json()["household"]["invite_code"]
 
-    # Alice creates chore
-    await client.post(
-        "/api/v1/chores",
-        headers={"Authorization": f"Bearer {alice_token}"},
-        json={"title": "Clean Balcony", "effort_weight": 2},
-    )
-
     # Alice sets away so rotation generates assignment with member_id = None
     await client.patch(
         "/api/v1/members/me/status",
         headers={"Authorization": f"Bearer {alice_token}"},
         json={"status": "away"},
+    )
+
+    # Alice creates chore
+    await client.post(
+        "/api/v1/chores",
+        headers={"Authorization": f"Bearer {alice_token}"},
+        json={"title": "Clean Balcony", "effort_weight": 2},
     )
 
     week_str = "2026-08-23"
