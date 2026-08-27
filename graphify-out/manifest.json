@@ -923,84 +923,6 @@
     "ast_hash": "3254379b5922140419a6ed8dfec20090",
     "semantic_hash": ""
   },
-  "openspec/changes/paper-notebook-design-system/.openspec.yaml": {
-    "mtime": 1787735831.162528,
-    "seen": 1787752550.455035,
-    "ast_hash": "fa5eda85798b0a1fdda0e72821b38a3a",
-    "semantic_hash": "fa5eda85798b0a1fdda0e72821b38a3a"
-  },
-  "openspec/changes/paper-notebook-design-system/design.md": {
-    "mtime": 1787735871.7323256,
-    "seen": 1787752550.455036,
-    "ast_hash": "8c462c517ef039c0df616e4c3e82d347",
-    "semantic_hash": "8c462c517ef039c0df616e4c3e82d347"
-  },
-  "openspec/changes/paper-notebook-design-system/proposal.md": {
-    "mtime": 1787735847.4398525,
-    "seen": 1787752550.4550369,
-    "ast_hash": "2155326a29fae0899e46880d70a50f00",
-    "semantic_hash": "2155326a29fae0899e46880d70a50f00"
-  },
-  "openspec/changes/paper-notebook-design-system/specs/stationery-design-system/spec.md": {
-    "mtime": 1787735864.320797,
-    "seen": 1787752550.455039,
-    "ast_hash": "14e34fb283184fd256ceb16b713cb16a",
-    "semantic_hash": "14e34fb283184fd256ceb16b713cb16a"
-  },
-  "openspec/changes/paper-notebook-design-system/tasks.md": {
-    "mtime": 1787737021.551378,
-    "seen": 1787752550.45504,
-    "ast_hash": "bba3ddb1e0f15117f695d930c73c4d88",
-    "semantic_hash": "bba3ddb1e0f15117f695d930c73c4d88"
-  },
-  "openspec/changes/tactile-ui-revamp/.openspec.yaml": {
-    "mtime": 1787859909.4207413,
-    "seen": 1787859931.8004851,
-    "ast_hash": "f97fd577ea4d8cb30b12050ab2b411e5",
-    "semantic_hash": ""
-  },
-  "openspec/changes/tactile-ui-revamp/proposal.md": {
-    "mtime": 1787859922.675911,
-    "seen": 1787859931.8004858,
-    "ast_hash": "947b9e071bb7fe73760b5ff5c49f0cdf",
-    "semantic_hash": ""
-  },
-  "openspec/changes/tactile-ui-revamp/design.md": {
-    "mtime": 1787859997.6396894,
-    "seen": 1787860013.569386,
-    "ast_hash": "b27458afe751e1704aecdb879f4ca9cd",
-    "semantic_hash": ""
-  },
-  "openspec/changes/tactile-ui-revamp/specs/ambient-hardware-pwa-integration/spec.md": {
-    "mtime": 1787859985.193752,
-    "seen": 1787860013.5693882,
-    "ast_hash": "f2b38e54dc51e11ff07269a3d24ca065",
-    "semantic_hash": ""
-  },
-  "openspec/changes/tactile-ui-revamp/specs/generative-stationery-rendering/spec.md": {
-    "mtime": 1787859982.4474936,
-    "seen": 1787860013.569389,
-    "ast_hash": "61a21c2e82600bab9dee26629031d062",
-    "semantic_hash": ""
-  },
-  "openspec/changes/tactile-ui-revamp/specs/stationery-design-system/spec.md": {
-    "mtime": 1787859988.2273686,
-    "seen": 1787860013.569389,
-    "ast_hash": "f8235816c9f2e4149a1a19d2698fd268",
-    "semantic_hash": ""
-  },
-  "openspec/changes/tactile-ui-revamp/specs/tactile-physics-and-gestures/spec.md": {
-    "mtime": 1787859979.8155777,
-    "seen": 1787860013.56939,
-    "ast_hash": "a28657f1af28b2191bcb17174855bca2",
-    "semantic_hash": ""
-  },
-  "openspec/changes/tactile-ui-revamp/tasks.md": {
-    "mtime": 1787860440.6203537,
-    "seen": 1787861384.870306,
-    "ast_hash": "58aa577143d78e9b098b518fb9ade97f",
-    "semantic_hash": ""
-  },
   "frontend/src/hooks/useAppBadging.test.ts": {
     "mtime": 1787860330.4881475,
     "seen": 1787861384.8702369,
@@ -1035,6 +957,108 @@
     "mtime": 1787860254.8603542,
     "seen": 1787861384.8702478,
     "ast_hash": "e928a5fd11dc584bf243c44d32b1a294",
+    "semantic_hash": ""
+  },
+  "openspec/changes/archive/2026-08-26-paper-notebook-design-system/.openspec.yaml": {
+    "mtime": 1787735831.162528,
+    "seen": 1787861522.5332859,
+    "ast_hash": "fa5eda85798b0a1fdda0e72821b38a3a",
+    "semantic_hash": ""
+  },
+  "openspec/changes/archive/2026-08-26-paper-notebook-design-system/design.md": {
+    "mtime": 1787735871.7323256,
+    "seen": 1787861522.5332868,
+    "ast_hash": "8c462c517ef039c0df616e4c3e82d347",
+    "semantic_hash": ""
+  },
+  "openspec/changes/archive/2026-08-26-paper-notebook-design-system/proposal.md": {
+    "mtime": 1787735847.4398525,
+    "seen": 1787861522.533288,
+    "ast_hash": "2155326a29fae0899e46880d70a50f00",
+    "semantic_hash": ""
+  },
+  "openspec/changes/archive/2026-08-26-paper-notebook-design-system/specs/stationery-design-system/spec.md": {
+    "mtime": 1787735864.320797,
+    "seen": 1787861522.533289,
+    "ast_hash": "14e34fb283184fd256ceb16b713cb16a",
+    "semantic_hash": ""
+  },
+  "openspec/changes/archive/2026-08-26-paper-notebook-design-system/tasks.md": {
+    "mtime": 1787737021.551378,
+    "seen": 1787861522.53329,
+    "ast_hash": "bba3ddb1e0f15117f695d930c73c4d88",
+    "semantic_hash": ""
+  },
+  "openspec/changes/archive/2026-08-27-tactile-ui-revamp/.openspec.yaml": {
+    "mtime": 1787859909.4207413,
+    "seen": 1787861522.53329,
+    "ast_hash": "f97fd577ea4d8cb30b12050ab2b411e5",
+    "semantic_hash": ""
+  },
+  "openspec/changes/archive/2026-08-27-tactile-ui-revamp/design.md": {
+    "mtime": 1787859997.6396894,
+    "seen": 1787861522.533291,
+    "ast_hash": "b27458afe751e1704aecdb879f4ca9cd",
+    "semantic_hash": ""
+  },
+  "openspec/changes/archive/2026-08-27-tactile-ui-revamp/proposal.md": {
+    "mtime": 1787859922.675911,
+    "seen": 1787861522.533292,
+    "ast_hash": "947b9e071bb7fe73760b5ff5c49f0cdf",
+    "semantic_hash": ""
+  },
+  "openspec/changes/archive/2026-08-27-tactile-ui-revamp/specs/ambient-hardware-pwa-integration/spec.md": {
+    "mtime": 1787859985.193752,
+    "seen": 1787861522.533292,
+    "ast_hash": "f2b38e54dc51e11ff07269a3d24ca065",
+    "semantic_hash": ""
+  },
+  "openspec/changes/archive/2026-08-27-tactile-ui-revamp/specs/generative-stationery-rendering/spec.md": {
+    "mtime": 1787859982.4474936,
+    "seen": 1787861522.533293,
+    "ast_hash": "61a21c2e82600bab9dee26629031d062",
+    "semantic_hash": ""
+  },
+  "openspec/changes/archive/2026-08-27-tactile-ui-revamp/specs/stationery-design-system/spec.md": {
+    "mtime": 1787859988.2273686,
+    "seen": 1787861522.533294,
+    "ast_hash": "f8235816c9f2e4149a1a19d2698fd268",
+    "semantic_hash": ""
+  },
+  "openspec/changes/archive/2026-08-27-tactile-ui-revamp/specs/tactile-physics-and-gestures/spec.md": {
+    "mtime": 1787859979.8155777,
+    "seen": 1787861522.5332952,
+    "ast_hash": "a28657f1af28b2191bcb17174855bca2",
+    "semantic_hash": ""
+  },
+  "openspec/changes/archive/2026-08-27-tactile-ui-revamp/tasks.md": {
+    "mtime": 1787860440.6203537,
+    "seen": 1787861522.533296,
+    "ast_hash": "58aa577143d78e9b098b518fb9ade97f",
+    "semantic_hash": ""
+  },
+  "openspec/specs/ambient-hardware-pwa-integration/spec.md": {
+    "mtime": 1787861508.5594397,
+    "seen": 1787861522.5332968,
+    "ast_hash": "bc016a0f4d785620b028397dc0611ace",
+    "semantic_hash": ""
+  },
+  "openspec/specs/generative-stationery-rendering/spec.md": {
+    "mtime": 1787861506.084794,
+    "seen": 1787861522.5333,
+    "ast_hash": "38171721b8bd3de6f07ecf76ac86dc0c",
+    "semantic_hash": ""
+  },
+  "openspec/specs/stationery-design-system/spec.md": {
+    "mtime": 1787861497.2411447,
+    "seen": 1787861522.533302,
+    "ast_hash": "8f17b20d7fccadd68a20e34379af4ffc",
+    "semantic_hash": ""
+  },
+  "openspec/specs/tactile-physics-and-gestures/spec.md": {
+    "mtime": 1787861503.341381,
+    "seen": 1787861522.533303,
+    "ast_hash": "7e82638a242a5596891bae375c93dfaa",
     "semantic_hash": ""
   }
 }
