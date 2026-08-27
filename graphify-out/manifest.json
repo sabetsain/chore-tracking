@@ -964,5 +964,41 @@
     "seen": 1787859931.8004858,
     "ast_hash": "947b9e071bb7fe73760b5ff5c49f0cdf",
     "semantic_hash": ""
+  },
+  "openspec/changes/tactile-ui-revamp/design.md": {
+    "mtime": 1787859997.6396894,
+    "seen": 1787860013.569386,
+    "ast_hash": "b27458afe751e1704aecdb879f4ca9cd",
+    "semantic_hash": ""
+  },
+  "openspec/changes/tactile-ui-revamp/specs/ambient-hardware-pwa-integration/spec.md": {
+    "mtime": 1787859985.193752,
+    "seen": 1787860013.5693882,
+    "ast_hash": "f2b38e54dc51e11ff07269a3d24ca065",
+    "semantic_hash": ""
+  },
+  "openspec/changes/tactile-ui-revamp/specs/generative-stationery-rendering/spec.md": {
+    "mtime": 1787859982.4474936,
+    "seen": 1787860013.569389,
+    "ast_hash": "61a21c2e82600bab9dee26629031d062",
+    "semantic_hash": ""
+  },
+  "openspec/changes/tactile-ui-revamp/specs/stationery-design-system/spec.md": {
+    "mtime": 1787859988.2273686,
+    "seen": 1787860013.569389,
+    "ast_hash": "f8235816c9f2e4149a1a19d2698fd268",
+    "semantic_hash": ""
+  },
+  "openspec/changes/tactile-ui-revamp/specs/tactile-physics-and-gestures/spec.md": {
+    "mtime": 1787859979.8155777,
+    "seen": 1787860013.56939,
+    "ast_hash": "a28657f1af28b2191bcb17174855bca2",
+    "semantic_hash": ""
+  },
+  "openspec/changes/tactile-ui-revamp/tasks.md": {
+    "mtime": 1787860006.116751,
+    "seen": 1787860013.569391,
+    "ast_hash": "5bcf91f95857296f369157fc285cf958",
+    "semantic_hash": ""
   }
 }
