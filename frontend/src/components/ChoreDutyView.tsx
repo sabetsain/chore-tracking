@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import {
   CheckCircle,
   Plus,
@@ -7,8 +7,13 @@ import {
   Sun,
   User,
   Star,
+  RotateCcw,
+  Shuffle,
+  Pause,
+  Pencil,
+  Trash2,
 } from 'lucide-react';
-import { ChoreAssignment, ChoreCompletionType, Member } from '../types';
+import { Chore, ChoreAssignment, ChoreCompletionType, Household, Member } from '../types';
 import { ChoreLogModal } from './ChoreLogModal';
 import { CreateChoreModal } from './CreateChoreModal';
 import { PaperCard } from './stationery/PaperCard';
@@ -19,8 +24,11 @@ import { triggerPaperDustCelebration } from '../utils/confetti';
 
 interface ChoreDutyViewProps {
   currentMember: Member;
+  household?: Household;
   assignments: ChoreAssignment[];
   onCompleteChore: (assignmentId: string) => Promise<void>;
+  onUncompleteChore?: (assignmentId: string) => Promise<void>;
+  onReassignChore?: (assignmentId: string, memberId: string) => Promise<void>;
   onLogDuty: (assignmentId: string, note?: string) => Promise<void>;
   onToggleAway: (status: 'active' | 'away') => Promise<void>;
   onOpenSwap?: (assignment: ChoreAssignment) => void;
@@ -30,21 +38,56 @@ interface ChoreDutyViewProps {
     effort_weight: number;
     completion_type: ChoreCompletionType;
   }) => Promise<void>;
+  allMembers?: Member[];
+  onActivateRotation?: () => Promise<void>;
+  onDeactivateRotation?: () => Promise<void>;
+  onReshuffleRotation?: () => Promise<void>;
+  onUnclaimChore?: (assignmentId: string) => Promise<void>;
+  onEditChore?: (chore: Chore) => void;
+  onDeleteChore?: (choreId: string) => Promise<void>;
 }
 
 export function ChoreDutyView({
   currentMember,
+  household,
   assignments,
   onCompleteChore,
+  onUncompleteChore,
+  onReassignChore,
   onLogDuty,
   onToggleAway,
   onOpenSwap,
   onCreateChore,
+  allMembers,
+  onActivateRotation,
+  onDeactivateRotation,
+  onReshuffleRotation,
+  onUnclaimChore,
+  onEditChore,
+  onDeleteChore,
 }: ChoreDutyViewProps) {
   const [activeLogAssignment, setActiveLogAssignment] = useState<ChoreAssignment | null>(null);
   const [showCreateModal, setShowCreateModal] = useState<boolean>(false);
   const [completingId, setCompletingId] = useState<string | null>(null);
+  const [unclaimingId, setUnclaimingId] = useState<string | null>(null);
   const [togglingAway, setTogglingAway] = useState<boolean>(false);
+  const [rotating, setRotating] = useState<boolean>(false);
+
+  const isRotationActive = household?.chore_rotation_active ?? false;
+
+  // Derive unique active members for reassignment
+  const activeMembers = useMemo(() => {
+    const memberMap = new Map<string, Member>();
+    if (allMembers && allMembers.length > 0) {
+      allMembers.forEach((m) => memberMap.set(m.id, m));
+    } else {
+      if (currentMember) memberMap.set(currentMember.id, currentMember);
+      assignments.forEach((a) => {
+        if (a.member) memberMap.set(a.member.id, a.member);
+      });
+    }
+    return Array.from(memberMap.values()).filter((m) => m.status === 'active');
+  }, [allMembers, assignments, currentMember]);
 
   // Group assignments by member
   const myAssignments = assignments.filter((a) => a.member_id === currentMember.id);
@@ -80,6 +123,40 @@ export function ChoreDutyView({
     }
   };
 
+  const handleUncomplete = async (assignmentId: string) => {
+    setCompletingId(assignmentId);
+    try {
+      soundEngine.playEraserSound();
+      if (onUncompleteChore) {
+        await onUncompleteChore(assignmentId);
+      }
+    } finally {
+      setCompletingId(null);
+    }
+  };
+
+  const handleUnclaim = async (assignmentId: string) => {
+    if (!onUnclaimChore) return;
+    setUnclaimingId(assignmentId);
+    try {
+      soundEngine.playEraserSound();
+      await onUnclaimChore(assignmentId);
+    } finally {
+      setUnclaimingId(null);
+    }
+  };
+
+  const handleReassign = async (assignmentId: string, memberId: string) => {
+    try {
+      soundEngine.playEraserSound();
+      if (onReassignChore) {
+        await onReassignChore(assignmentId, memberId);
+      }
+    } catch {
+      // Gracefully ignore error
+    }
+  };
+
   const handleAwayToggle = async () => {
     setTogglingAway(true);
     try {
@@ -87,6 +164,39 @@ export function ChoreDutyView({
       await onToggleAway(nextStatus);
     } finally {
       setTogglingAway(false);
+    }
+  };
+
+  const handleActivateRotation = async () => {
+    if (!onActivateRotation) return;
+    setRotating(true);
+    try {
+      soundEngine.playPencilScribbleSound();
+      await onActivateRotation();
+    } finally {
+      setRotating(false);
+    }
+  };
+
+  const handleDeactivateRotation = async () => {
+    if (!onDeactivateRotation) return;
+    setRotating(true);
+    try {
+      soundEngine.playEraserSound();
+      await onDeactivateRotation();
+    } finally {
+      setRotating(false);
+    }
+  };
+
+  const handleReshuffleRotation = async () => {
+    if (!onReshuffleRotation) return;
+    setRotating(true);
+    try {
+      soundEngine.playPencilScribbleSound();
+      await onReshuffleRotation();
+    } finally {
+      setRotating(false);
     }
   };
 
@@ -104,15 +214,48 @@ export function ChoreDutyView({
                 Away
               </span>
             )}
+            {!isRotationActive && (
+              <span className="px-2.5 py-0.5 rounded-lg bg-stone-100 dark:bg-slate-700 border border-stone-300 dark:border-slate-600 text-ink-muted dark:text-slate-300 text-xs font-sans font-semibold">
+                Rotation Paused
+              </span>
+            )}
           </div>
           <p className="text-xs text-ink-graphite dark:text-slate-400 mt-1 font-sans">
             {isAway
               ? 'You are currently marked as Away. Your chores are up for grabs.'
+              : !isRotationActive
+              ? 'Chore rotation is currently paused. Chores are available in the Up-for-Grabs pool.'
               : 'Complete your weekly chores or log continuous duty instances on the ledger.'}
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          {isRotationActive && onReshuffleRotation && (
+            <button
+              type="button"
+              disabled={rotating}
+              onClick={handleReshuffleRotation}
+              className="inline-flex items-center gap-1.5 px-3 py-2 bg-paper-card dark:bg-[#222D42] hover:bg-stone-100 dark:hover:bg-slate-700 text-ink-navy dark:text-slate-200 text-xs sm:text-sm font-sans font-semibold rounded-lg border border-stone-300 dark:border-slate-600 shadow-paper-sm transition-all active:scale-95 disabled:opacity-50"
+              title="Re-distribute chores across buckets"
+            >
+              <Shuffle className="w-3.5 h-3.5" />
+              <span>{rotating ? 'Shuffling...' : '⚙️ Re-shuffle Buckets'}</span>
+            </button>
+          )}
+
+          {isRotationActive && onDeactivateRotation && (
+            <button
+              type="button"
+              disabled={rotating}
+              onClick={handleDeactivateRotation}
+              className="inline-flex items-center gap-1.5 px-3 py-2 bg-paper-card dark:bg-[#222D42] hover:bg-stone-100 dark:hover:bg-slate-700 text-ink-navy dark:text-slate-200 text-xs sm:text-sm font-sans font-semibold rounded-lg border border-stone-300 dark:border-slate-600 shadow-paper-sm transition-all active:scale-95 disabled:opacity-50"
+              title="Pause chore rotation and release duties to Up-for-Grabs"
+            >
+              <Pause className="w-3.5 h-3.5" />
+              <span>⏸️ Pause Rotation</span>
+            </button>
+          )}
+
           {onCreateChore && (
             <button
               type="button"
@@ -149,6 +292,32 @@ export function ChoreDutyView({
         </div>
       </PaperCard>
 
+      {/* Paused Rotation Banner */}
+      {!isRotationActive && (
+        <PaperCard variant="card" className="p-6 text-center space-y-3 bg-amber-50/50 dark:bg-slate-800/60 border border-dashed border-amber-300 dark:border-amber-700/60">
+          <div className="text-3xl">🎲</div>
+          <h3 className="text-lg font-serif font-bold text-ink-navy dark:text-slate-100">
+            Chore rotation is currently paused. Chores are available in the Up-for-Grabs pool.
+          </h3>
+          <p className="text-xs text-ink-graphite dark:text-slate-400 max-w-md mx-auto font-sans">
+            Distribute all household chores into balanced effort buckets and automatically rotate weekly assignments among active roommates.
+          </p>
+          {onActivateRotation && (
+            <div className="pt-2">
+              <button
+                type="button"
+                disabled={rotating}
+                onClick={handleActivateRotation}
+                className="inline-flex items-center gap-2 px-5 py-2.5 bg-indigo-700 hover:bg-indigo-800 text-white text-sm font-sans font-bold rounded-lg shadow-paper-sm hover:shadow-paper-md transition-all active:scale-95 disabled:opacity-50"
+              >
+                <RotateCcw className={`w-4 h-4 ${rotating ? 'animate-spin' : ''}`} />
+                <span>{rotating ? 'Distributing...' : '🎲 Distribute into Buckets & Start Rotation'}</span>
+              </button>
+            </div>
+          )}
+        </PaperCard>
+      )}
+
       {/* My Duties Section */}
       <div className="space-y-4 pt-2">
         <div className="flex items-center justify-between pb-1 border-b border-stone-200/80 dark:border-slate-700/80">
@@ -183,8 +352,14 @@ export function ChoreDutyView({
                     <div className="flex items-center gap-2">
                       <ScribbleCheckbox
                         checked={assignment.status === 'completed'}
-                        disabled={assignment.status === 'completed' || completingId === assignment.id}
-                        onChange={() => handleComplete(assignment.id)}
+                        disabled={completingId === assignment.id}
+                        onChange={(nextChecked) => {
+                          if (nextChecked) {
+                            handleComplete(assignment.id);
+                          } else {
+                            handleUncomplete(assignment.id);
+                          }
+                        }}
                         label={
                           <span className="font-serif font-bold text-lg text-ink-navy dark:text-slate-100 leading-snug">
                             {assignment.chore.title}
@@ -192,7 +367,34 @@ export function ChoreDutyView({
                         }
                       />
                     </div>
-                    <div className="flex items-center gap-1 shrink-0">
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      {onEditChore && (
+                        <button
+                          type="button"
+                          onClick={() => onEditChore(assignment.chore)}
+                          className="p-1 rounded text-ink-muted hover:text-ink-navy dark:text-slate-400 dark:hover:text-slate-200 hover:bg-stone-100 dark:hover:bg-slate-700 transition"
+                          title="Edit Chore"
+                          aria-label={`Edit ${assignment.chore.title}`}
+                        >
+                          <Pencil className="w-3.5 h-3.5" />
+                        </button>
+                      )}
+                      {onDeleteChore && (
+                        <button
+                          type="button"
+                          onClick={async () => {
+                            if (window.confirm(`Are you sure you want to delete "${assignment.chore.title}"?`)) {
+                              soundEngine.playEraserSound();
+                              await onDeleteChore(assignment.chore.id);
+                            }
+                          }}
+                          className="p-1 rounded text-ink-muted hover:text-stamp-dirty dark:text-slate-400 dark:hover:text-red-300 hover:bg-stone-100 dark:hover:bg-slate-700 transition"
+                          title="Delete Chore"
+                          aria-label={`Delete ${assignment.chore.title}`}
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      )}
                       <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-highlighter-yellow text-amber-950 font-sans font-bold text-xs border border-amber-300/80 shadow-sm">
                         <Star className="w-3 h-3 fill-amber-500 text-amber-600" />
                         {assignment.chore.effort_weight} pts
@@ -231,46 +433,100 @@ export function ChoreDutyView({
                   )}
                 </div>
 
-                {/* Actions */}
-                <div className="flex items-center gap-2 pt-3 mt-2 border-t border-stone-200/80 dark:border-slate-700/80">
-                  {assignment.chore.completion_type === 'single_weekly' ? (
-                    assignment.status === 'completed' ? (
-                      <div className="flex-1 py-2 text-center font-sans font-semibold text-xs text-stamp-clean bg-emerald-100/60 dark:bg-emerald-950/40 rounded-lg border border-emerald-300 dark:border-emerald-700">
-                        Done for this week
-                      </div>
+                <div>
+                  {/* Actions */}
+                  <div className="flex flex-wrap items-center gap-2 pt-3 mt-2 border-t border-stone-200/80 dark:border-slate-700/80">
+                    {assignment.chore.completion_type === 'single_weekly' ? (
+                      assignment.status === 'completed' ? (
+                        <button
+                          type="button"
+                          disabled={completingId === assignment.id}
+                          onClick={() => handleUncomplete(assignment.id)}
+                          className="flex-1 py-2 px-3 bg-amber-50/80 dark:bg-amber-950/40 hover:bg-amber-100 dark:hover:bg-amber-900/50 text-amber-900 dark:text-amber-200 font-sans font-semibold text-xs rounded-lg border border-amber-300/80 dark:border-amber-700 transition flex items-center justify-center gap-1.5 active:scale-95 disabled:opacity-50 shadow-paper-sm"
+                          title="Undo chore completion"
+                          aria-label="Undo chore completion"
+                        >
+                          <RotateCcw className="w-3.5 h-3.5" />
+                          <span>{completingId === assignment.id ? 'Undoing...' : 'Undo / Uncheck'}</span>
+                        </button>
+                      ) : (
+                        <button
+                          type="button"
+                          disabled={completingId === assignment.id}
+                          onClick={() => handleComplete(assignment.id)}
+                          className="flex-1 py-2 px-3 bg-indigo-700 hover:bg-indigo-800 text-white font-sans font-bold text-sm rounded-lg shadow-paper-sm transition flex items-center justify-center gap-1.5 disabled:opacity-50 active:scale-95"
+                        >
+                          <CheckCircle className="w-4 h-4" />
+                          <span>{completingId === assignment.id ? 'Marking...' : 'Mark Done'}</span>
+                        </button>
+                      )
                     ) : (
                       <button
                         type="button"
-                        disabled={completingId === assignment.id}
-                        onClick={() => handleComplete(assignment.id)}
-                        className="flex-1 py-2 px-3 bg-indigo-700 hover:bg-indigo-800 text-white font-sans font-bold text-sm rounded-lg shadow-paper-sm transition flex items-center justify-center gap-1.5 disabled:opacity-50 active:scale-95"
+                        onClick={() => setActiveLogAssignment(assignment)}
+                        className="flex-1 py-2 px-3 bg-indigo-700 hover:bg-indigo-800 text-white font-sans font-bold text-sm rounded-lg shadow-paper-sm transition flex items-center justify-center gap-1.5 active:scale-95"
                       >
-                        <CheckCircle className="w-4 h-4" />
-                        <span>{completingId === assignment.id ? 'Marking...' : 'Mark Done'}</span>
+                        <Plus className="w-4 h-4" />
+                        <span>+ Log Duty</span>
                       </button>
-                    )
-                  ) : (
-                    <button
-                      type="button"
-                      onClick={() => setActiveLogAssignment(assignment)}
-                      className="flex-1 py-2 px-3 bg-indigo-700 hover:bg-indigo-800 text-white font-sans font-bold text-sm rounded-lg shadow-paper-sm transition flex items-center justify-center gap-1.5 active:scale-95"
-                    >
-                      <Plus className="w-4 h-4" />
-                      <span>+ Log Duty</span>
-                    </button>
-                  )}
+                    )}
 
-                  {onOpenSwap && assignment.status === 'pending' && (
-                    <button
-                      type="button"
-                      onClick={() => onOpenSwap(assignment)}
-                      className="py-2 px-3 bg-paper-manila dark:bg-[#2C3952] hover:bg-amber-200/80 dark:hover:bg-slate-600 text-ink-navy dark:text-slate-200 font-sans font-bold text-sm rounded-lg border border-amber-300/80 dark:border-slate-500 shadow-paper-sm transition flex items-center gap-1 active:scale-95"
-                      title="Swap chore with roommate"
-                      aria-label="Swap Chore"
-                    >
-                      <ArrowLeftRight className="w-3.5 h-3.5" />
-                      <span>Swap</span>
-                    </button>
+                    {!isRotationActive && onUnclaimChore && assignment.status === 'pending' && (
+                      <button
+                        type="button"
+                        disabled={unclaimingId === assignment.id}
+                        onClick={() => handleUnclaim(assignment.id)}
+                        className="py-2 px-3 bg-stone-100 dark:bg-slate-700 hover:bg-stone-200 dark:hover:bg-slate-600 text-ink-navy dark:text-slate-200 font-sans font-semibold text-xs rounded-lg border border-stone-300 dark:border-slate-500 shadow-paper-sm transition flex items-center justify-center gap-1 active:scale-95 disabled:opacity-50"
+                        title="Release chore back to Up-for-Grabs pool"
+                        aria-label="Release or Unclaim Chore"
+                      >
+                        <RotateCcw className="w-3.5 h-3.5" />
+                        <span>{unclaimingId === assignment.id ? 'Releasing...' : '↩️ Release / Unclaim'}</span>
+                      </button>
+                    )}
+
+                    {onOpenSwap && assignment.status === 'pending' && (
+                      <button
+                        type="button"
+                        onClick={() => onOpenSwap(assignment)}
+                        className="py-2 px-3 bg-paper-manila dark:bg-[#2C3952] hover:bg-amber-200/80 dark:hover:bg-slate-600 text-ink-navy dark:text-slate-200 font-sans font-bold text-sm rounded-lg border border-amber-300/80 dark:border-slate-500 shadow-paper-sm transition flex items-center gap-1 active:scale-95"
+                        title="Swap chore with roommate"
+                        aria-label="Swap Chore"
+                      >
+                        <ArrowLeftRight className="w-3.5 h-3.5" />
+                        <span>Swap</span>
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Reassignment Control */}
+                  {onReassignChore && activeMembers.length > 1 && (
+                    <div className="flex items-center gap-2 mt-3 pt-2.5 border-t border-stone-200/60 dark:border-slate-700/60">
+                      <label
+                        htmlFor={`reassign-my-${assignment.id}`}
+                        className="text-[11px] font-sans font-semibold text-ink-graphite dark:text-slate-400 shrink-0"
+                      >
+                        Reassign:
+                      </label>
+                      <select
+                        id={`reassign-my-${assignment.id}`}
+                        aria-label={`Reassign ${assignment.chore.title}`}
+                        value={assignment.member_id || currentMember.id}
+                        onChange={(e) => {
+                          const targetId = e.target.value;
+                          if (targetId && targetId !== assignment.member_id) {
+                            handleReassign(assignment.id, targetId);
+                          }
+                        }}
+                        className="w-full py-1 px-2 text-xs font-sans bg-paper-card dark:bg-[#222D42] text-ink-navy dark:text-slate-200 border border-stone-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-1 focus:ring-indigo-500 cursor-pointer"
+                      >
+                        {activeMembers.map((m) => (
+                          <option key={m.id} value={m.id}>
+                            {m.id === currentMember.id ? `${m.nickname} (Me)` : m.nickname}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
                   )}
                 </div>
               </PaperCard>
@@ -307,13 +563,50 @@ export function ChoreDutyView({
               >
                 <div>
                   <div className="flex items-start justify-between gap-2 mb-1.5">
-                    <h4 className="font-serif font-bold text-lg text-ink-navy dark:text-slate-100 leading-snug">
-                      {assignment.chore.title}
-                    </h4>
-                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-highlighter-yellow text-amber-950 font-sans font-bold text-xs border border-amber-300/80 shadow-sm shrink-0">
-                      <Star className="w-3 h-3 text-amber-600 fill-amber-500" />
-                      {assignment.chore.effort_weight} pts
-                    </span>
+                    <div className="flex items-center gap-2">
+                      <ScribbleCheckbox
+                        checked={assignment.status === 'completed'}
+                        disabled={true}
+                        label={
+                          <span className="font-serif font-bold text-lg text-ink-navy dark:text-slate-100 leading-snug">
+                            {assignment.chore.title}
+                          </span>
+                        }
+                      />
+                    </div>
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      {onEditChore && (
+                        <button
+                          type="button"
+                          onClick={() => onEditChore(assignment.chore)}
+                          className="p-1 rounded text-ink-muted hover:text-ink-navy dark:text-slate-400 dark:hover:text-slate-200 hover:bg-stone-100 dark:hover:bg-slate-700 transition"
+                          title="Edit Chore"
+                          aria-label={`Edit ${assignment.chore.title}`}
+                        >
+                          <Pencil className="w-3.5 h-3.5" />
+                        </button>
+                      )}
+                      {onDeleteChore && (
+                        <button
+                          type="button"
+                          onClick={async () => {
+                            if (window.confirm(`Are you sure you want to delete "${assignment.chore.title}"?`)) {
+                              soundEngine.playEraserSound();
+                              await onDeleteChore(assignment.chore.id);
+                            }
+                          }}
+                          className="p-1 rounded text-ink-muted hover:text-stamp-dirty dark:text-slate-400 dark:hover:text-red-300 hover:bg-stone-100 dark:hover:bg-slate-700 transition"
+                          title="Delete Chore"
+                          aria-label={`Delete ${assignment.chore.title}`}
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      )}
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-highlighter-yellow text-amber-950 font-sans font-bold text-xs border border-amber-300/80 shadow-sm shrink-0">
+                        <Star className="w-3 h-3 text-amber-600 fill-amber-500" />
+                        {assignment.chore.effort_weight} pts
+                      </span>
+                    </div>
                   </div>
 
                   {assignment.chore.description && (
@@ -346,18 +639,50 @@ export function ChoreDutyView({
                   )}
                 </div>
 
-                {assignment.chore.completion_type === 'continuous_duty' && (
-                  <div className="pt-3 mt-3 border-t border-stone-200/80 dark:border-slate-700/80">
-                    <button
-                      type="button"
-                      onClick={() => setActiveLogAssignment(assignment)}
-                      className="w-full py-1.5 px-2.5 bg-paper-card dark:bg-[#222D42] hover:bg-amber-100/60 dark:hover:bg-slate-700 text-ink-navy dark:text-slate-200 font-sans font-bold text-xs rounded-lg border border-stone-300 dark:border-slate-600 transition flex items-center justify-center gap-1.5 shadow-paper-sm active:scale-95"
-                    >
-                      <Plus className="w-3.5 h-3.5" />
-                      <span>+ Log Instance</span>
-                    </button>
-                  </div>
-                )}
+                <div>
+                  {assignment.chore.completion_type === 'continuous_duty' && (
+                    <div className="pt-3 mt-3 border-t border-stone-200/80 dark:border-slate-700/80">
+                      <button
+                        type="button"
+                        onClick={() => setActiveLogAssignment(assignment)}
+                        className="w-full py-1.5 px-2.5 bg-paper-card dark:bg-[#222D42] hover:bg-amber-100/60 dark:hover:bg-slate-700 text-ink-navy dark:text-slate-200 font-sans font-bold text-xs rounded-lg border border-stone-300 dark:border-slate-600 transition flex items-center justify-center gap-1.5 shadow-paper-sm active:scale-95"
+                      >
+                        <Plus className="w-3.5 h-3.5" />
+                        <span>+ Log Instance</span>
+                      </button>
+                    </div>
+                  )}
+
+                  {/* Reassignment Control for Roommates */}
+                  {onReassignChore && activeMembers.length > 1 && (
+                    <div className="flex items-center gap-2 mt-3 pt-2.5 border-t border-stone-200/60 dark:border-slate-700/60">
+                      <label
+                        htmlFor={`reassign-roommate-${assignment.id}`}
+                        className="text-[11px] font-sans font-semibold text-ink-graphite dark:text-slate-400 shrink-0"
+                      >
+                        Reassign:
+                      </label>
+                      <select
+                        id={`reassign-roommate-${assignment.id}`}
+                        aria-label={`Reassign ${assignment.chore.title}`}
+                        value={assignment.member_id || ''}
+                        onChange={(e) => {
+                          const targetId = e.target.value;
+                          if (targetId && targetId !== assignment.member_id) {
+                            handleReassign(assignment.id, targetId);
+                          }
+                        }}
+                        className="w-full py-1 px-2 text-xs font-sans bg-paper-card dark:bg-[#222D42] text-ink-navy dark:text-slate-200 border border-stone-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-1 focus:ring-indigo-500 cursor-pointer"
+                      >
+                        {activeMembers.map((m) => (
+                          <option key={m.id} value={m.id}>
+                            {m.id === currentMember.id ? `${m.nickname} (Me)` : m.nickname}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
+                </div>
               </PaperCard>
             ))}
           </div>

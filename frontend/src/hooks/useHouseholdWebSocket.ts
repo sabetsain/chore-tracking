@@ -6,15 +6,19 @@ interface UseHouseholdWebSocketOptions {
   householdId?: string | null;
   token?: string | null;
   queryClient: QueryClient;
+  onHouseholdChanged?: () => void;
 }
 
 export function useHouseholdWebSocket({
   householdId,
   token,
   queryClient,
+  onHouseholdChanged,
 }: UseHouseholdWebSocketOptions) {
   const wsRef = useRef<WebSocket | null>(null);
   const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const onHouseholdChangedRef = useRef(onHouseholdChanged);
+  onHouseholdChangedRef.current = onHouseholdChanged;
 
   useEffect(() => {
     if (!householdId || !token) {
@@ -47,6 +51,14 @@ export function useHouseholdWebSocket({
 
             case 'CHORE_UPDATED':
               queryClient.invalidateQueries({ queryKey: ['chores'] });
+              break;
+
+            case 'CHORE_ROTATION_CHANGED':
+              queryClient.invalidateQueries({ queryKey: ['chores'] });
+              queryClient.invalidateQueries({ queryKey: ['members'] });
+              if (onHouseholdChangedRef.current) {
+                onHouseholdChangedRef.current();
+              }
               break;
 
             case 'MEMBER_STATUS_CHANGED':

@@ -285,6 +285,9 @@ async def test_chore_assignment_triggers_push_notification(client: AsyncClient, 
     db_session.add(sub)
     await db_session.commit()
 
+    # Activate rotation
+    await client.post("/api/v1/chores/rotation/activate", headers=headers)
+
     with patch.object(settings, "VAPID_PRIVATE_KEY", "sample_private_key"), \
          patch.object(settings, "VAPID_PUBLIC_KEY", "sample_public_key"), \
          patch("app.services.push_service.webpush") as mock_webpush:

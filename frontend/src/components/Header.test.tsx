@@ -10,6 +10,7 @@ describe('Header Component', () => {
     name: 'Sunset Villa',
     invite_code: 'ABC123',
     timezone: 'UTC',
+    chore_rotation_active: false,
     created_at: new Date().toISOString(),
   };
 

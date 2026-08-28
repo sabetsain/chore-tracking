@@ -264,6 +264,53 @@ export class StationerySoundEngine {
       // Gracefully ignore audio synthesis errors
     }
   }
+
+  /**
+   * Soft Eraser Rubber Friction Synthesis.
+   * Synthesizes tactile soft eraser rubber friction on paper using the Web Audio API.
+   */
+  public playEraserSound(velocity: number = 1.0): void {
+    this.triggerHaptic([8, 12]);
+
+    const ctx = this.getContext();
+    if (!ctx) return;
+
+    try {
+      const now = ctx.currentTime;
+      const duration = 0.09;
+      const safeVelocity = Math.min(1.8, Math.max(0.4, velocity));
+      const bufferSize = Math.floor(ctx.sampleRate * duration);
+      if (bufferSize <= 0) return;
+
+      const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+      const data = buffer.getChannelData(0);
+      for (let i = 0; i < bufferSize; i++) {
+        const env = Math.sin((i / bufferSize) * Math.PI);
+        data[i] = (Math.random() * 2 - 1) * env;
+      }
+
+      const noise = ctx.createBufferSource();
+      noise.buffer = buffer;
+
+      const filter = ctx.createBiquadFilter();
+      filter.type = 'bandpass';
+      filter.frequency.setValueAtTime(850, now);
+      filter.frequency.linearRampToValueAtTime(1400, now + duration);
+
+      const gain = ctx.createGain();
+      gain.gain.setValueAtTime(0.18 * safeVelocity, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + duration);
+
+      noise.connect(filter);
+      filter.connect(gain);
+      gain.connect(ctx.destination);
+
+      noise.start(now);
+      noise.stop(now + duration);
+    } catch {
+      // Gracefully ignore audio synthesis errors
+    }
+  }
 }
 
 export const soundEngine = new StationerySoundEngine();

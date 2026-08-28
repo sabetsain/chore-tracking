@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { QueryClient, QueryClientProvider, useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useDrag } from '@use-gesture/react';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { Header, NavTab } from './components/Header';
 import { Onboarding } from './components/Onboarding';
@@ -8,13 +7,14 @@ import { ApplianceDashboard } from './components/ApplianceDashboard';
 import { ChoreDutyView } from './components/ChoreDutyView';
 import { UpForGrabsPool } from './components/UpForGrabsPool';
 import { ChoreSwapModal } from './components/ChoreSwapModal';
+import { EditChoreModal } from './components/EditChoreModal';
 import { SettingsView } from './components/SettingsView';
 import { PWAInstallPrompt } from './components/PWAInstallPrompt';
 import { useHouseholdWebSocket } from './hooks/useHouseholdWebSocket';
 import { usePushNotifications } from './hooks/usePushNotifications';
 import { useAppBadging } from './hooks/useAppBadging';
 import { api } from './api/client';
-import { ApplianceState, ApplianceType, ChoreAssignment, ChoreCompletionType } from './types';
+import { ApplianceState, ApplianceType, Chore, ChoreAssignment, ChoreCompletionType } from './types';
 import { soundEngine } from './utils/soundEngine';
 import { Loader2 } from 'lucide-react';
 
@@ -28,11 +28,10 @@ const queryClient = new QueryClient({
 });
 
 function MainApp() {
-  const { member, household, token, logout, updateStatus } = useAuth();
+  const { member, household, token, logout, updateStatus, refreshMe } = useAuth();
   const [activeTab, setActiveTab] = useState<NavTab>('appliances');
   const [swapSourceAssignment, setSwapSourceAssignment] = useState<ChoreAssignment | null>(null);
-  const [dragOffset, setDragOffset] = useState<number>(0);
-  const [isDragging, setIsDragging] = useState<boolean>(false);
+  const [editingChore, setEditingChore] = useState<Chore | null>(null);
 
   const qc = useQueryClient();
 
@@ -41,6 +40,7 @@ function MainApp() {
     householdId: household?.id,
     token,
     queryClient: qc,
+    onHouseholdChanged: refreshMe,
   });
 
   // Web Push Notifications
@@ -88,8 +88,24 @@ function MainApp() {
     },
   });
 
+
   const completeChoreMutation = useMutation({
     mutationFn: (assignmentId: string) => api.completeChore(assignmentId),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['chores'] });
+    },
+  });
+
+  const uncompleteChoreMutation = useMutation({
+    mutationFn: (assignmentId: string) => api.uncompleteChore(assignmentId),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['chores'] });
+    },
+  });
+
+  const reassignChoreMutation = useMutation({
+    mutationFn: ({ assignmentId, memberId }: { assignmentId: string; memberId: string }) =>
+      api.reassignChore(assignmentId, memberId),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['chores'] });
     },
@@ -122,6 +138,38 @@ function MainApp() {
     },
   });
 
+  const unclaimChoreMutation = useMutation({
+    mutationFn: (id: string) => api.unclaimChore(id),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['chores'] });
+    },
+  });
+
+  const updateChoreMutation = useMutation({
+    mutationFn: ({
+      id,
+      data,
+    }: {
+      id: string;
+      data: {
+        title?: string;
+        description?: string;
+        effort_weight?: number;
+        completion_type?: ChoreCompletionType;
+      };
+    }) => api.updateChore(id, data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['chores'] });
+    },
+  });
+
+  const deleteChoreMutation = useMutation({
+    mutationFn: (id: string) => api.deleteChore(id),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['chores'] });
+    },
+  });
+
   const swapChoreMutation = useMutation({
     mutationFn: ({ sourceId, targetId }: { sourceId: string; targetId: string }) =>
       api.swapChores(sourceId, targetId),
@@ -130,45 +178,38 @@ function MainApp() {
     },
   });
 
+  const activateRotationMutation = useMutation({
+    mutationFn: () => api.activateRotation(),
+    onSuccess: async () => {
+      await refreshMe();
+      qc.invalidateQueries({ queryKey: ['chores'] });
+      qc.invalidateQueries({ queryKey: ['members'] });
+    },
+  });
+
+  const deactivateRotationMutation = useMutation({
+    mutationFn: () => api.deactivateRotation(),
+    onSuccess: async () => {
+      await refreshMe();
+      qc.invalidateQueries({ queryKey: ['chores'] });
+      qc.invalidateQueries({ queryKey: ['members'] });
+    },
+  });
+
+  const reshuffleRotationMutation = useMutation({
+    mutationFn: () => api.reshuffleRotation(),
+    onSuccess: async () => {
+      await refreshMe();
+      qc.invalidateQueries({ queryKey: ['chores'] });
+      qc.invalidateQueries({ queryKey: ['members'] });
+    },
+  });
+
   const handleTabChange = (nextTab: NavTab) => {
     if (nextTab === activeTab) return;
     soundEngine.playPageFlipSound();
     setActiveTab(nextTab);
   };
-
-  // Inertial horizontal swipe gestures with spring rubber-banding
-  const bindSwipe = useDrag(
-    ({ movement: [mx], velocity: [vx], down, tap }) => {
-      if (tap) return;
-      const tabs: NavTab[] = ['appliances', 'chores', 'settings'];
-      const currentIndex = tabs.indexOf(activeTab);
-
-      if (down) {
-        setIsDragging(true);
-        let offset = mx;
-        // Rubber-band damping past edges
-        if ((currentIndex === 0 && mx > 0) || (currentIndex === tabs.length - 1 && mx < 0)) {
-          offset = mx * 0.25;
-        }
-        setDragOffset(offset);
-      } else {
-        setIsDragging(false);
-        setDragOffset(0);
-
-        const threshold = Math.min(typeof window !== 'undefined' ? window.innerWidth * 0.25 : 100, 120);
-        if ((mx < -threshold || (vx < -0.4 && mx < -30)) && currentIndex < tabs.length - 1) {
-          handleTabChange(tabs[currentIndex + 1]);
-        } else if ((mx > threshold || (vx > 0.4 && mx > 30)) && currentIndex > 0) {
-          handleTabChange(tabs[currentIndex - 1]);
-        }
-      }
-    },
-    {
-      axis: 'x',
-      filterTaps: true,
-      pointer: { touch: true },
-    }
-  );
 
   if (!member || !household) {
     return null;
@@ -196,14 +237,7 @@ function MainApp() {
         />
 
         {/* Main Working Sheet Container */}
-        <div
-          {...bindSwipe()}
-          className="w-full relative -mt-0.5 px-2 sm:px-4 touch-pan-y select-none sm:select-auto"
-          style={{
-            transform: dragOffset !== 0 ? `translateX(${dragOffset}px)` : undefined,
-            transition: isDragging ? 'none' : 'transform 250ms cubic-bezier(0.25, 1, 0.5, 1)',
-          }}
-        >
+        <div className="w-full relative -mt-0.5 px-2 sm:px-4">
           <main
             id={`panel-${activeTab}`}
             role="tabpanel"
@@ -230,9 +264,23 @@ function MainApp() {
               <div className="space-y-8">
                 <ChoreDutyView
                   currentMember={member}
+                  household={household}
                   assignments={assignments}
                   onCompleteChore={async (id) => {
                     await completeChoreMutation.mutateAsync(id);
+                  }}
+                  onUncompleteChore={async (id) => {
+                    await uncompleteChoreMutation.mutateAsync(id);
+                  }}
+                  onUnclaimChore={async (id) => {
+                    await unclaimChoreMutation.mutateAsync(id);
+                  }}
+                  onEditChore={(chore) => setEditingChore(chore)}
+                  onDeleteChore={async (id) => {
+                    await deleteChoreMutation.mutateAsync(id);
+                  }}
+                  onReassignChore={async (assignmentId, memberId) => {
+                    await reassignChoreMutation.mutateAsync({ assignmentId, memberId });
                   }}
                   onLogDuty={async (id, note) => {
                     await logDutyMutation.mutateAsync({ assignmentId: id, note });
@@ -246,12 +294,25 @@ function MainApp() {
                   onCreateChore={async (data) => {
                     await createChoreMutation.mutateAsync(data);
                   }}
+                  onActivateRotation={async () => {
+                    await activateRotationMutation.mutateAsync();
+                  }}
+                  onDeactivateRotation={async () => {
+                    await deactivateRotationMutation.mutateAsync();
+                  }}
+                  onReshuffleRotation={async () => {
+                    await reshuffleRotationMutation.mutateAsync();
+                  }}
                 />
 
                 <UpForGrabsPool
                   chores={upForGrabs}
                   onClaimChore={async (id) => {
                     await claimChoreMutation.mutateAsync(id);
+                  }}
+                  onEditChore={(chore) => setEditingChore(chore)}
+                  onDeleteChore={async (id) => {
+                    await deleteChoreMutation.mutateAsync(id);
                   }}
                 />
               </div>
@@ -290,6 +351,20 @@ function MainApp() {
           onClose={() => setSwapSourceAssignment(null)}
           onSwap={async (sourceId, targetId) => {
             await swapChoreMutation.mutateAsync({ sourceId, targetId });
+          }}
+        />
+      )}
+
+      {/* Edit Chore Modal */}
+      {editingChore && (
+        <EditChoreModal
+          chore={editingChore}
+          onClose={() => setEditingChore(null)}
+          onUpdateChore={async (id, data) => {
+            await updateChoreMutation.mutateAsync({ id, data });
+          }}
+          onDeleteChore={async (id) => {
+            await deleteChoreMutation.mutateAsync(id);
           }}
         />
       )}

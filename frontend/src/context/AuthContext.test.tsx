@@ -24,6 +24,7 @@ describe('AuthContext', () => {
     name: 'Dream House',
     invite_code: 'CODE12',
     timezone: 'America/New_York',
+    chore_rotation_active: false,
     created_at: new Date().toISOString(),
   };
 

@@ -12,7 +12,9 @@ When starting a session on this repository, please read the project handoff docu
 - When extending the codebase with new features, models, endpoints, or OpenSpec specifications, run `/graphify --update` to refresh `graphify-out/graph.json`, `graph.html`, and `GRAPH_REPORT.md`.
 - A git post-commit hook is installed to automatically re-extract AST relationships on each commit.
 
-## 4. Implementation Delegation
+## 4. Planning & Implementation Delegation
+- **Spec vs. Simple Plan Evaluation**: When approaching a proposed change or feature, explicitly consider whether it warrants a full specification (e.g., OpenSpec change) versus a lightweight implementation plan.
+- **Grill-Me Alignment**: Assess whether a `/grill-me` session is required with the user prior to writing out the plan or spec to resolve ambiguities, challenge assumptions, and align on design decisions early.
 - **Always delegate implementation to subagents**: Execute code changes via subagents to keep their context window free of conversational planning clutter.
 
 ## 5. Future Roadmap & Product Specifications

@@ -26,6 +26,7 @@ class HouseholdOut(BaseModel):
     name: str
     invite_code: str
     timezone: str
+    chore_rotation_active: bool = False
     created_at: datetime
 
 
@@ -137,6 +138,11 @@ class ChoreLogCreate(BaseModel):
 
 class ChoreSwapRequest(BaseModel):
     target_assignment_id: uuid.UUID
+
+
+class ChoreReassignRequest(BaseModel):
+    member_id: uuid.UUID
+
 
 
 class ApplianceCreate(BaseModel):

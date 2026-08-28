@@ -323,7 +323,7 @@ async def test_create_chore_auto_generates_weekly_assignment(client: AsyncClient
     assert res.status_code == 201
     chore_id = res.json()["id"]
 
-    # Verify that assignments for the current week now include this newly created chore
+    # Verify that assignments for the current week now include this newly created chore with member_id = None
     asg_res = await client.get(
         "/api/v1/chores/assignments",
         headers={"Authorization": f"Bearer {token}"},
@@ -333,6 +333,15 @@ async def test_create_chore_auto_generates_weekly_assignment(client: AsyncClient
     new_asg = next((a for a in assignments if a["chore_id"] == chore_id), None)
     assert new_asg is not None
     assert new_asg["status"] == "pending"
-    assert new_asg["member_id"] == alice_id
+    assert new_asg["member_id"] is None
     assert new_asg["chore"]["title"] == "Clean Refrigerator"
+
+    # Verify it is in up-for-grabs pool
+    grabs_res = await client.get(
+        "/api/v1/chores/up-for-grabs",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    assert grabs_res.status_code == 200
+    grabs = grabs_res.json()
+    assert any(g["id"] == new_asg["id"] for g in grabs)
 

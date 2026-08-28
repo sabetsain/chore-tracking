@@ -28,6 +28,7 @@ describe('SettingsView Component', () => {
     name: 'Sunset Villa',
     invite_code: 'ABC123',
     timezone: 'America/New_York',
+    chore_rotation_active: false,
     created_at: new Date().toISOString(),
   };
 

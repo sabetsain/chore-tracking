@@ -6,22 +6,62 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
-from app.models import Chore, ChoreAssignment, ChoreLog, Member
+from app.models import Chore, ChoreAssignment, ChoreLog, Household, Member
 from app.schemas import (
     ChoreAssignmentOut,
     ChoreCreate,
     ChoreLogCreate,
     ChoreLogOut,
     ChoreOut,
+    ChoreReassignRequest,
     ChoreSwapRequest,
     ChoreUpdate,
 )
 
 from app.security import get_current_member
-from app.services.chore_service import get_current_week_start, get_or_generate_weekly_assignments
+from app.services.chore_service import (
+    activate_chore_rotation,
+    deactivate_chore_rotation,
+    get_current_week_start,
+    get_or_generate_weekly_assignments,
+    reshuffle_chore_rotation,
+)
 from app.websocket import ws_manager
 
 router = APIRouter(prefix="/api/v1/chores", tags=["chores"])
+
+
+@router.post("/rotation/activate", response_model=list[ChoreAssignmentOut], status_code=status.HTTP_200_OK)
+async def activate_rotation(
+    current_member: Member = Depends(get_current_member),
+    db: AsyncSession = Depends(get_db),
+):
+    household = await db.get(Household, current_member.household_id)
+    if not household:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Household not found")
+    return await activate_chore_rotation(db=db, household=household)
+
+
+@router.post("/rotation/deactivate", response_model=list[ChoreAssignmentOut], status_code=status.HTTP_200_OK)
+async def deactivate_rotation(
+    current_member: Member = Depends(get_current_member),
+    db: AsyncSession = Depends(get_db),
+):
+    household = await db.get(Household, current_member.household_id)
+    if not household:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Household not found")
+    return await deactivate_chore_rotation(db=db, household=household)
+
+
+@router.post("/rotation/reshuffle", response_model=list[ChoreAssignmentOut], status_code=status.HTTP_200_OK)
+async def reshuffle_rotation(
+    current_member: Member = Depends(get_current_member),
+    db: AsyncSession = Depends(get_db),
+):
+    household = await db.get(Household, current_member.household_id)
+    if not household:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Household not found")
+    return await reshuffle_chore_rotation(db=db, household=household)
 
 
 @router.get("/assignments", response_model=list[ChoreAssignmentOut], status_code=status.HTTP_200_OK)
@@ -99,6 +139,64 @@ async def claim_chore_assignment(
     return assignment
 
 
+@router.post("/assignments/{assignment_id}/unclaim", response_model=ChoreAssignmentOut, status_code=status.HTTP_200_OK)
+async def unclaim_chore_assignment(
+    assignment_id: uuid.UUID,
+    current_member: Member = Depends(get_current_member),
+    db: AsyncSession = Depends(get_db),
+):
+    stmt = (
+        select(ChoreAssignment)
+        .join(Chore, ChoreAssignment.chore_id == Chore.id)
+        .where(
+            ChoreAssignment.id == assignment_id,
+            Chore.household_id == current_member.household_id,
+        )
+    )
+    res = await db.execute(stmt)
+    assignment = res.scalar_one_or_none()
+    if not assignment:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Chore assignment not found in this household",
+        )
+
+    if assignment.status != "pending":
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Cannot unclaim a completed or non-pending chore",
+        )
+
+    household = await db.get(Household, current_member.household_id)
+    if not household:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Household not found",
+        )
+
+    if household.chore_rotation_active:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Cannot unclaim chores when cyclical chore rotation is active; use reassignment or swap instead",
+        )
+
+    if assignment.member_id != current_member.id and current_member.role != "admin":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only assigned member or admin can unclaim this chore",
+        )
+
+    assignment.member_id = None
+    await db.commit()
+    await db.refresh(assignment)
+    await ws_manager.broadcast(
+        household_id=current_member.household_id,
+        event="CHORE_UPDATED",
+        data={"action": "unclaimed", "assignment": ChoreAssignmentOut.model_validate(assignment).model_dump(mode="json")},
+    )
+    return assignment
+
+
 
 @router.post("/assignments/{assignment_id}/complete", response_model=ChoreAssignmentOut, status_code=status.HTTP_200_OK)
 async def complete_chore_assignment(
@@ -122,6 +220,12 @@ async def complete_chore_assignment(
             detail="Chore assignment not found in this household",
         )
 
+    if assignment.member_id is not None and assignment.member_id != current_member.id and current_member.role != "admin":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only assigned member or admin can complete this chore",
+        )
+
     assignment.status = "completed"
     assignment.completed_at = datetime.now(timezone.utc)
     assignment.completed_by_member_id = current_member.id
@@ -134,6 +238,96 @@ async def complete_chore_assignment(
         data={"action": "completed", "assignment": ChoreAssignmentOut.model_validate(assignment).model_dump(mode="json")},
     )
     return assignment
+
+
+@router.post("/assignments/{assignment_id}/uncomplete", response_model=ChoreAssignmentOut, status_code=status.HTTP_200_OK)
+async def uncomplete_chore_assignment(
+    assignment_id: uuid.UUID,
+    current_member: Member = Depends(get_current_member),
+    db: AsyncSession = Depends(get_db),
+):
+    stmt = (
+        select(ChoreAssignment)
+        .join(Chore, ChoreAssignment.chore_id == Chore.id)
+        .where(
+            ChoreAssignment.id == assignment_id,
+            Chore.household_id == current_member.household_id,
+        )
+    )
+    res = await db.execute(stmt)
+    assignment = res.scalar_one_or_none()
+    if not assignment:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Chore assignment not found in this household",
+        )
+
+    if assignment.member_id is not None and assignment.member_id != current_member.id and current_member.role != "admin":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only assigned member or admin can uncomplete this chore",
+        )
+
+    assignment.status = "pending"
+    assignment.completed_at = None
+    assignment.completed_by_member_id = None
+
+    await db.commit()
+    await db.refresh(assignment)
+    await ws_manager.broadcast(
+        household_id=current_member.household_id,
+        event="CHORE_UPDATED",
+        data={"action": "uncompleted", "assignment": ChoreAssignmentOut.model_validate(assignment).model_dump(mode="json")},
+    )
+    return assignment
+
+
+@router.patch("/assignments/{assignment_id}/reassign", response_model=ChoreAssignmentOut, status_code=status.HTTP_200_OK)
+async def reassign_chore_assignment(
+    assignment_id: uuid.UUID,
+    data: ChoreReassignRequest,
+    current_member: Member = Depends(get_current_member),
+    db: AsyncSession = Depends(get_db),
+):
+    stmt = (
+        select(ChoreAssignment)
+        .join(Chore, ChoreAssignment.chore_id == Chore.id)
+        .where(
+            ChoreAssignment.id == assignment_id,
+            Chore.household_id == current_member.household_id,
+        )
+    )
+    res = await db.execute(stmt)
+    assignment = res.scalar_one_or_none()
+    if not assignment:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Chore assignment not found in this household",
+        )
+
+    target_member = await db.scalar(
+        select(Member).where(
+            Member.id == data.member_id,
+            Member.household_id == current_member.household_id,
+        )
+    )
+    if not target_member:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Target member not found in this household",
+        )
+
+    assignment.member_id = data.member_id
+
+    await db.commit()
+    await db.refresh(assignment)
+    await ws_manager.broadcast(
+        household_id=current_member.household_id,
+        event="CHORE_UPDATED",
+        data={"action": "reassigned", "assignment": ChoreAssignmentOut.model_validate(assignment).model_dump(mode="json")},
+    )
+    return assignment
+
 
 
 @router.post("/assignments/{assignment_id}/swap", response_model=ChoreAssignmentOut, status_code=status.HTTP_200_OK)

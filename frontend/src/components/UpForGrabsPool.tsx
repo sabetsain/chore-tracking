@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import { Sparkles, Hand, Star, Moon, AlertCircle, ArrowDown } from 'lucide-react';
+import { Sparkles, Hand, Star, Moon, AlertCircle, ArrowDown, Pencil, Trash2 } from 'lucide-react';
 import { motion, useMotionValue, useTransform } from 'framer-motion';
-import { ChoreAssignment } from '../types';
+import { Chore, ChoreAssignment } from '../types';
 import { PaperCard } from './stationery/PaperCard';
 import { WashiTape } from './stationery/WashiTape';
 import { soundEngine } from '../utils/soundEngine';
@@ -9,6 +9,8 @@ import { soundEngine } from '../utils/soundEngine';
 interface UpForGrabsPoolProps {
   chores: ChoreAssignment[];
   onClaimChore: (assignmentId: string) => Promise<void>;
+  onEditChore?: (chore: Chore) => void;
+  onDeleteChore?: (choreId: string) => Promise<void>;
 }
 
 interface DraggableMemoNoteProps {
@@ -16,9 +18,18 @@ interface DraggableMemoNoteProps {
   idx: number;
   claimingId: string | null;
   onClaim: (id: string) => Promise<void>;
+  onEdit?: (chore: Chore) => void;
+  onDelete?: (choreId: string) => Promise<void>;
 }
 
-function DraggableMemoNote({ assignment, idx, claimingId, onClaim }: DraggableMemoNoteProps) {
+function DraggableMemoNote({
+  assignment,
+  idx,
+  claimingId,
+  onClaim,
+  onEdit,
+  onDelete,
+}: DraggableMemoNoteProps) {
   const isAwayMember = assignment.member && assignment.member.status === 'away';
   const tapeColor = idx % 3 === 0 ? 'yellow' : idx % 3 === 1 ? 'green' : 'orange';
   const baseTilt = idx % 2 === 0 ? -1.5 : 1.5;
@@ -65,10 +76,43 @@ function DraggableMemoNote({ assignment, idx, claimingId, onClaim }: DraggableMe
               <h4 className="font-serif font-bold text-xl text-ink-navy dark:text-slate-100 leading-tight">
                 {assignment.chore.title}
               </h4>
-              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-highlighter-yellow text-amber-950 font-sans font-bold text-xs border border-amber-300/80 shadow-sm shrink-0">
-                <Star className="w-3.5 h-3.5 fill-amber-500 text-amber-600" />
-                {assignment.chore.effort_weight} pts
-              </span>
+              <div className="flex items-center gap-1 shrink-0">
+                {onEdit && (
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onEdit(assignment.chore);
+                    }}
+                    className="p-1 rounded text-ink-muted hover:text-ink-navy dark:text-slate-400 dark:hover:text-slate-200 hover:bg-amber-100/60 dark:hover:bg-slate-700 transition"
+                    title="Edit Chore"
+                    aria-label={`Edit ${assignment.chore.title}`}
+                  >
+                    <Pencil className="w-3.5 h-3.5" />
+                  </button>
+                )}
+                {onDelete && (
+                  <button
+                    type="button"
+                    onClick={async (e) => {
+                      e.stopPropagation();
+                      if (window.confirm(`Are you sure you want to delete "${assignment.chore.title}"?`)) {
+                        soundEngine.playEraserSound();
+                        await onDelete(assignment.chore.id);
+                      }
+                    }}
+                    className="p-1 rounded text-ink-muted hover:text-stamp-dirty dark:text-slate-400 dark:hover:text-red-300 hover:bg-amber-100/60 dark:hover:bg-slate-700 transition"
+                    title="Delete Chore"
+                    aria-label={`Delete ${assignment.chore.title}`}
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                )}
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-highlighter-yellow text-amber-950 font-sans font-bold text-xs border border-amber-300/80 shadow-sm">
+                  <Star className="w-3.5 h-3.5 fill-amber-500 text-amber-600" />
+                  {assignment.chore.effort_weight} pts
+                </span>
+              </div>
             </div>
 
             {assignment.chore.description && (
@@ -117,7 +161,12 @@ function DraggableMemoNote({ assignment, idx, claimingId, onClaim }: DraggableMe
   );
 }
 
-export function UpForGrabsPool({ chores, onClaimChore }: UpForGrabsPoolProps) {
+export function UpForGrabsPool({
+  chores,
+  onClaimChore,
+  onEditChore,
+  onDeleteChore,
+}: UpForGrabsPoolProps) {
   const [claimingId, setClaimingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -178,6 +227,8 @@ export function UpForGrabsPool({ chores, onClaimChore }: UpForGrabsPoolProps) {
             idx={idx}
             claimingId={claimingId}
             onClaim={handleClaim}
+            onEdit={onEditChore}
+            onDelete={onDeleteChore}
           />
         ))}
       </div>

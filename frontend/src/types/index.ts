@@ -3,6 +3,7 @@ export interface Household {
   name: string;
   invite_code: string;
   timezone: string;
+  chore_rotation_active: boolean;
   created_at: string;
 }
 
@@ -91,4 +92,5 @@ export interface ChoreLog {
 export type WebSocketEvent =
   | { event: 'APPLIANCE_STATE_CHANGED'; data: Appliance }
   | { event: 'CHORE_UPDATED'; data: { action: string; assignment?: ChoreAssignment; log?: ChoreLog; chore?: Chore; chore_id?: string } }
+  | { event: 'CHORE_ROTATION_CHANGED'; data: { household_id: string; chore_rotation_active: boolean } }
   | { event: 'MEMBER_STATUS_CHANGED'; data: Member | { action: string; member_id: string } };

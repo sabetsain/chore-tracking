@@ -36,6 +36,7 @@ describe('App Integration', () => {
     name: 'Pine Creek House',
     invite_code: 'PCK123',
     timezone: 'UTC',
+    chore_rotation_active: false,
     created_at: new Date().toISOString(),
   };
 

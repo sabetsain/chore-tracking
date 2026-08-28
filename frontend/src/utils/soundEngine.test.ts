@@ -169,6 +169,18 @@ describe('StationerySoundEngine', () => {
     expect(vibrateMock).toHaveBeenCalledWith([12]);
   });
 
+  it('synthesizes eraser sound with rubber friction and triggers haptics', () => {
+    const engine = new StationerySoundEngine();
+    engine.setEnabled(true);
+
+    engine.playEraserSound(1.2);
+
+    expect(mockAudioContext.createBufferSource).toHaveBeenCalled();
+    expect(mockAudioContext.createBiquadFilter).toHaveBeenCalled();
+    expect(mockBufferSource.start).toHaveBeenCalled();
+    expect(vibrateMock).toHaveBeenCalledWith([8, 12]);
+  });
+
   it('handles triggerHaptic safely when navigator.vibrate is unavailable', () => {
     // @ts-ignore
     delete navigator.vibrate;

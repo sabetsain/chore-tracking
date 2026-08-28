@@ -1,19 +1,4 @@
-# chore-management Specification
-
-## Purpose
-Coordinate shared household chores, weekly responsibility rotations, continuous duty logs, chore swapping, up-for-grabs task claiming, and collaborative assignments.
-
-## Requirements
-### Requirement: Chore Definition and Configuration
-The system SHALL allow household members to create, view, update, and deactivate chores with a title, description, effort weight (1-5 points), and completion type ('single_weekly' or 'continuous_duty') directly from the chore user interface.
-
-#### Scenario: Creating a new chore from UI
-- **WHEN** a member submits a valid chore definition with title, effort weight, and completion type from the chore duty view modal
-- **THEN** the system persists the chore scoped to the household, includes it in the active chore list, and immediately provisions an assignment for the active current week.
-
-#### Scenario: Immediate assignment generation on chore creation
-- **WHEN** a new chore is added to a household during an active week
-- **THEN** the system generates a corresponding weekly chore assignment for the current week (assigned round-robin to an active member or made available in up-for-grabs) without requiring a week rollover.
+## MODIFIED Requirements
 
 ### Requirement: Weekly Duty Assignment and Fair Rotation
 The system SHALL organize active household chores into $N$ balanced difficulty buckets (where $N$ is the count of active, non-away household members) by partitioning chores to minimize effort weight variance, and rotate bucket assignments across members each weekly cycle (Sunday midnight to Sunday midnight).
@@ -49,19 +34,7 @@ The system SHALL support completion tracking and reversible check-offs: single w
 - **WHEN** a member on 'continuous_duty' logs a completion instance (e.g. emptied trash)
 - **THEN** the system creates a timestamped chore log entry, increments the weekly instance counter, and keeps the assignment active for the remainder of the week.
 
-### Requirement: Up for Grabs Claim Pool
-The system SHALL place unassigned, orphaned, or away-member chores into an 'Up for Grabs' pool that any active roommate can claim.
-
-#### Scenario: Active member claims an up for grabs chore
-- **WHEN** an active member claims a chore currently in the 'Up for Grabs' pool
-- **THEN** the system reassigns the weekly assignment to that member, removes it from the open pool, and broadcasts the assignment update to all household members.
-
-### Requirement: 1-to-1 Chore Swapping
-The system SHALL allow a member to propose or perform a 1-to-1 swap of their weekly assigned chore with another active member's assigned chore.
-
-#### Scenario: Direct chore swap between members
-- **WHEN** a member requests to swap their assigned weekly chore with another member's assigned weekly chore
-- **THEN** the system updates the assignees on both assignment records and logs the swap in the activity history.
+## ADDED Requirements
 
 ### Requirement: Collaborative Weekly Chore Reassignment
 The system SHALL allow any active household member to reassign a specific weekly chore assignment to any other active household member for the current week without altering the chore's permanent bucket assignment in future rotation cycles.

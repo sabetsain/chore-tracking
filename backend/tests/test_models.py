@@ -34,6 +34,7 @@ async def test_create_household_and_defaults(db_session: AsyncSession):
     assert household.name == "Baker Street Flat"
     assert household.invite_code == "BAKER1"
     assert household.timezone == "UTC"
+    assert household.chore_rotation_active is False
     assert household.created_at is not None
 
 

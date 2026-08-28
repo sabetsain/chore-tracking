@@ -22,3 +22,6 @@ frontend/dist/
 # Graphify temporary caches
 graphify-out/.graphify_*
 graphify-out/cache/
+
+# Scratch & Temporary
+.tmp/

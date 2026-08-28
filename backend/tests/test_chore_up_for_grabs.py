@@ -97,6 +97,9 @@ async def test_up_for_grabs_pool_includes_away_member_chores(client: AsyncClient
     bob_token = join_bob.json()["access_token"]
     bob_id = join_bob.json()["member"]["id"]
 
+    # Activate rotation
+    await client.post("/api/v1/chores/rotation/activate", headers={"Authorization": f"Bearer {alice_token}"})
+
     # Create chore
     await client.post(
         "/api/v1/chores",
@@ -105,43 +108,44 @@ async def test_up_for_grabs_pool_includes_away_member_chores(client: AsyncClient
     )
 
     week_str = "2026-08-23"
-    # Generate assignment while Alice is active -> assigned to Alice
+    # Generate assignment while Bob is active -> assigned to Bob (week_index=33, 33%2=1)
     assign_res = await client.get(
         f"/api/v1/chores/assignments?week_start_date={week_str}",
         headers={"Authorization": f"Bearer {alice_token}"},
     )
     assignment_id = assign_res.json()[0]["id"]
-    assert assign_res.json()[0]["member_id"] == alice_id
+    assert assign_res.json()[0]["member_id"] == bob_id
 
     # Pool is empty initially
     p1 = await client.get(
         f"/api/v1/chores/up-for-grabs?week_start_date={week_str}",
-        headers={"Authorization": f"Bearer {bob_token}"},
+        headers={"Authorization": f"Bearer {alice_token}"},
     )
     assert len(p1.json()) == 0
 
-    # Alice goes away mid-week
+    # Bob goes away mid-week
     await client.patch(
         "/api/v1/members/me/status",
-        headers={"Authorization": f"Bearer {alice_token}"},
+        headers={"Authorization": f"Bearer {bob_token}"},
         json={"status": "away"},
     )
 
-    # Now Alice's chore shows up in the Up for Grabs pool
+    # Now Bob's chore shows up in the Up for Grabs pool
     p2 = await client.get(
         f"/api/v1/chores/up-for-grabs?week_start_date={week_str}",
-        headers={"Authorization": f"Bearer {bob_token}"},
+        headers={"Authorization": f"Bearer {alice_token}"},
     )
     assert len(p2.json()) == 1
     assert p2.json()[0]["id"] == assignment_id
 
-    # Bob claims it
+    # Alice claims it
     claim_res = await client.post(
         f"/api/v1/chores/assignments/{assignment_id}/claim",
-        headers={"Authorization": f"Bearer {bob_token}"},
+        headers={"Authorization": f"Bearer {alice_token}"},
     )
     assert claim_res.status_code == 200
-    assert claim_res.json()["member_id"] == bob_id
+    assert claim_res.json()["member_id"] == alice_id
+
 
 
 @pytest.mark.asyncio

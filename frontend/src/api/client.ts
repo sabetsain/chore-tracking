@@ -138,14 +138,45 @@ export const api = {
     return request<ChoreAssignment[]>(`/chores/up-for-grabs${query}`);
   },
 
+  activateRotation: () =>
+    request<ChoreAssignment[]>('/chores/rotation/activate', {
+      method: 'POST',
+    }),
+
+  deactivateRotation: () =>
+    request<ChoreAssignment[]>('/chores/rotation/deactivate', {
+      method: 'POST',
+    }),
+
+  reshuffleRotation: () =>
+    request<ChoreAssignment[]>('/chores/rotation/reshuffle', {
+      method: 'POST',
+    }),
+
   claimChore: (assignmentId: string) =>
     request<ChoreAssignment>(`/chores/assignments/${assignmentId}/claim`, {
+      method: 'POST',
+    }),
+
+  unclaimChore: (assignmentId: string) =>
+    request<ChoreAssignment>(`/chores/assignments/${assignmentId}/unclaim`, {
       method: 'POST',
     }),
 
   completeChore: (assignmentId: string) =>
     request<ChoreAssignment>(`/chores/assignments/${assignmentId}/complete`, {
       method: 'POST',
+    }),
+
+  uncompleteChore: (assignmentId: string) =>
+    request<ChoreAssignment>(`/chores/assignments/${assignmentId}/uncomplete`, {
+      method: 'POST',
+    }),
+
+  reassignChore: (assignmentId: string, memberId: string) =>
+    request<ChoreAssignment>(`/chores/assignments/${assignmentId}/reassign`, {
+      method: 'PATCH',
+      body: JSON.stringify({ member_id: memberId }),
     }),
 
   logChoreDuty: (assignmentId: string, note?: string) =>
@@ -171,6 +202,12 @@ export const api = {
   createChore: (data: { title: string; description?: string; effort_weight: number; completion_type: string }) =>
     request<Chore>('/chores', {
       method: 'POST',
+      body: JSON.stringify(data),
+    }),
+
+  updateChore: (choreId: string, data: { title?: string; description?: string; effort_weight?: number; completion_type?: string }) =>
+    request<Chore>(`/chores/${choreId}`, {
+      method: 'PATCH',
       body: JSON.stringify(data),
     }),
 

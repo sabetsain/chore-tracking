@@ -221,5 +221,165 @@ describe('ChoreDutyView Component', () => {
       completion_type: 'continuous_duty',
     });
   });
+
+  it('unchecks a completed chore and triggers onUncompleteChore', async () => {
+    const user = userEvent.setup();
+    const mockOnUncompleteChore = vi.fn().mockResolvedValueOnce(undefined);
+
+    const completedAssignments: ChoreAssignment[] = [
+      {
+        ...mockAssignments[0],
+        status: 'completed',
+        completed_at: new Date().toISOString(),
+      },
+    ];
+
+    render(
+      <ChoreDutyView
+        currentMember={currentMember}
+        assignments={completedAssignments}
+        onCompleteChore={mockOnCompleteChore}
+        onUncompleteChore={mockOnUncompleteChore}
+        onLogDuty={mockOnLogDuty}
+        onToggleAway={mockOnToggleAway}
+      />
+    );
+
+    // Should find the completed chore checkbox
+    const checkbox = screen.getByRole('checkbox', { name: /Deep Clean Bathroom/i });
+    expect(checkbox).toBeChecked();
+
+    // Clicking the checked checkbox unchecks it and triggers onUncompleteChore
+    await user.click(checkbox);
+    expect(mockOnUncompleteChore).toHaveBeenCalledWith('a-1');
+  });
+
+  it('renders disabled / read-only checkboxes for roommates duties', async () => {
+    const user = userEvent.setup();
+
+    render(
+      <ChoreDutyView
+        currentMember={currentMember}
+        assignments={mockAssignments}
+        onCompleteChore={mockOnCompleteChore}
+        onLogDuty={mockOnLogDuty}
+        onToggleAway={mockOnToggleAway}
+      />
+    );
+
+    // Sam's duty (Vacuum Common Areas)
+    const samCheckbox = screen.getByRole('checkbox', { name: /Vacuum Common Areas/i });
+    expect(samCheckbox).toBeDisabled();
+
+    await user.click(samCheckbox);
+    expect(mockOnCompleteChore).not.toHaveBeenCalled();
+  });
+
+  it('triggers onReassignChore when reassigning a chore via the dropdown', async () => {
+    const user = userEvent.setup();
+    const mockOnReassignChore = vi.fn().mockResolvedValueOnce(undefined);
+
+    render(
+      <ChoreDutyView
+        currentMember={currentMember}
+        assignments={mockAssignments}
+        onCompleteChore={mockOnCompleteChore}
+        onReassignChore={mockOnReassignChore}
+        onLogDuty={mockOnLogDuty}
+        onToggleAway={mockOnToggleAway}
+        allMembers={[currentMember, otherMember]}
+      />
+    );
+
+    // Find the reassignment select for Alex's chore
+    const reassignSelect = screen.getByRole('combobox', { name: /Reassign Deep Clean Bathroom/i });
+    expect(reassignSelect).toBeInTheDocument();
+    expect(reassignSelect).toHaveValue('m-1');
+
+    // Change value to Sam (m-2)
+    await user.selectOptions(reassignSelect, 'm-2');
+
+    expect(mockOnReassignChore).toHaveBeenCalledWith('a-1', 'm-2');
+  });
+
+  it('renders paused rotation banner when chore_rotation_active is false and activates on button click', async () => {
+    const user = userEvent.setup();
+    const mockOnActivateRotation = vi.fn().mockResolvedValueOnce(undefined);
+
+    const mockHousehold = {
+      id: 'h-1',
+      name: 'Test House',
+      invite_code: 'TEST12',
+      timezone: 'UTC',
+      chore_rotation_active: false,
+      created_at: new Date().toISOString(),
+    };
+
+    render(
+      <ChoreDutyView
+        currentMember={currentMember}
+        household={mockHousehold}
+        assignments={mockAssignments}
+        onCompleteChore={mockOnCompleteChore}
+        onLogDuty={mockOnLogDuty}
+        onToggleAway={mockOnToggleAway}
+        onActivateRotation={mockOnActivateRotation}
+      />
+    );
+
+    expect(
+      screen.getAllByText(/Chore rotation is currently paused\. Chores are available in the Up-for-Grabs pool\./i)[0]
+    ).toBeInTheDocument();
+
+    const activateBtn = screen.getByRole('button', {
+      name: /distribute into buckets & start rotation/i,
+    });
+    expect(activateBtn).toBeInTheDocument();
+
+    await user.click(activateBtn);
+    expect(mockOnActivateRotation).toHaveBeenCalled();
+  });
+
+  it('renders active rotation controls when chore_rotation_active is true', async () => {
+    const user = userEvent.setup();
+    const mockOnReshuffleRotation = vi.fn().mockResolvedValueOnce(undefined);
+    const mockOnDeactivateRotation = vi.fn().mockResolvedValueOnce(undefined);
+
+    const mockHousehold = {
+      id: 'h-1',
+      name: 'Test House',
+      invite_code: 'TEST12',
+      timezone: 'UTC',
+      chore_rotation_active: true,
+      created_at: new Date().toISOString(),
+    };
+
+    render(
+      <ChoreDutyView
+        currentMember={currentMember}
+        household={mockHousehold}
+        assignments={mockAssignments}
+        onCompleteChore={mockOnCompleteChore}
+        onLogDuty={mockOnLogDuty}
+        onToggleAway={mockOnToggleAway}
+        onReshuffleRotation={mockOnReshuffleRotation}
+        onDeactivateRotation={mockOnDeactivateRotation}
+      />
+    );
+
+    // Controls in top header
+    const reshuffleBtn = screen.getByRole('button', { name: /re-shuffle buckets/i });
+    const pauseBtn = screen.getByRole('button', { name: /pause rotation/i });
+
+    expect(reshuffleBtn).toBeInTheDocument();
+    expect(pauseBtn).toBeInTheDocument();
+
+    await user.click(reshuffleBtn);
+    expect(mockOnReshuffleRotation).toHaveBeenCalled();
+
+    await user.click(pauseBtn);
+    expect(mockOnDeactivateRotation).toHaveBeenCalled();
+  });
 });
+
 

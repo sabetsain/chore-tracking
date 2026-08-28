@@ -54,6 +54,7 @@ def test_migration_upgrade_and_downgrade(alembic_config):
     assert "name" in columns
     assert "invite_code" in columns
     assert "timezone" in columns
+    assert "chore_rotation_active" in columns
     assert "created_at" in columns
 
     # Verify columns on members table

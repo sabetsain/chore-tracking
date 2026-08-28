@@ -181,27 +181,28 @@ async def test_full_roommate_lifecycle_simulation(client: AsyncClient, db_sessio
             "/api/v1/chores",
             headers=r1_headers,
             json={
-                "title": "Trash & Recycling",
-                "completion_type": "continuous_duty",
-                "effort_weight": 1,
-                "description": "Empty bins and take to curb",
-            },
-        )
-        assert c2_res.status_code == 201
-        chore_trash_id = c2_res.json()["id"]
-
-        c3_res = await client.post(
-            "/api/v1/chores",
-            headers=r1_headers,
-            json={
                 "title": "Bathroom Sanitization",
                 "completion_type": "single_weekly",
                 "effort_weight": 2,
                 "description": "Clean shower, toilet, and mirrors",
             },
         )
+        assert c2_res.status_code == 201
+        chore_bath_id = c2_res.json()["id"]
+
+        c3_res = await client.post(
+            "/api/v1/chores",
+            headers=r1_headers,
+            json={
+                "title": "Trash & Recycling",
+                "completion_type": "continuous_duty",
+                "effort_weight": 1,
+                "description": "Empty bins and take to curb",
+            },
+        )
         assert c3_res.status_code == 201
-        chore_bath_id = c3_res.json()["id"]
+        chore_trash_id = c3_res.json()["id"]
+
 
         # Verify chore creation broadcast to all roommates
         for ws in [ws_r1, ws_r2, ws_r3]:
@@ -211,6 +212,7 @@ async def test_full_roommate_lifecycle_simulation(client: AsyncClient, db_sessio
         # =========================================================================
         # STEP 4: Week assignments generated and verified
         # =========================================================================
+        await client.post("/api/v1/chores/rotation/activate", headers=r1_headers)
         week_str = "2026-08-23"
         assignments_res = await client.get(
             f"/api/v1/chores/assignments?week_start_date={week_str}",
@@ -381,14 +383,14 @@ async def test_full_roommate_lifecycle_simulation(client: AsyncClient, db_sessio
         assert db_trash.status == "pending"
 
         # =========================================================================
-        # STEP 9: Roommate 2 marks Kitchen Deep Clean complete
+        # STEP 9: Roommate 2 marks Bathroom Sanitization complete
         # =========================================================================
         ws_r1.messages.clear()
         ws_r2.messages.clear()
         ws_r3.messages.clear()
 
         comp_res = await client.post(
-            f"/api/v1/chores/assignments/{kitchen_assign['id']}/complete",
+            f"/api/v1/chores/assignments/{bath_assign['id']}/complete",
             headers=r2_headers,
         )
         assert comp_res.status_code == 200
@@ -427,7 +429,7 @@ async def test_full_roommate_lifecycle_simulation(client: AsyncClient, db_sessio
             assert len(status_events) == 1
             assert status_events[0]["data"]["status"] == "away"
 
-        # Jordan's chore ("Bathroom Sanitization") now shows up in Up-for-Grabs pool
+        # Jordan's chore ("Trash & Recycling") now shows up in Up-for-Grabs pool
         pool_res = await client.get(
             f"/api/v1/chores/up-for-grabs?week_start_date={week_str}",
             headers=r1_headers,
@@ -435,7 +437,7 @@ async def test_full_roommate_lifecycle_simulation(client: AsyncClient, db_sessio
         assert pool_res.status_code == 200
         pool = pool_res.json()
         # Find Jordan's assigned chore in pool
-        assert any(a["id"] == bath_assign["id"] for a in pool)
+        assert any(a["id"] == trash_assign["id"] for a in pool)
 
         # Roommate 1 (Alex) claims Jordan's chore
         ws_r1.messages.clear()
@@ -443,12 +445,13 @@ async def test_full_roommate_lifecycle_simulation(client: AsyncClient, db_sessio
         ws_r3.messages.clear()
 
         claim_res = await client.post(
-            f"/api/v1/chores/assignments/{bath_assign['id']}/claim",
+            f"/api/v1/chores/assignments/{trash_assign['id']}/claim",
             headers=r1_headers,
         )
         assert claim_res.status_code == 200
         assert claim_res.json()["member_id"] == r1_id
         assert claim_res.json()["member"]["nickname"] == "Alex"
+
 
         # Verify WebSocket broadcast for claim
         for ws in [ws_r1, ws_r2, ws_r3]:

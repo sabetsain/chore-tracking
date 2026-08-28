@@ -112,7 +112,7 @@ describe('Stationery Primitives', () => {
   });
 
   describe('ScribbleCheckbox', () => {
-    it('renders unchecked and checked states', async () => {
+    it('renders unchecked and checked states and supports toggling both ways', async () => {
       const handleChange = vi.fn();
       const user = userEvent.setup();
 
@@ -123,14 +123,20 @@ describe('Stationery Primitives', () => {
       const checkbox = screen.getByRole('checkbox', { name: /Clean counters/i });
       expect(checkbox).not.toBeChecked();
 
+      // Check: clicking unchecked calls onChange(true)
       await user.click(checkbox);
       expect(handleChange).toHaveBeenCalledWith(true);
 
+      // Re-render as checked
       rerender(<ScribbleCheckbox checked={true} onChange={handleChange} label="Clean counters" />);
       expect(checkbox).toBeChecked();
+
+      // Uncheck: clicking checked calls onChange(false)
+      await user.click(checkbox);
+      expect(handleChange).toHaveBeenCalledWith(false);
     });
 
-    it('handles disabled state', async () => {
+    it('handles disabled state and prevents interactions', async () => {
       const handleChange = vi.fn();
       const user = userEvent.setup();
 

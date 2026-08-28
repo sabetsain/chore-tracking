@@ -24,7 +24,10 @@ async def test_swap_chore_assignments_success(client: AsyncClient, db_session: A
     bob_token = join_bob.json()["access_token"]
     bob_id = join_bob.json()["member"]["id"]
 
-    # Alice creates 2 chores: "Dishes" and "Mop"
+    # Activate rotation
+    await client.post("/api/v1/chores/rotation/activate", headers={"Authorization": f"Bearer {alice_token}"})
+
+    # Alice creates 2 chores: "Dishes" and "Mop" (equal weight 2)
     c1_res = await client.post(
         "/api/v1/chores",
         headers={"Authorization": f"Bearer {alice_token}"},
@@ -33,7 +36,7 @@ async def test_swap_chore_assignments_success(client: AsyncClient, db_session: A
     c2_res = await client.post(
         "/api/v1/chores",
         headers={"Authorization": f"Bearer {alice_token}"},
-        json={"title": "Mop", "effort_weight": 3},
+        json={"title": "Mop", "effort_weight": 2},
     )
     c1_id = c1_res.json()["id"]
     c2_id = c2_res.json()["id"]
@@ -47,24 +50,25 @@ async def test_swap_chore_assignments_success(client: AsyncClient, db_session: A
     dishes_assign = assignments[c1_id]
     mop_assign = assignments[c2_id]
 
-    assert dishes_assign["member_id"] == alice_id
-    assert mop_assign["member_id"] == bob_id
+    assert dishes_assign["member_id"] == bob_id
+    assert mop_assign["member_id"] == alice_id
 
-    # Alice initiates swap: swap her Dishes assignment with Bob's Mop assignment
+    # Alice initiates swap: swap her Mop assignment with Bob's Dishes assignment
     swap_res = await client.post(
-        f"/api/v1/chores/assignments/{dishes_assign['id']}/swap",
+        f"/api/v1/chores/assignments/{mop_assign['id']}/swap",
         headers={"Authorization": f"Bearer {alice_token}"},
-        json={"target_assignment_id": mop_assign["id"]},
+        json={"target_assignment_id": dishes_assign["id"]},
     )
     assert swap_res.status_code == 200
-    updated_dishes = swap_res.json()
-    assert updated_dishes["member_id"] == bob_id
+    updated_mop = swap_res.json()
+    assert updated_mop["member_id"] == bob_id
 
-    # Verify Bob now has Dishes and Alice has Mop
+    # Verify Bob now has Mop and Alice has Dishes
     db_dishes = await db_session.get(ChoreAssignment, uuid.UUID(dishes_assign["id"]))
     db_mop = await db_session.get(ChoreAssignment, uuid.UUID(mop_assign["id"]))
-    assert str(db_dishes.member_id) == bob_id
-    assert str(db_mop.member_id) == alice_id
+    assert str(db_dishes.member_id) == alice_id
+    assert str(db_mop.member_id) == bob_id
+
 
 
 @pytest.mark.asyncio
@@ -151,6 +155,9 @@ async def test_swap_completed_chore_fails(client: AsyncClient):
         "/api/v1/households/join",
         json={"invite_code": invite_code, "nickname": "Bob"},
     )
+
+    # Activate rotation
+    await client.post("/api/v1/chores/rotation/activate", headers={"Authorization": f"Bearer {alice_token}"})
 
     await client.post(
         "/api/v1/chores",

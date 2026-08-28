@@ -88,6 +88,11 @@ export const ScribbleCheckbox: React.FC<ScribbleCheckboxProps> = ({
   return (
     <label
       htmlFor={inputId}
+      onClick={(e) => {
+        if (disabled) {
+          e.preventDefault();
+        }
+      }}
       className={clsx(
         'inline-flex items-center gap-3 cursor-pointer select-none group',
         disabled && 'opacity-60 cursor-not-allowed',
