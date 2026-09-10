@@ -27,77 +27,114 @@ A self-hosted, mobile-first progressive web application (PWA) designed for share
 
 ---
 
-## 🚀 1-Step Self-Hosting with Docker Compose
+## 🚀 Full-Stack Container Deployment (Production Simulation)
 
-Deploy the entire production stack (PostgreSQL 16, FastAPI backend, Nginx frontend) with a single command:
+Deploy the entire containerized production stack (PostgreSQL 16, FastAPI backend, Nginx frontend) using Docker Compose profiles:
 
 ```bash
-docker compose up -d
+docker compose --profile full up -d
 ```
 
 - **Frontend Application**: [http://localhost:3000](http://localhost:3000) (or port configured in `docker-compose.yml`)
 - **Backend API & Interactive Docs**: [http://localhost:8000/docs](http://localhost:8000/docs)
 - **Database**: PostgreSQL on port `5432`
 
-To stop the containers:
+To stop all containers:
 ```bash
-docker compose down
+docker compose --profile full down
 ```
+
+> [!NOTE]
+> Running `docker compose up -d` without `--profile full` boots strictly the isolated database container (`chores-db`) on port `5432`, which is used for hybrid local development.
 
 ---
 
-## 🛠️ Local Development Setup
+## 🛠️ Hybrid Local Development Setup
+
+In the hybrid setup, PostgreSQL runs isolated in a lightweight Docker container while FastAPI and Vite run natively on the host for instant hot-reloading and direct debugger attachment.
 
 ### Prerequisites
 - Python 3.12+
 - Node.js 20+ & npm
-- PostgreSQL 16 (or local Docker container)
+- Docker / Podman (with Docker Compose v2)
 
-### 1. Backend Setup
+### Quickstart: All-in-One Runner
+
+Run the full hybrid development stack with a single command:
 
 ```bash
-# Navigate to backend
-cd backend
+./scripts/dev.sh
+```
 
-# Create virtual environment & activate
+This will automatically:
+1. Start the PostgreSQL container (`chores-db`) in the background.
+2. Probe database socket readiness (`./scripts/wait-for-db.sh`).
+3. Run pending database migrations to head (`./scripts/migrate.sh up`).
+4. Concurrently launch FastAPI (:8000) and Vite (:5173).
+
+Press `Ctrl+C` to gracefully terminate local servers. The database container will remain running in the background for instant restarts.
+
+### Modular Development Commands
+
+The `scripts/dev.sh` orchestrator supports granular subcommands:
+
+```bash
+./scripts/dev.sh all       # Start DB, migrate, and run backend + frontend concurrently (default)
+./scripts/dev.sh backend   # Start DB, migrate, and run only FastAPI (:8000)
+./scripts/dev.sh frontend  # Run only Vite dev server (:5173)
+./scripts/dev.sh db        # Start DB container and wait for readiness
+./scripts/dev.sh down      # Stop DB container cleanly (preserves volume data)
+```
+
+### Database Migration Pipeline (`scripts/migrate.sh`)
+
+Alembic migrations can be executed independently from the repository root or backend directory. Python environments (`backend/.venv`, active `$VIRTUAL_ENV`, or system PATH) are auto-detected:
+
+```bash
+./scripts/migrate.sh            # Run pending migrations to head (default: up)
+./scripts/migrate.sh up         # Run pending migrations to head (alembic upgrade head)
+./scripts/migrate.sh down       # Roll back latest migration revision (alembic downgrade -1)
+./scripts/migrate.sh check      # Check for schema drift between models and database
+./scripts/migrate.sh history    # View migration revision history
+./scripts/migrate.sh current    # Show current database revision
+```
+
+### Database Readiness Probing (`scripts/wait-for-db.sh`)
+
+Ensure the database container is accepting connections before starting services or running migrations:
+
+```bash
+./scripts/wait-for-db.sh        # Polls pg_isready with 30s timeout (default)
+DB_TIMEOUT=60 ./scripts/wait-for-db.sh  # Configurable timeout
+```
+
+### Manual Host Setup (Alternative)
+
+If you prefer running services across separate terminals:
+
+#### 1. Backend Setup
+```bash
+# Start and wait for DB
+./scripts/dev.sh db
+
+# Setup Python virtual environment
+cd backend
 python3 -m venv .venv
 source .venv/bin/activate
-
-# Install dependencies
 pip install -r requirements.txt
 
-# Run database migrations
-alembic upgrade head
+# Run migrations
+../scripts/migrate.sh up
 
 # Start FastAPI dev server with reload
 uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 ```
 
-Run Backend Test Suite:
+#### 2. Frontend Setup
 ```bash
-pytest backend/tests -v
-```
-
-### 2. Frontend Setup
-
-```bash
-# Navigate to frontend
 cd frontend
-
-# Install npm dependencies
 npm install
-
-# Start Vite development server
 npm run dev
-```
-
-Run Frontend Test Suite & Production Build:
-```bash
-# Run Vitest test suite
-npm test -- --run
-
-# Run TypeScript type check and production build
-npm run build
 ```
 
 ---
