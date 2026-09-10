@@ -1,8 +1,20 @@
 import { useState } from 'react';
-import { Home, Copy, Check, User, Moon, Sparkles, ListTodo, Settings as SettingsIcon } from 'lucide-react';
+import {
+  Home,
+  Copy,
+  Check,
+  User,
+  Moon,
+  Sparkles,
+  ListTodo,
+  Settings as SettingsIcon,
+  Volume2,
+  VolumeX,
+} from 'lucide-react';
 import { Household, Member } from '../types';
 import { NotebookTab } from './stationery/NotebookTab';
-import { SpiralSpine } from './stationery/SpiralSpine';
+import { soundEffects } from '../utils/soundEffects';
+import { soundEngine } from '../utils/soundEngine';
 
 export type NavTab = 'appliances' | 'chores' | 'settings';
 
@@ -15,6 +27,13 @@ interface HeaderProps {
 
 export function Header({ household, member, activeTab, onTabChange }: HeaderProps) {
   const [copied, setCopied] = useState(false);
+  const [isMuted, setIsMuted] = useState<boolean>(() => soundEffects.getMuted());
+
+  const handleToggleMute = () => {
+    const nextMuted = soundEffects.toggleMuted();
+    soundEngine.setEnabled(!nextMuted);
+    setIsMuted(nextMuted);
+  };
 
   const handleCopyInvite = async () => {
     try {
@@ -41,22 +60,17 @@ export function Header({ household, member, activeTab, onTabChange }: HeaderProp
   };
 
   return (
-    <header className="relative w-full z-30 pt-2 pb-0 px-2 sm:px-4">
-      {/* Top Wire Spiral Coil Binder Spine */}
-      <div className="w-full flex justify-center -mb-2 overflow-hidden px-2">
-        <SpiralSpine orientation="horizontal" count={18} className="w-full max-w-4xl" />
-      </div>
-
-      {/* Binder Header Plank */}
-      <div className="bg-paper-bg dark:bg-[#1A2234]/95 backdrop-blur rounded-t-xl border-t border-x border-stone-300 dark:border-slate-700 px-4 sm:px-6 pt-4 pb-2 shadow-paper-sm">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pb-3">
-          {/* Household Branding & Logbook Title */}
+    <header className="w-full z-30">
+      {/* Header Container */}
+      <div className="bg-canvas-card dark:bg-canvas-card rounded-2xl border border-border-stone dark:border-[#252D37] px-5 py-4 sm:px-7 sm:py-5 shadow-sm flex flex-col gap-4">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+          {/* Household Branding & Title */}
           <div className="flex items-center gap-3 min-w-0">
-            <div className="w-10 h-10 rounded-xl bg-amber-800 dark:bg-amber-700 flex items-center justify-center text-amber-50 shadow-sm shrink-0 border border-amber-900/40">
+            <div className="w-10 h-10 rounded-xl bg-accent-slate text-white flex items-center justify-center shadow-sm shrink-0 border border-slate-700/20">
               <Home className="w-5 h-5" />
             </div>
             <div className="min-w-0">
-              <h1 className="text-xl sm:text-2xl font-serif font-bold text-ink-navy dark:text-slate-100 truncate tracking-tight">
+              <h1 className="text-xl sm:text-2xl font-sans font-bold text-ink-navy dark:text-slate-100 truncate tracking-tight">
                 {household.name}
               </h1>
               <div className="flex items-center gap-2 text-xs text-ink-graphite dark:text-slate-400 mt-0.5 font-sans">
@@ -64,18 +78,18 @@ export function Header({ household, member, activeTab, onTabChange }: HeaderProp
                 <button
                   type="button"
                   onClick={handleCopyInvite}
-                  className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-paper-card dark:bg-[#222D42] hover:bg-amber-100/60 dark:hover:bg-[#2C3952] text-ink-navy dark:text-slate-200 font-mono text-xs font-semibold border border-stone-300/80 dark:border-slate-600 shadow-paper-sm transition-all active:scale-95"
+                  className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-stone-100 dark:bg-[#222D42] hover:bg-stone-200/70 dark:hover:bg-[#2C3952] text-ink-navy dark:text-slate-200 font-mono text-xs font-semibold border border-stone-200/80 dark:border-slate-700 shadow-paper-sm transition-all active:scale-95"
                   title="Click to copy invite code"
                   aria-label={`Invite code ${household.invite_code}`}
                 >
                   {copied ? (
                     <>
-                      <Check className="w-3.5 h-3.5 text-stamp-clean" />
-                      <span className="text-stamp-clean font-bold">Copied!</span>
+                      <Check className="w-3.5 h-3.5 text-accent-sage" />
+                      <span className="text-accent-sage font-bold">Copied!</span>
                     </>
                   ) : (
                     <>
-                      <span>{household.invite_code}</span>
+                      <span className="tabular-nums tracking-wide">{household.invite_code}</span>
                       <Copy className="w-3.5 h-3.5 text-ink-muted" />
                     </>
                   )}
@@ -84,33 +98,48 @@ export function Header({ household, member, activeTab, onTabChange }: HeaderProp
             </div>
           </div>
 
-          {/* Member Badge & Away Mode Pill */}
+          {/* Controls: Audio Mute Toggle, Member Badge & Away Mode Pill */}
           <div className="flex items-center gap-2.5 shrink-0 self-end sm:self-center">
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-paper-card dark:bg-[#222D42] border border-stone-300/80 dark:border-slate-600 text-xs font-semibold text-ink-navy dark:text-slate-200 shadow-paper-sm">
+            {/* Audio Feedback Mute/Unmute Toggle */}
+            <button
+              type="button"
+              onClick={handleToggleMute}
+              className="p-2 rounded-lg bg-stone-100 dark:bg-[#222D42] border border-stone-200/80 dark:border-slate-700 text-ink-navy dark:text-slate-200 hover:bg-stone-200/70 dark:hover:bg-slate-700 shadow-paper-sm transition-all active:scale-95 flex items-center justify-center"
+              title={isMuted ? 'Unmute audio feedback' : 'Mute audio feedback'}
+              aria-label={isMuted ? 'Unmute audio feedback' : 'Mute audio feedback'}
+            >
+              {isMuted ? (
+                <VolumeX className="w-4 h-4 text-accent-crimson dark:text-rose-400" />
+              ) : (
+                <Volume2 className="w-4 h-4 text-ink-graphite dark:text-slate-300" />
+              )}
+            </button>
+
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-stone-100 dark:bg-[#222D42] border border-stone-200/80 dark:border-slate-700 text-xs font-semibold text-ink-navy dark:text-slate-200 shadow-paper-sm">
               <User className="w-3.5 h-3.5 text-ink-graphite dark:text-slate-400" />
               <span className="font-sans font-semibold text-sm leading-none">{member.nickname}</span>
               {member.role === 'admin' && (
-                <span className="px-1.5 py-0.5 text-[10px] uppercase font-mono font-bold tracking-wider bg-amber-100 dark:bg-amber-900/60 text-amber-900 dark:text-amber-200 rounded border border-amber-300/80 dark:border-amber-700">
+                <span className="px-1.5 py-0.5 text-[10px] uppercase font-mono font-bold tracking-wider bg-stone-200/70 dark:bg-slate-800 text-accent-slate dark:text-slate-300 rounded border border-border-stone dark:border-slate-600">
                   Admin
                 </span>
               )}
             </div>
 
             {member.status === 'away' && (
-              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-amber-100 dark:bg-amber-900/50 border border-amber-300 dark:border-amber-700 text-amber-900 dark:text-amber-200 text-xs font-sans font-semibold animate-pulse shadow-sm">
-                <Moon className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
+              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-stone-100 dark:bg-slate-800/80 border border-border-stone dark:border-slate-700 text-accent-slate dark:text-slate-300 text-xs font-sans font-semibold shadow-sm">
+                <Moon className="w-3.5 h-3.5 text-accent-slate dark:text-slate-400" />
                 Away
               </span>
             )}
           </div>
         </div>
 
-        {/* Die-Cut Protruding Index Tabs */}
+        {/* Clean Tactile Segmented Tab Bar */}
         <nav
           role="tablist"
           aria-label="Notebook Sections"
           onKeyDown={handleKeyDown}
-          className="flex items-end gap-1.5 sm:gap-2 pt-2 border-t border-stone-200/80 dark:border-slate-700/80 -mb-[1px]"
+          className="flex items-center gap-1.5 p-1 bg-stone-100/80 dark:bg-[#181F2C] rounded-xl border border-border-stone/80 dark:border-[#252D37]"
         >
           <NotebookTab
             id="tab-appliances"
@@ -119,8 +148,7 @@ export function Header({ household, member, activeTab, onTabChange }: HeaderProp
             icon={Sparkles}
             isActive={activeTab === 'appliances'}
             onClick={() => onTabChange('appliances')}
-            colorClass="bg-[#EFE9DC] dark:bg-[#222D42]"
-            className="flex-1 sm:flex-none text-center"
+            className="flex-1 sm:flex-initial"
           />
           <NotebookTab
             id="tab-chores"
@@ -129,8 +157,7 @@ export function Header({ household, member, activeTab, onTabChange }: HeaderProp
             icon={ListTodo}
             isActive={activeTab === 'chores'}
             onClick={() => onTabChange('chores')}
-            colorClass="bg-[#E8E1D2] dark:bg-[#28354D]"
-            className="flex-1 sm:flex-none text-center"
+            className="flex-1 sm:flex-initial"
           />
           <NotebookTab
             id="tab-settings"
@@ -139,8 +166,7 @@ export function Header({ household, member, activeTab, onTabChange }: HeaderProp
             icon={SettingsIcon}
             isActive={activeTab === 'settings'}
             onClick={() => onTabChange('settings')}
-            colorClass="bg-[#E2DAC8] dark:bg-[#2C3952]"
-            className="flex-1 sm:flex-none text-center"
+            className="flex-1 sm:flex-initial"
           />
         </nav>
       </div>

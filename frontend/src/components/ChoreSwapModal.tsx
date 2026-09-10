@@ -3,7 +3,6 @@ import { X, ArrowLeftRight, Star, AlertCircle, Check } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { ChoreAssignment } from '../types';
 import { PaperCard } from './stationery/PaperCard';
-import { PaperclipFastener } from './stationery/PaperclipFastener';
 
 interface ChoreSwapModalProps {
   sourceAssignment: ChoreAssignment;
@@ -53,20 +52,13 @@ export function ChoreSwapModal({
         transition={{ type: 'spring', stiffness: 350, damping: 25 }}
         className="relative max-w-md w-full"
       >
-        <motion.div
-          initial={{ y: -20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: 0.08, type: 'spring', stiffness: 400, damping: 20 }}
-        >
-          <PaperclipFastener position="top-left" />
-        </motion.div>
         <PaperCard
-          variant="manila"
-          className="-rotate-1 p-6 shadow-paper-lifted border border-amber-300/80 dark:border-slate-600"
+          variant="sheet"
+          className="-rotate-1 p-6 shadow-paper-lifted border border-border-stone dark:border-slate-600"
         >
-          <div className="flex items-center justify-between pb-3 border-b border-amber-300/60 dark:border-slate-600 mb-4">
+          <div className="flex items-center justify-between pb-3 border-b border-border-stone dark:border-slate-600 mb-4">
             <div className="flex items-center gap-2">
-              <ArrowLeftRight className="w-5 h-5 text-indigo-700 dark:text-indigo-400" />
+              <ArrowLeftRight className="w-5 h-5 text-accent-slate dark:text-slate-300" />
               <h3 className="font-serif font-bold text-2xl text-ink-navy dark:text-slate-100">
                 Swap Chore Assignment
               </h3>
@@ -74,7 +66,7 @@ export function ChoreSwapModal({
             <button
               type="button"
               onClick={onClose}
-              className="p-1 rounded-lg text-ink-muted hover:text-ink-navy dark:text-slate-400 dark:hover:text-slate-200 hover:bg-amber-200/50 dark:hover:bg-slate-700 transition"
+              className="p-1 rounded-lg text-ink-muted hover:text-ink-navy dark:text-slate-400 dark:hover:text-slate-200 hover:bg-stone-100 dark:hover:bg-slate-700 transition"
               aria-label="Close Swap Modal"
             >
               <X className="w-5 h-5" />
@@ -94,13 +86,13 @@ export function ChoreSwapModal({
               <label className="block text-xs font-bold text-ink-graphite dark:text-slate-400 uppercase tracking-wider mb-1 font-sans">
                 Your Current Chore
               </label>
-              <div className="p-3.5 bg-paper-sheet dark:bg-[#1A2234] border border-amber-300/70 dark:border-slate-700 rounded-lg shadow-paper-sm">
+              <div className="p-3.5 bg-paper-sheet dark:bg-[#1A2234] border border-border-stone dark:border-slate-700 rounded-lg shadow-paper-sm">
                 <div className="flex items-center justify-between">
                   <span className="font-serif font-bold text-lg text-ink-navy dark:text-slate-100">
                     {sourceAssignment.chore.title}
                   </span>
-                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-highlighter-yellow text-amber-950 text-xs font-sans font-bold border border-amber-300/80 shadow-sm">
-                    <Star className="w-3.5 h-3.5 fill-amber-500 text-amber-600" />
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-stone-100 dark:bg-slate-800 text-ink-navy dark:text-slate-200 text-xs font-sans font-bold border border-border-stone dark:border-slate-700 shadow-sm">
+                    <Star className="w-3.5 h-3.5 fill-accent-slate text-accent-slate" />
                     {sourceAssignment.chore.effort_weight} pts
                   </span>
                 </div>
@@ -127,8 +119,8 @@ export function ChoreSwapModal({
                         onClick={() => setSelectedTargetId(target.id)}
                         className={`p-3 rounded-lg border cursor-pointer transition flex items-center justify-between shadow-paper-sm ${
                           isSelected
-                            ? 'border-indigo-600 bg-paper-sheet dark:bg-[#1A2234] ring-2 ring-indigo-500/40'
-                            : 'border-amber-200 dark:border-slate-700 hover:border-amber-400 bg-paper-sheet/80 dark:bg-[#1A2234]/80'
+                            ? 'border-accent-slate bg-paper-sheet dark:bg-[#1A2234] ring-2 ring-accent-slate/40'
+                            : 'border-border-stone dark:border-slate-700 hover:border-accent-slate/50 bg-paper-sheet/80 dark:bg-[#1A2234]/80'
                         }`}
                       >
                         <div>
@@ -144,12 +136,12 @@ export function ChoreSwapModal({
                         </div>
 
                         <div className="flex items-center gap-2">
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-highlighter-yellow text-amber-950 text-xs font-sans font-bold border border-amber-300/80">
-                            <Star className="w-3 h-3 fill-amber-500 text-amber-600" />
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-stone-100 dark:bg-slate-800 text-ink-navy dark:text-slate-200 text-xs font-sans font-bold border border-border-stone dark:border-slate-700">
+                            <Star className="w-3 h-3 fill-accent-slate text-accent-slate" />
                             {target.chore.effort_weight} pts
                           </span>
                           {isSelected && (
-                            <div className="w-5 h-5 rounded-full bg-indigo-700 flex items-center justify-center text-white shadow-sm">
+                            <div className="w-5 h-5 rounded-full bg-accent-slate flex items-center justify-center text-white shadow-sm">
                               <Check className="w-3 h-3" />
                             </div>
                           )}
@@ -161,18 +153,18 @@ export function ChoreSwapModal({
               )}
             </div>
 
-            <div className="flex gap-2 pt-3 border-t border-amber-300/60 dark:border-slate-600">
+            <div className="flex gap-2 pt-3 border-t border-border-stone dark:border-slate-600">
               <button
                 type="button"
                 onClick={onClose}
-                className="flex-1 py-2.5 bg-paper-card dark:bg-[#222D42] hover:bg-amber-100/60 dark:hover:bg-slate-700 text-ink-graphite dark:text-slate-300 text-sm font-sans font-semibold rounded-lg border border-stone-300 dark:border-slate-600 transition"
+                className="flex-1 py-2.5 bg-paper-card dark:bg-[#222D42] hover:bg-stone-100 dark:hover:bg-slate-700 text-ink-graphite dark:text-slate-300 text-sm font-sans font-semibold rounded-lg border border-stone-300 dark:border-slate-600 transition"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={loading || availableTargets.length === 0}
-                className="flex-1 py-2.5 bg-indigo-700 hover:bg-indigo-800 text-white text-sm font-sans font-bold rounded-lg shadow-paper-sm transition disabled:opacity-50 flex items-center justify-center gap-1.5 active:scale-95"
+                className="flex-1 py-2.5 bg-accent-slate hover:bg-[#1E334A] text-white text-sm font-sans font-bold rounded-lg shadow-paper-sm transition disabled:opacity-50 flex items-center justify-center gap-1.5 active:scale-95"
               >
                 <ArrowLeftRight className="w-4 h-4" />
                 <span>{loading ? 'Swapping...' : 'Confirm Swap'}</span>

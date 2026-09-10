@@ -18,13 +18,15 @@ import {
   Pencil,
   AlertTriangle,
   X,
+  Loader2,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Appliance, ApplianceState } from '../types';
 import { formatElapsedTime } from '../utils/time';
-import { soundEngine } from '../utils/soundEngine';
+import { soundEffects } from '../utils/soundEffects';
 import { PaperCard } from './stationery/PaperCard';
-import { RubberStampBadge } from './stationery/RubberStampBadge';
+import { StatusStamp } from './stationery/StatusStamp';
+import { IdentitySticker } from './stationery/IdentitySticker';
 import { api } from '../api/client';
 
 export interface ApplianceCardProps {
@@ -108,7 +110,6 @@ function formatStateLabel(state: ApplianceState): string {
       return 'Mark Clean';
     case 'empty':
     case 'dirty':
-      return 'Mark Emptied';
     case 'clean_needs_emptying':
       return 'Mark Emptied';
     default:
@@ -120,13 +121,13 @@ function getActionStyle(nextState: ApplianceState) {
   switch (nextState) {
     case 'running':
       return {
-        bg: 'bg-blue-600 hover:bg-blue-700 text-white',
+        bg: 'bg-accent-slate hover:bg-[#1E334A] text-white',
         icon: Play,
       };
     case 'needs_attention':
     case 'clean':
       return {
-        bg: 'bg-emerald-600 hover:bg-emerald-700 text-white',
+        bg: 'bg-accent-sage hover:bg-[#2F523F] text-white',
         icon: CheckCircle2,
       };
     case 'empty':
@@ -134,7 +135,7 @@ function getActionStyle(nextState: ApplianceState) {
     case 'clean_needs_emptying':
     default:
       return {
-        bg: 'bg-slate-700 hover:bg-slate-800 text-white',
+        bg: 'bg-accent-slate hover:bg-[#1E334A] text-white',
         icon: Trash2,
       };
   }
@@ -195,7 +196,7 @@ export function ApplianceCard({
   useEffect(() => {
     if (hasTimer && isTimerExpired && !hasChimedRef.current) {
       hasChimedRef.current = true;
-      soundEngine.playChimeSound();
+      soundEffects.playWoodClick();
     }
   }, [hasTimer, isTimerExpired]);
 
@@ -211,7 +212,7 @@ export function ApplianceCard({
 
     setLoading(true);
     try {
-      soundEngine.playStampSound();
+      soundEffects.playWoodClick();
       await onUpdateState(appliance.id, nextState);
     } finally {
       setLoading(false);
@@ -224,7 +225,7 @@ export function ApplianceCard({
 
     setLoading(true);
     try {
-      soundEngine.playStampSound();
+      soundEffects.playWoodClick();
       setShowDurationPicker(false);
       await onUpdateState(appliance.id, 'running', duration);
     } finally {
@@ -235,7 +236,7 @@ export function ApplianceCard({
   const handleReset = async () => {
     setResetting(true);
     try {
-      soundEngine.playStampSound();
+      soundEffects.playWoodClick();
       if (onReset) {
         await onReset(appliance.id);
       } else {
@@ -281,7 +282,7 @@ export function ApplianceCard({
       <div>
         <div className="flex items-start justify-between gap-2 mb-3">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-amber-100/80 dark:bg-[#2C3952] border border-amber-200/80 dark:border-slate-600 flex items-center justify-center text-amber-900 dark:text-amber-200 shadow-sm shrink-0">
+            <div className="w-10 h-10 rounded-xl bg-stone-100 dark:bg-[#2C3952] border border-border-stone dark:border-slate-600 flex items-center justify-center text-accent-slate dark:text-slate-200 shadow-sm shrink-0">
               <Icon className="w-5 h-5" />
             </div>
             <div>
@@ -299,7 +300,7 @@ export function ApplianceCard({
               <button
                 type="button"
                 onClick={() => onEdit(appliance)}
-                className="p-1.5 text-ink-graphite hover:text-ink-navy dark:text-slate-400 dark:hover:text-slate-200 hover:bg-amber-100/60 dark:hover:bg-slate-700 rounded-lg transition"
+                className="p-1.5 text-ink-graphite hover:text-ink-navy dark:text-slate-400 dark:hover:text-slate-200 hover:bg-stone-100 dark:hover:bg-slate-700 rounded-lg transition"
                 title="Edit Appliance Settings"
                 aria-label="Edit Appliance"
               >
@@ -310,7 +311,7 @@ export function ApplianceCard({
             <button
               type="button"
               onClick={() => onViewHistory(appliance)}
-              className="p-1.5 text-ink-graphite hover:text-ink-navy dark:text-slate-400 dark:hover:text-slate-200 hover:bg-amber-100/60 dark:hover:bg-slate-700 rounded-lg transition"
+              className="p-1.5 text-ink-graphite hover:text-ink-navy dark:text-slate-400 dark:hover:text-slate-200 hover:bg-stone-100 dark:hover:bg-slate-700 rounded-lg transition"
               title="View Activity History"
               aria-label="History"
             >
@@ -319,17 +320,17 @@ export function ApplianceCard({
           </div>
         </div>
 
-        {/* Rubber Stamp Status Badge & Clock */}
+        {/* StatusStamp Badge & Duration */}
         <div className="flex items-center justify-between gap-3 my-3">
-          <RubberStampBadge
+          <StatusStamp
             status={appliance.current_state}
-            animated={true}
             size="md"
+            animated={true}
           />
 
-          <div className="flex items-center gap-1.5 text-xs text-ink-graphite dark:text-slate-400 font-mono font-medium shrink-0">
+          <div className="flex items-center gap-1.5 text-xs text-ink-graphite dark:text-slate-400 font-mono font-medium tabular-nums shrink-0">
             <Clock className="w-3.5 h-3.5 opacity-70" />
-            <span>{formatElapsedTime(appliance.state_updated_at)}</span>
+            <span className="tabular-nums">{formatElapsedTime(appliance.state_updated_at)}</span>
           </div>
         </div>
 
@@ -338,16 +339,16 @@ export function ApplianceCard({
           <div className="my-2.5 p-2 rounded-lg bg-stone-100/80 dark:bg-slate-800/80 border border-stone-200 dark:border-slate-700 space-y-1">
             <div className="flex items-center justify-between">
               <span className="text-xs font-sans font-semibold text-ink-navy dark:text-slate-200 flex items-center gap-1.5">
-                <Clock className="w-3.5 h-3.5 text-blue-600 animate-pulse" />
+                <Clock className="w-3.5 h-3.5 text-accent-slate animate-pulse" />
                 <span>Timer Countdown</span>
               </span>
 
               {isTimerExpired ? (
-                <span className="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-mono font-bold bg-amber-200/90 text-amber-900 dark:bg-amber-900/60 dark:text-amber-200 border border-amber-400/80">
+                <span className="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-mono font-bold bg-amber-100 text-accent-ochre dark:bg-amber-900/60 dark:text-amber-200 border border-amber-300 dark:border-amber-700">
                   AWAITING CONFIRMATION
                 </span>
               ) : (
-                <span className="text-xs font-mono font-bold text-blue-700 dark:text-blue-300">
+                <span className="text-xs font-mono font-bold tabular-nums text-accent-slate dark:text-slate-200">
                   {Math.floor(remainingSeconds / 60)}m remaining
                 </span>
               )}
@@ -359,22 +360,36 @@ export function ApplianceCard({
                 <span>Timer complete (00:00) — Confirmation needed</span>
               </p>
             ) : (
-              <div className="text-[11px] text-ink-muted dark:text-slate-400 font-mono">
+              <div className="text-[11px] text-ink-muted dark:text-slate-400 font-mono tabular-nums">
                 {Math.floor(remainingSeconds / 60)}m {String(remainingSeconds % 60).padStart(2, '0')}s remaining
               </div>
             )}
           </div>
         )}
 
-        {/* Actor Info */}
+        {/* Actor Info with IdentitySticker */}
         <div className="flex items-center gap-1.5 text-xs text-ink-graphite dark:text-slate-400 mb-3 font-sans">
-          <User className="w-3.5 h-3.5 text-ink-muted" />
-          <span>
-            by{' '}
-            <strong className="font-sans font-semibold text-xs text-ink-navy dark:text-slate-200">
-              {appliance.updated_by_member ? appliance.updated_by_member.nickname : 'System/Sensor'}
-            </strong>
-          </span>
+          {appliance.updated_by_member ? (
+            <>
+              <IdentitySticker name={appliance.updated_by_member.nickname} size="sm" />
+              <span>
+                by{' '}
+                <strong className="font-sans font-semibold text-xs text-ink-navy dark:text-slate-200">
+                  {appliance.updated_by_member.nickname}
+                </strong>
+              </span>
+            </>
+          ) : (
+            <>
+              <User className="w-3.5 h-3.5 text-ink-muted" />
+              <span>
+                by{' '}
+                <strong className="font-sans font-semibold text-xs text-ink-navy dark:text-slate-200">
+                  System/Sensor
+                </strong>
+              </span>
+            </>
+          )}
         </div>
       </div>
 
@@ -384,14 +399,23 @@ export function ApplianceCard({
           type="button"
           disabled={isButtonDisabled}
           onClick={handlePrimaryAction}
-          className={`w-full py-2.5 px-4 rounded-lg font-sans text-sm font-bold tracking-wide shadow-paper-sm hover:shadow-paper-md transition-all active:scale-[0.98] flex items-center justify-center gap-2 ${
+          className={`w-full min-h-[46px] py-3 px-4 rounded-xl font-sans text-sm font-bold tracking-wide transition-all duration-150 flex items-center justify-center gap-2 shadow-[0_2px_0_rgba(30,35,43,0.12)] hover:translate-y-[-1px] hover:shadow-[0_3px_0_rgba(30,35,43,0.15)] focus-visible:ring-2 focus-visible:ring-accent-slate focus-visible:outline-none active:translate-y-[1px] active:shadow-none disabled:opacity-60 disabled:pointer-events-none ${
             isTimerExpired
-              ? 'bg-amber-600 hover:bg-amber-700 text-white'
+              ? 'bg-accent-sage hover:bg-[#2F523F] text-white'
               : actionConfig.bg
-          } disabled:opacity-60`}
+          }`}
         >
-          <ActionIcon className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-          <span>{loading ? 'Updating...' : buttonLabel}</span>
+          {loading ? (
+            <>
+              <Loader2 className="w-4 h-4 animate-spin" />
+              <span>Updating...</span>
+            </>
+          ) : (
+            <>
+              <ActionIcon className="w-4 h-4" />
+              <span>{buttonLabel}</span>
+            </>
+          )}
         </button>
 
         {/* Secondary Abort / Reset Action */}
@@ -399,7 +423,7 @@ export function ApplianceCard({
           type="button"
           disabled={resetting}
           onClick={handleReset}
-          className="w-full py-1.5 px-3 rounded text-xs font-sans font-medium text-ink-muted hover:text-red-700 dark:text-slate-400 dark:hover:text-red-400 hover:bg-red-50/50 dark:hover:bg-red-950/20 transition flex items-center justify-center gap-1.5"
+          className="w-full py-1.5 px-3 rounded text-xs font-sans font-medium text-accent-crimson hover:text-[#852E35] dark:text-rose-400 dark:hover:text-rose-300 hover:bg-rose-50/50 dark:hover:bg-rose-950/20 active:translate-y-[1px] transition flex items-center justify-center gap-1.5"
           title="Abort and reset cycle back to initial step"
         >
           <RotateCcw className={`w-3.5 h-3.5 ${resetting ? 'animate-spin' : ''}`} />
@@ -420,11 +444,11 @@ export function ApplianceCard({
               initial={{ scale: 0.95, opacity: 0, y: 10 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.95, opacity: 0, y: 10 }}
-              className="bg-paper-sheet dark:bg-[#1A2234] p-5 rounded-xl border border-stone-300 dark:border-slate-700 shadow-paper-lifted max-w-sm w-full space-y-4"
+              className="bg-canvas-card dark:bg-[#1F1D1A] p-5 rounded-xl border border-stone-300 dark:border-slate-700 shadow-paper-lifted max-w-sm w-full space-y-4"
             >
               <div className="flex items-center justify-between pb-2 border-b border-stone-200 dark:border-slate-700">
                 <div className="flex items-center gap-2">
-                  <Clock className="w-5 h-5 text-blue-600" />
+                  <Clock className="w-5 h-5 text-accent-slate" />
                   <h4 className="font-serif font-bold text-lg text-ink-navy dark:text-slate-100">
                     Set Cycle Duration
                   </h4>
@@ -432,7 +456,7 @@ export function ApplianceCard({
                 <button
                   type="button"
                   onClick={() => setShowDurationPicker(false)}
-                  className="p-1 rounded text-ink-muted hover:text-ink-navy"
+                  className="p-1 rounded text-ink-muted hover:text-ink-navy dark:text-slate-400 dark:hover:text-slate-200"
                   aria-label="Close duration picker"
                 >
                   <X className="w-4 h-4" />
@@ -455,10 +479,10 @@ export function ApplianceCard({
                         setSelectedDuration(mins);
                         setCustomDuration('');
                       }}
-                      className={`px-3 py-1.5 rounded-lg text-xs font-mono font-bold transition border ${
+                      className={`px-3 py-1.5 rounded-lg text-xs font-mono font-bold transition border tabular-nums active:translate-y-[1px] ${
                         isSelected
-                          ? 'bg-blue-600 text-white border-blue-600 shadow-sm'
-                          : 'bg-paper-card dark:bg-[#222D42] text-ink-navy dark:text-slate-200 border-stone-300 dark:border-slate-600 hover:border-blue-400'
+                          ? 'bg-accent-slate text-white border-accent-slate shadow-sm'
+                          : 'bg-canvas-card dark:bg-[#222D42] text-ink-navy dark:text-slate-200 border-stone-300 dark:border-slate-600 hover:border-accent-slate'
                       }`}
                     >
                       {mins}m
@@ -483,7 +507,7 @@ export function ApplianceCard({
                   placeholder="e.g. 50"
                   value={customDuration}
                   onChange={(e) => setCustomDuration(e.target.value)}
-                  className="w-full px-3 py-1.5 bg-paper-card dark:bg-[#222D42] border border-stone-300 dark:border-slate-600 rounded-lg text-sm text-ink-navy dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono"
+                  className="w-full px-3 py-1.5 bg-canvas-card dark:bg-[#222D42] border border-stone-300 dark:border-slate-600 rounded-lg text-sm text-ink-navy dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-accent-slate font-mono tabular-nums"
                 />
               </div>
 
@@ -491,7 +515,7 @@ export function ApplianceCard({
                 <button
                   type="button"
                   onClick={() => setShowDurationPicker(false)}
-                  className="flex-1 py-2 bg-paper-card dark:bg-[#222D42] hover:bg-slate-100 dark:hover:bg-slate-700 text-ink-graphite dark:text-slate-300 text-xs font-sans font-semibold rounded-lg border border-stone-300 dark:border-slate-600 transition"
+                  className="flex-1 py-2 bg-canvas-card dark:bg-[#222D42] hover:bg-stone-100 dark:hover:bg-slate-700 text-ink-graphite dark:text-slate-300 text-xs font-sans font-semibold rounded-lg border border-stone-300 dark:border-slate-600 transition active:translate-y-[1px]"
                 >
                   Cancel
                 </button>
@@ -499,7 +523,7 @@ export function ApplianceCard({
                   type="button"
                   disabled={loading}
                   onClick={handleConfirmDuration}
-                  className="flex-1 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-sans font-bold rounded-lg shadow-paper-sm transition"
+                  className="flex-1 py-2 bg-accent-slate hover:bg-[#1E334A] text-white text-xs font-sans font-bold rounded-lg shadow-paper-sm transition active:translate-y-[1px]"
                 >
                   {loading ? 'Starting...' : 'Start Cycle'}
                 </button>

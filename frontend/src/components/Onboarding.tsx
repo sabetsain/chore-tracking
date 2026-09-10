@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { Home, Sparkles, ArrowRight, AlertCircle, Sun, Moon, BookOpen } from 'lucide-react';
 import { PaperCard } from './stationery/PaperCard';
-import { PaperclipFastener } from './stationery/PaperclipFastener';
 
 type Tab = 'join' | 'create' | 'login';
 type CoverStyle = 'moleskine' | 'kraft' | 'leather';
@@ -27,29 +26,29 @@ const COVER_STYLES: Record<
   moleskine: {
     name: 'Classic Moleskine',
     bgClass: 'bg-[#1C1917]',
-    borderClass: 'border-amber-500/40 shadow-[0_20px_50px_rgba(0,0,0,0.6)] ring-1 ring-amber-500/20',
-    titleColor: 'text-amber-300 drop-shadow-[0_1px_3px_rgba(217,119,6,0.6)]',
-    crestColor: 'text-amber-400',
-    subtitleColor: 'text-amber-200/80',
-    badgeBg: 'bg-stone-900 border-amber-500/30 text-amber-300',
+    borderClass: 'border-stone-500/40 shadow-[0_20px_50px_rgba(0,0,0,0.6)] ring-1 ring-stone-500/20',
+    titleColor: 'text-stone-200 drop-shadow-[0_1px_3px_rgba(0,0,0,0.6)]',
+    crestColor: 'text-stone-300',
+    subtitleColor: 'text-stone-300/80',
+    badgeBg: 'bg-stone-900 border-stone-600 text-stone-200',
   },
   kraft: {
     name: 'Raw Kraft Board',
     bgClass: 'bg-[#C19A6B]',
-    borderClass: 'border-amber-900/40 shadow-[0_20px_40px_rgba(60,30,10,0.4)]',
-    titleColor: 'text-amber-950 drop-shadow-[0_1px_1px_rgba(255,255,255,0.4)]',
-    crestColor: 'text-amber-900',
-    subtitleColor: 'text-amber-900/80',
-    badgeBg: 'bg-[#b08756] border-amber-950/30 text-amber-950',
+    borderClass: 'border-stone-800/40 shadow-[0_20px_40px_rgba(60,30,10,0.4)]',
+    titleColor: 'text-ink-navy drop-shadow-[0_1px_1px_rgba(255,255,255,0.4)]',
+    crestColor: 'text-ink-navy',
+    subtitleColor: 'text-ink-graphite',
+    badgeBg: 'bg-[#b08756] border-stone-800/30 text-ink-navy',
   },
   leather: {
     name: 'Saddle Leather',
     bgClass: 'bg-[#78350F]',
-    borderClass: 'border-2 border-dashed border-amber-950/70 shadow-[0_20px_50px_rgba(0,0,0,0.5)] ring-4 ring-[#542407]',
-    titleColor: 'text-amber-100 drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]',
-    crestColor: 'text-amber-200',
-    subtitleColor: 'text-amber-200/90',
-    badgeBg: 'bg-[#602a0c] border-amber-950/40 text-amber-200',
+    borderClass: 'border-2 border-dashed border-stone-900/70 shadow-[0_20px_50px_rgba(0,0,0,0.5)] ring-4 ring-[#3D2314]',
+    titleColor: 'text-stone-100 drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]',
+    crestColor: 'text-stone-200',
+    subtitleColor: 'text-stone-200/90',
+    badgeBg: 'bg-[#4A2612] border-stone-800/40 text-stone-200',
   },
 };
 
@@ -146,7 +145,7 @@ export function Onboarding({ onLogin, onJoin, onCreate }: OnboardingProps) {
             onClick={() => setCoverStyle('moleskine')}
             className={`px-2.5 py-1 rounded transition ${
               coverStyle === 'moleskine'
-                ? 'bg-[#1C1917] text-amber-300 shadow-sm'
+                ? 'bg-[#1C1917] text-stone-200 shadow-sm'
                 : 'text-ink-graphite dark:text-slate-400 hover:text-ink-navy dark:hover:text-slate-200'
             }`}
           >
@@ -157,7 +156,7 @@ export function Onboarding({ onLogin, onJoin, onCreate }: OnboardingProps) {
             onClick={() => setCoverStyle('kraft')}
             className={`px-2.5 py-1 rounded transition ${
               coverStyle === 'kraft'
-                ? 'bg-[#C19A6B] text-amber-950 shadow-sm'
+                ? 'bg-[#C19A6B] text-ink-navy shadow-sm'
                 : 'text-ink-graphite dark:text-slate-400 hover:text-ink-navy dark:hover:text-slate-200'
             }`}
           >
@@ -168,7 +167,7 @@ export function Onboarding({ onLogin, onJoin, onCreate }: OnboardingProps) {
             onClick={() => setCoverStyle('leather')}
             className={`px-2.5 py-1 rounded transition ${
               coverStyle === 'leather'
-                ? 'bg-[#78350F] text-amber-100 shadow-sm'
+                ? 'bg-[#78350F] text-stone-100 shadow-sm'
                 : 'text-ink-graphite dark:text-slate-400 hover:text-ink-navy dark:hover:text-slate-200'
             }`}
           >
@@ -180,18 +179,18 @@ export function Onboarding({ onLogin, onJoin, onCreate }: OnboardingProps) {
         <button
           type="button"
           onClick={toggleDeskLamp}
-          className="inline-flex items-center gap-2 px-3 py-1.5 bg-paper-card dark:bg-[#1A2234] hover:bg-amber-100/60 dark:hover:bg-slate-700 border border-stone-300 dark:border-slate-700 rounded-lg text-xs font-sans font-bold text-ink-navy dark:text-slate-200 shadow-paper-sm transition-all active:scale-95"
+          className="inline-flex items-center gap-2 px-3 py-1.5 bg-paper-card dark:bg-[#1A2234] hover:bg-stone-100 dark:hover:bg-slate-700 border border-stone-300 dark:border-slate-700 rounded-lg text-xs font-sans font-bold text-ink-navy dark:text-slate-200 shadow-paper-sm transition-all active:scale-95"
           title="Toggle Desk Lamp (Night Mode)"
           aria-label="Toggle Desk Lamp"
         >
           {isDark ? (
             <>
-              <Sun className="w-4 h-4 text-amber-400" />
+              <Sun className="w-4 h-4 text-accent-slate dark:text-slate-300" />
               <span>Desk Lamp: ON</span>
             </>
           ) : (
             <>
-              <Moon className="w-4 h-4 text-amber-600" />
+              <Moon className="w-4 h-4 text-accent-slate dark:text-slate-300" />
               <span>Desk Lamp: OFF</span>
             </>
           )}
@@ -204,7 +203,7 @@ export function Onboarding({ onLogin, onJoin, onCreate }: OnboardingProps) {
       >
         {/* Cover Header Branding / Foil Stamping */}
         <div className="text-center mb-6 pt-2 select-none">
-          <div className="w-14 h-14 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center mx-auto mb-3 shadow-inner">
+          <div className="w-14 h-14 rounded-2xl bg-accent-slate/10 border border-accent-slate/30 flex items-center justify-center mx-auto mb-3 shadow-inner">
             <Home className={`w-7 h-7 ${currentCover.crestColor}`} />
           </div>
           <h1 className={`text-3xl sm:text-4xl font-serif font-bold tracking-tight ${currentCover.titleColor}`}>
@@ -215,9 +214,8 @@ export function Onboarding({ onLogin, onJoin, onCreate }: OnboardingProps) {
           </p>
         </div>
 
-        {/* Paperclipped Form Card Resting on the Cover */}
+        {/* Paper Card Resting on the Cover */}
         <div className="relative mt-4">
-          <PaperclipFastener position="top-left" />
           <PaperCard
             variant="sheet"
             className="p-6 shadow-paper-lifted border border-stone-300 dark:border-slate-700"
@@ -226,7 +224,7 @@ export function Onboarding({ onLogin, onJoin, onCreate }: OnboardingProps) {
             <div
               role="tablist"
               aria-label="Onboarding Options"
-              className="flex p-1 bg-paper-manila dark:bg-slate-800 rounded-xl mb-6 text-xs font-sans font-bold border border-amber-200/80 dark:border-slate-700"
+              className="flex p-1 bg-stone-100 dark:bg-slate-800 rounded-xl mb-6 text-xs font-sans font-bold border border-border-stone dark:border-slate-700"
             >
               <button
                 type="button"
@@ -288,7 +286,7 @@ export function Onboarding({ onLogin, onJoin, onCreate }: OnboardingProps) {
                     placeholder="House or apartment name (e.g. Maple Grove)"
                     value={householdName}
                     onChange={(e) => setHouseholdName(e.target.value)}
-                    className="w-full px-3.5 py-2.5 bg-paper-card dark:bg-[#222D42] border border-stone-300 dark:border-slate-600 rounded-lg text-sm text-ink-navy dark:text-slate-100 placeholder:text-ink-muted dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-amber-700 dark:focus:ring-amber-500 transition font-sans"
+                    className="w-full px-3.5 py-2.5 bg-paper-card dark:bg-[#222D42] border border-stone-300 dark:border-slate-600 rounded-lg text-sm text-ink-navy dark:text-slate-100 placeholder:text-ink-muted dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-accent-slate transition font-sans"
                   />
                 </div>
               )}
@@ -305,7 +303,7 @@ export function Onboarding({ onLogin, onJoin, onCreate }: OnboardingProps) {
                     placeholder="6-letter code (e.g. ABC123)"
                     value={inviteCode}
                     onChange={(e) => setInviteCode(e.target.value.toUpperCase())}
-                    className="w-full px-3.5 py-2.5 bg-paper-card dark:bg-[#222D42] border border-stone-300 dark:border-slate-600 rounded-lg text-sm font-mono tracking-wider uppercase text-ink-navy dark:text-slate-100 placeholder:text-ink-muted dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-amber-700 dark:focus:ring-amber-500 transition"
+                    className="w-full px-3.5 py-2.5 bg-paper-card dark:bg-[#222D42] border border-stone-300 dark:border-slate-600 rounded-lg text-sm font-mono tracking-wider uppercase text-ink-navy dark:text-slate-100 placeholder:text-ink-muted dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-accent-slate transition"
                   />
                 </div>
               )}
@@ -320,7 +318,7 @@ export function Onboarding({ onLogin, onJoin, onCreate }: OnboardingProps) {
                   placeholder="Your nickname (e.g. Alex, Sam)"
                   value={nickname}
                   onChange={(e) => setNickname(e.target.value)}
-                  className="w-full px-3.5 py-2.5 bg-paper-card dark:bg-[#222D42] border border-stone-300 dark:border-slate-600 rounded-lg text-sm text-ink-navy dark:text-slate-100 placeholder:text-ink-muted dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-amber-700 dark:focus:ring-amber-500 transition font-sans"
+                  className="w-full px-3.5 py-2.5 bg-paper-card dark:bg-[#222D42] border border-stone-300 dark:border-slate-600 rounded-lg text-sm text-ink-navy dark:text-slate-100 placeholder:text-ink-muted dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-accent-slate transition font-sans"
                 />
               </div>
 
@@ -337,14 +335,14 @@ export function Onboarding({ onLogin, onJoin, onCreate }: OnboardingProps) {
                   placeholder="4-digit PIN (optional)"
                   value={pin}
                   onChange={(e) => setPin(e.target.value)}
-                  className="w-full px-3.5 py-2.5 bg-paper-card dark:bg-[#222D42] border border-stone-300 dark:border-slate-600 rounded-lg text-sm font-mono text-ink-navy dark:text-slate-100 placeholder:text-ink-muted dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-amber-700 dark:focus:ring-amber-500 transition"
+                  className="w-full px-3.5 py-2.5 bg-paper-card dark:bg-[#222D42] border border-stone-300 dark:border-slate-600 rounded-lg text-sm font-mono text-ink-navy dark:text-slate-100 placeholder:text-ink-muted dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-accent-slate transition"
                 />
               </div>
 
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full mt-3 py-3 px-4 bg-indigo-700 hover:bg-indigo-800 disabled:opacity-50 text-white font-sans font-bold text-sm tracking-wide rounded-lg shadow-paper-sm hover:shadow-paper-md transition-all flex items-center justify-center gap-2 active:scale-[0.98]"
+                className="w-full mt-3 py-3 px-4 bg-accent-slate hover:bg-[#1E334A] disabled:opacity-50 text-white font-sans font-bold text-sm tracking-wide rounded-lg shadow-paper-sm hover:shadow-paper-md transition-all flex items-center justify-center gap-2 active:scale-[0.98]"
               >
                 {loading ? (
                   <span>Loading...</span>

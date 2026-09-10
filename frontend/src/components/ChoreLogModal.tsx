@@ -3,7 +3,6 @@ import { X, CheckCircle, AlertCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { ChoreAssignment } from '../types';
 import { PaperCard } from './stationery/PaperCard';
-import { PaperclipFastener } from './stationery/PaperclipFastener';
 
 interface ChoreLogModalProps {
   assignment: ChoreAssignment;
@@ -44,13 +43,6 @@ export function ChoreLogModal({ assignment, onClose, onSubmitLog }: ChoreLogModa
         transition={{ type: 'spring', stiffness: 350, damping: 25 }}
         className="relative max-w-md w-full"
       >
-        <motion.div
-          initial={{ y: -20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: 0.08, type: 'spring', stiffness: 400, damping: 20 }}
-        >
-          <PaperclipFastener position="top-left" />
-        </motion.div>
         <PaperCard
           variant="sheet"
           className="rotate-1 p-6 shadow-paper-lifted border border-stone-300 dark:border-slate-700"
@@ -91,7 +83,7 @@ export function ChoreLogModal({ assignment, onClose, onSubmitLog }: ChoreLogModa
                 placeholder="Optional note (e.g. Emptied kitchen trash and recycling bins)"
                 value={note}
                 onChange={(e) => setNote(e.target.value)}
-                className="w-full px-3.5 py-2.5 bg-paper-card dark:bg-[#222D42] border border-stone-300 dark:border-slate-600 rounded-lg text-sm text-ink-navy dark:text-slate-100 placeholder:text-ink-muted dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-amber-700 dark:focus:ring-amber-500 transition font-sans"
+                className="w-full px-3.5 py-2.5 bg-paper-card dark:bg-[#222D42] border border-stone-300 dark:border-slate-600 rounded-lg text-sm text-ink-navy dark:text-slate-100 placeholder:text-ink-muted dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-accent-slate transition font-sans"
               />
             </div>
 
@@ -106,7 +98,7 @@ export function ChoreLogModal({ assignment, onClose, onSubmitLog }: ChoreLogModa
               <button
                 type="submit"
                 disabled={loading}
-                className="flex-1 py-2.5 bg-indigo-700 hover:bg-indigo-800 text-white text-sm font-sans font-bold rounded-lg shadow-paper-sm transition disabled:opacity-50 flex items-center justify-center gap-1.5 active:scale-95"
+                className="flex-1 py-2.5 bg-accent-slate hover:bg-[#1E334A] text-white text-sm font-sans font-bold rounded-lg shadow-paper-sm transition disabled:opacity-50 flex items-center justify-center gap-1.5 active:scale-95"
               >
                 <CheckCircle className="w-4 h-4" />
                 <span>{loading ? 'Logging...' : 'Submit Log'}</span>

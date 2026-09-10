@@ -1,8 +1,8 @@
 export * from './RubberStampBadge';
+export * from './StatusStamp';
+export * from './IdentitySticker';
 export * from './PaperCard';
-export * from './WashiTape';
-export * from './PaperclipFastener';
+export * from './NotebookTab';
 export * from './ScribbleCheckbox';
 export * from './TallyCounter';
-export * from './SpiralSpine';
-export * from './NotebookTab';
+

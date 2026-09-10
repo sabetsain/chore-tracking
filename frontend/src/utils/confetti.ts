@@ -36,12 +36,11 @@ export function triggerPaperDustCelebration(options?: ConfettiOptions): void {
       ticks: 120, // ~1.2s settle time
       colors: [
         '#FAF6EE', // warm cream paper
-        '#FEF08A', // canary highlighter yellow
+        '#3E6B52', // sage green
+        '#28415C', // slate navy
         '#CBD5E1', // graphite slate
-        '#B89772', // kraft fiber
-        '#FBBF24', // amber stamp
-        '#15803D', // forest green stamp
-        '#BAE6FD', // blueprint pastel blue
+        '#D6D3D1', // soft stone
+        '#52796F', // muted sage
       ],
       shapes: ['square', 'circle'],
       disableForReducedMotion: true,

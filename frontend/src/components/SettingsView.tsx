@@ -21,6 +21,7 @@ import {
 import { Household, Member } from '../types';
 import { PaperCard } from './stationery/PaperCard';
 import { soundEngine } from '../utils/soundEngine';
+import { soundEffects } from '../utils/soundEffects';
 import { useWakeLock } from '../hooks/useWakeLock';
 
 interface SettingsViewProps {
@@ -120,6 +121,7 @@ export function SettingsView({
   const toggleSound = () => {
     const next = !soundEnabled;
     soundEngine.setEnabled(next);
+    soundEffects.setMuted(!next);
     setSoundEnabled(next);
     if (next) {
       soundEngine.playStampSound();
@@ -152,7 +154,7 @@ export function SettingsView({
       {/* Household Info Ledger Card */}
       <PaperCard variant="card" className="p-5 shadow-paper-sm space-y-4 border border-stone-200/80 dark:border-slate-700/80">
         <h3 className="text-xl font-serif font-bold text-ink-navy dark:text-slate-100 flex items-center gap-2">
-          <Home className="w-4 h-4 text-indigo-700 dark:text-indigo-400" />
+          <Home className="w-4 h-4 text-accent-slate dark:text-slate-300" />
           <span>Household Info</span>
         </h3>
 
@@ -172,7 +174,7 @@ export function SettingsView({
         </div>
 
         {/* Invite Code */}
-        <div className="p-4 bg-paper-manila dark:bg-[#2C3952] border border-amber-300/80 dark:border-slate-600 rounded-lg shadow-paper-sm">
+        <div className="p-4 bg-paper-sheet dark:bg-[#1A2234] border border-border-stone dark:border-slate-600 rounded-lg shadow-paper-sm">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
               <span className="text-sm font-sans font-bold text-ink-navy dark:text-slate-100 block">
@@ -189,7 +191,7 @@ export function SettingsView({
               <button
                 type="button"
                 onClick={handleCopy}
-                className="p-2 rounded-lg bg-paper-card dark:bg-[#222D42] border border-stone-300 dark:border-slate-600 hover:bg-amber-100/60 dark:hover:bg-slate-700 text-ink-navy dark:text-slate-200 transition shadow-paper-sm active:scale-95"
+                className="p-2 rounded-lg bg-paper-card dark:bg-[#222D42] border border-stone-300 dark:border-slate-600 hover:bg-stone-100 dark:hover:bg-slate-700 text-ink-navy dark:text-slate-200 transition shadow-paper-sm active:scale-95"
                 title="Copy Invite Code"
                 aria-label="Copy Invite Code"
               >
@@ -198,7 +200,7 @@ export function SettingsView({
               <button
                 type="button"
                 onClick={handleShare}
-                className="p-2 rounded-lg bg-paper-card dark:bg-[#222D42] border border-stone-300 dark:border-slate-600 hover:bg-amber-100/60 dark:hover:bg-slate-700 text-ink-navy dark:text-slate-200 transition shadow-paper-sm active:scale-95 flex items-center gap-1.5 font-sans text-xs font-bold"
+                className="p-2 rounded-lg bg-paper-card dark:bg-[#222D42] border border-stone-300 dark:border-slate-600 hover:bg-stone-100 dark:hover:bg-slate-700 text-ink-navy dark:text-slate-200 transition shadow-paper-sm active:scale-95 flex items-center gap-1.5 font-sans text-xs font-bold"
                 title="Share Invite Code"
                 aria-label="Share Invite Code"
               >
@@ -209,12 +211,12 @@ export function SettingsView({
           </div>
 
           {isAdmin && (
-            <div className="mt-3 pt-3 border-t border-amber-300/60 dark:border-slate-600 flex justify-end">
+            <div className="mt-3 pt-3 border-t border-border-stone dark:border-slate-600 flex justify-end">
               <button
                 type="button"
                 disabled={regenerating}
                 onClick={handleRegenerate}
-                className="inline-flex items-center gap-1.5 text-xs text-indigo-700 dark:text-indigo-300 hover:underline font-sans font-bold disabled:opacity-50"
+                className="inline-flex items-center gap-1.5 text-xs text-accent-slate dark:text-slate-300 hover:underline font-sans font-bold disabled:opacity-50"
               >
                 <RefreshCw className={`w-3.5 h-3.5 ${regenerating ? 'animate-spin' : ''}`} />
                 <span>Regenerate Code</span>
@@ -227,7 +229,7 @@ export function SettingsView({
       {/* Member Profile Card */}
       <PaperCard variant="card" className="p-5 shadow-paper-sm space-y-4 border border-stone-200/80 dark:border-slate-700/80">
         <h3 className="text-xl font-serif font-bold text-ink-navy dark:text-slate-100 flex items-center gap-2">
-          <User className="w-4 h-4 text-indigo-700 dark:text-indigo-400" />
+          <User className="w-4 h-4 text-accent-slate dark:text-slate-300" />
           <span>My Profile</span>
         </h3>
 
@@ -237,7 +239,7 @@ export function SettingsView({
             <span className="font-serif font-bold text-ink-navy dark:text-slate-100 text-lg">{member.nickname}</span>
           </div>
           <div className="flex items-center gap-2">
-            <span className="px-2.5 py-0.5 rounded bg-paper-manila dark:bg-slate-700 border border-amber-300 dark:border-slate-600 text-ink-navy dark:text-slate-200 font-mono font-bold uppercase text-[10px]">
+            <span className="px-2.5 py-0.5 rounded bg-stone-100 dark:bg-slate-700 border border-border-stone dark:border-slate-600 text-ink-navy dark:text-slate-200 font-mono font-bold uppercase text-[10px]">
               {member.role}
             </span>
           </div>
@@ -259,11 +261,11 @@ export function SettingsView({
             onClick={handleToggleAway}
             className={`inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-sm font-sans font-bold transition shadow-paper-sm active:scale-95 shrink-0 ${
               isAway
-                ? 'bg-amber-600 text-white hover:bg-amber-700'
-                : 'bg-paper-card dark:bg-[#222D42] text-ink-navy dark:text-slate-200 hover:bg-amber-100/60 dark:hover:bg-slate-700 border border-stone-300 dark:border-slate-600'
+                ? 'bg-accent-slate text-white hover:bg-[#1E334A]'
+                : 'bg-paper-card dark:bg-[#222D42] text-ink-navy dark:text-slate-200 hover:bg-stone-100 dark:hover:bg-slate-700 border border-stone-300 dark:border-slate-600'
             }`}
           >
-            {isAway ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4 text-amber-600 dark:text-amber-400" />}
+            {isAway ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4 text-accent-slate dark:text-slate-300" />}
             <span>{isAway ? 'Currently Away' : 'Set Away'}</span>
           </button>
         </div>
@@ -272,7 +274,7 @@ export function SettingsView({
       {/* Desk Stationery & Environment Controls */}
       <PaperCard variant="card" className="p-5 shadow-paper-sm space-y-4 border border-stone-200/80 dark:border-slate-700/80">
         <h3 className="text-xl font-serif font-bold text-ink-navy dark:text-slate-100 flex items-center gap-2">
-          <Sun className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+          <Sun className="w-4 h-4 text-accent-slate dark:text-slate-300" />
           <span>Desk & Atmosphere Controls</span>
         </h3>
 
@@ -292,8 +294,8 @@ export function SettingsView({
               onClick={toggleDeskLamp}
               className={`p-2.5 rounded-lg border shadow-paper-sm transition active:scale-95 ${
                 isDark
-                  ? 'bg-amber-500/20 border-amber-500/40 text-amber-300 hover:bg-amber-500/30'
-                  : 'bg-amber-100/80 border-amber-300 text-amber-800 hover:bg-amber-200'
+                  ? 'bg-slate-800 border-slate-700 text-slate-200 hover:bg-slate-700'
+                  : 'bg-stone-100 border-border-stone text-ink-navy hover:bg-stone-200'
               }`}
               title="Toggle Desk Lamp"
               aria-label="Toggle Desk Lamp"
@@ -370,7 +372,7 @@ export function SettingsView({
       {/* Push Notifications Card */}
       <PaperCard variant="card" className="p-5 shadow-paper-sm space-y-4 border border-stone-200/80 dark:border-slate-700/80">
         <h3 className="text-xl font-serif font-bold text-ink-navy dark:text-slate-100 flex items-center gap-2">
-          <Bell className="w-4 h-4 text-indigo-700 dark:text-indigo-400" />
+          <Bell className="w-4 h-4 text-accent-slate dark:text-slate-300" />
           <span>Push Notifications</span>
         </h3>
 
@@ -413,7 +415,7 @@ export function SettingsView({
                   className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-sans font-bold shadow-paper-sm transition disabled:opacity-50 shrink-0 active:scale-95 ${
                     pushEnabled
                       ? 'bg-paper-card dark:bg-[#222D42] hover:bg-slate-100 dark:hover:bg-slate-700 text-ink-navy dark:text-slate-200 border border-stone-300 dark:border-slate-600'
-                      : 'bg-indigo-700 hover:bg-indigo-800 text-white'
+                      : 'bg-accent-slate hover:bg-[#1E334A] text-white'
                   }`}
                 >
                   {pushEnabled ? (

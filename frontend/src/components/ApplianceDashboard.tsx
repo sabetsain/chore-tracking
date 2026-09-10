@@ -16,7 +16,7 @@ import { ApplianceCard } from './ApplianceCard';
 import { AddApplianceModal } from './AddApplianceModal';
 import { formatDateTime } from '../utils/time';
 import { PaperCard } from './stationery/PaperCard';
-import { PaperclipFastener } from './stationery/PaperclipFastener';
+import { IdentitySticker } from './stationery/IdentitySticker';
 import { api } from '../api/client';
 
 export interface ApplianceDashboardProps {
@@ -113,7 +113,7 @@ export function ApplianceDashboard({
         <button
           type="button"
           onClick={handleOpenAdd}
-          className="inline-flex items-center self-start sm:self-center gap-1.5 px-4 py-2 bg-indigo-700 hover:bg-indigo-800 text-white text-sm font-sans font-bold rounded-lg shadow-paper-sm hover:shadow-paper-md transition-all active:scale-95"
+          className="inline-flex items-center self-start sm:self-center gap-1.5 px-4 py-2.5 bg-accent-slate hover:bg-[#1E334A] text-white text-sm font-sans font-bold rounded-xl shadow-[0_2px_0_rgba(30,35,43,0.12)] hover:translate-y-[-1px] hover:shadow-[0_3px_0_rgba(30,35,43,0.15)] active:translate-y-[1px] active:shadow-none transition-all"
         >
           <Plus className="w-4 h-4" />
           <span>Add Appliance</span>
@@ -122,8 +122,8 @@ export function ApplianceDashboard({
 
       {/* Grid of Appliances */}
       {appliances.length === 0 ? (
-        <PaperCard variant="card" className="p-8 text-center border-dashed border-2 border-stone-300 dark:border-slate-700">
-          <Sparkles className="w-8 h-8 text-amber-500 mx-auto mb-2 opacity-80" />
+        <PaperCard variant="card" className="p-8 text-center border-dashed border-2 border-stone-300 dark:border-slate-700 bg-canvas-card">
+          <Sparkles className="w-8 h-8 text-accent-slate mx-auto mb-2 opacity-80" />
           <p className="text-base font-serif font-bold text-ink-navy dark:text-slate-200">No appliances added yet</p>
           <p className="text-xs text-ink-muted dark:text-slate-400 mt-1 font-sans">
             Add a dishwasher, washing machine, dryer, or custom machine to start tracking!
@@ -144,7 +144,7 @@ export function ApplianceDashboard({
         </div>
       )}
 
-      {/* History Modal (Paperclipped Ledger Slip) */}
+      {/* History Modal */}
       <AnimatePresence>
         {selectedAppliance && (
           <motion.div
@@ -160,19 +160,12 @@ export function ApplianceDashboard({
               transition={{ type: 'spring', stiffness: 350, damping: 25 }}
               className="relative max-w-md w-full"
             >
-              <motion.div
-                initial={{ y: -20, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                transition={{ delay: 0.08, type: 'spring', stiffness: 400, damping: 20 }}
-              >
-                <PaperclipFastener position="top-left" />
-              </motion.div>
               <PaperCard
-                variant="manila"
+                variant="card"
                 layoutId={`appliance-${selectedAppliance.id}`}
-                className="-rotate-1 p-6 shadow-paper-lifted max-h-[85vh] flex flex-col border border-amber-300/80 dark:border-slate-600"
+                className="p-6 shadow-paper-lifted max-h-[85vh] flex flex-col bg-canvas-card border border-stone-300 dark:border-slate-700"
               >
-                <div className="flex items-center justify-between pb-3 border-b border-amber-300/60 dark:border-slate-600">
+                <div className="flex items-center justify-between pb-3 border-b border-border-stone dark:border-slate-600">
                   <div>
                     <h3 className="font-serif font-bold text-xl text-ink-navy dark:text-slate-100">
                       Activity History
@@ -184,7 +177,7 @@ export function ApplianceDashboard({
                   <button
                     type="button"
                     onClick={() => setSelectedAppliance(null)}
-                    className="p-1 rounded-lg text-ink-muted hover:text-ink-navy dark:text-slate-400 dark:hover:text-slate-200 hover:bg-amber-200/50 dark:hover:bg-slate-700 transition"
+                    className="p-1.5 rounded-lg text-ink-muted hover:text-ink-navy dark:text-slate-400 dark:hover:text-slate-200 hover:bg-stone-100 dark:hover:bg-slate-700 transition"
                     aria-label="Close History"
                   >
                     <X className="w-5 h-5" />
@@ -193,43 +186,50 @@ export function ApplianceDashboard({
 
                 <div className="flex-1 overflow-y-auto py-4 space-y-2.5">
                   {loadingHistory ? (
-                    <p className="text-center font-sans text-xs text-ink-muted dark:text-slate-400 py-8">Loading ledger history...</p>
+                    <p className="text-center font-sans text-xs text-ink-muted dark:text-slate-400 py-8">Loading history...</p>
                   ) : historyLogs.length === 0 ? (
                     <p className="text-center font-sans text-xs text-ink-muted dark:text-slate-400 py-8">No recent state changes logged.</p>
                   ) : (
                     historyLogs.map((log) => (
                       <div
                         key={log.id}
-                        className="p-3 bg-paper-sheet dark:bg-[#1A2234] rounded-lg border border-amber-200/80 dark:border-slate-700 flex items-center justify-between text-xs shadow-paper-sm"
+                        className="p-3 bg-stone-50 dark:bg-[#1A2234] rounded-lg border border-border-stone dark:border-slate-700 flex items-center justify-between text-xs shadow-paper-sm"
                       >
                         <div>
                           <div className="font-sans font-semibold text-sm text-ink-navy dark:text-slate-100 capitalize">
                             {log.from_state.replace('_', ' ')} → {log.to_state.replace('_', ' ')}
                           </div>
-                          <div className="text-ink-muted dark:text-slate-400 font-mono text-[11px] mt-0.5">
+                          <div className="text-ink-muted dark:text-slate-400 font-mono text-[11px] mt-0.5 tabular-nums">
                             {formatDateTime(log.created_at)}
                           </div>
                         </div>
 
-                        <div className="text-right">
-                          <span className="font-sans font-semibold text-xs text-ink-navy dark:text-slate-200">
-                            {log.actor_member
-                              ? log.actor_member.nickname
-                              : log.trigger_source === 'sensor_webhook'
-                              ? 'IoT Sensor'
-                              : 'System'}
-                          </span>
+                        <div className="flex items-center gap-1.5 text-right">
+                          {log.actor_member ? (
+                            <>
+                              <IdentitySticker name={log.actor_member.nickname} size="sm" />
+                              <span className="font-sans font-semibold text-xs text-ink-navy dark:text-slate-200">
+                                {log.actor_member.nickname}
+                              </span>
+                            </>
+                          ) : (
+                            <span className="font-sans font-semibold text-xs text-ink-muted dark:text-slate-400">
+                              {log.trigger_source === 'sensor_webhook'
+                                ? 'IoT Sensor'
+                                : 'System'}
+                            </span>
+                          )}
                         </div>
                       </div>
                     ))
                   )}
                 </div>
 
-                <div className="pt-3 border-t border-amber-300/60 dark:border-slate-600">
+                <div className="pt-3 border-t border-border-stone dark:border-slate-600">
                   <button
                     type="button"
                     onClick={() => setSelectedAppliance(null)}
-                    className="w-full py-2.5 bg-paper-card dark:bg-[#222D42] hover:bg-amber-100/60 dark:hover:bg-[#2C3952] text-ink-navy dark:text-slate-200 font-sans text-sm font-bold rounded-lg border border-stone-300 dark:border-slate-600 shadow-paper-sm transition active:scale-[0.98]"
+                    className="w-full py-2.5 bg-canvas-card dark:bg-[#222D42] hover:bg-stone-100 dark:hover:bg-[#2C3952] text-ink-navy dark:text-slate-200 font-sans text-sm font-bold rounded-lg border border-stone-300 dark:border-slate-600 shadow-paper-sm transition active:translate-y-[1px]"
                   >
                     Close
                   </button>

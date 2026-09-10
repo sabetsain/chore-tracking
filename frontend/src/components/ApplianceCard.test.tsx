@@ -3,14 +3,14 @@ import userEvent from '@testing-library/user-event';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { ApplianceCard } from './ApplianceCard';
 import { Appliance } from '../types';
-import { soundEngine } from '../utils/soundEngine';
+import { soundEffects } from '../utils/soundEffects';
 
-vi.mock('../utils/soundEngine', () => ({
-  soundEngine: {
-    playStampSound: vi.fn(),
-    playChimeSound: vi.fn(),
-    playPencilScribbleSound: vi.fn(),
-    playPageFlipSound: vi.fn(),
+vi.mock('../utils/soundEffects', () => ({
+  soundEffects: {
+    playWoodClick: vi.fn(),
+    getMuted: vi.fn().mockReturnValue(false),
+    setMuted: vi.fn(),
+    toggleMuted: vi.fn(),
   },
 }));
 
@@ -47,7 +47,7 @@ describe('ApplianceCard Component', () => {
     },
   };
 
-  it('renders appliance name, icon type, rubber stamp, and actor', () => {
+  it('renders StatusStamp with current state and preserves state text', () => {
     render(
       <ApplianceCard
         appliance={baseAppliance}
@@ -58,10 +58,73 @@ describe('ApplianceCard Component', () => {
       />
     );
 
-    expect(screen.getByText('Smart Laundry Washer')).toBeInTheDocument();
-    expect(screen.getByText(/washing machine/i)).toBeInTheDocument();
-    expect(screen.getByRole('status')).toHaveTextContent('READY TO RUN!');
-    expect(screen.getByText(/Alex/i)).toBeInTheDocument();
+    const statusEl = screen.getByRole('status');
+    expect(statusEl).toBeInTheDocument();
+    expect(statusEl).toHaveTextContent(/empty/i);
+  });
+
+  it('renders actor IdentitySticker in audit trail alongside nickname', () => {
+    render(
+      <ApplianceCard
+        appliance={baseAppliance}
+        onUpdateState={mockOnUpdateState}
+        onViewHistory={mockOnViewHistory}
+        onEdit={mockOnEdit}
+        onReset={mockOnReset}
+      />
+    );
+
+    const sticker = screen.getByRole('img', { name: /Alex's sticker/i });
+    expect(sticker).toBeInTheDocument();
+    expect(screen.getByText(/by/i)).toBeInTheDocument();
+    expect(screen.getByText('Alex')).toBeInTheDocument();
+  });
+
+  it('renders system/sensor fallback when updated_by_member is missing', () => {
+    const applianceWithoutActor: Appliance = {
+      ...baseAppliance,
+      updated_by_member: undefined,
+    };
+
+    render(
+      <ApplianceCard
+        appliance={applianceWithoutActor}
+        onUpdateState={mockOnUpdateState}
+        onViewHistory={mockOnViewHistory}
+      />
+    );
+
+    expect(screen.getByText(/System\/Sensor/i)).toBeInTheDocument();
+    expect(screen.queryByRole('img', { name: /sticker/i })).not.toBeInTheDocument();
+  });
+
+  it('renders full-width 4-state action button with explicit action verb "Start Cycle"', async () => {
+    const user = userEvent.setup();
+    mockOnUpdateState.mockResolvedValueOnce(undefined);
+
+    const noTimerAppliance: Appliance = {
+      ...baseAppliance,
+      timer_enabled: false,
+    };
+
+    render(
+      <ApplianceCard
+        appliance={noTimerAppliance}
+        onUpdateState={mockOnUpdateState}
+        onViewHistory={mockOnViewHistory}
+      />
+    );
+
+    const actionBtn = screen.getByRole('button', { name: /Start Cycle/i });
+    expect(actionBtn).toBeInTheDocument();
+    expect(actionBtn.className).toContain('w-full');
+    expect(actionBtn.className).toContain('min-h-[46px]');
+    expect(actionBtn.className).toContain('bg-accent-slate');
+
+    await user.click(actionBtn);
+
+    expect(mockOnUpdateState).toHaveBeenCalledWith('app-washer-1', 'running');
+    expect(soundEffects.playWoodClick).toHaveBeenCalled();
   });
 
   it('opens duration picker dialog when starting cycle with timer_enabled=true', async () => {
@@ -95,6 +158,7 @@ describe('ApplianceCard Component', () => {
     await user.click(dialogStartBtn);
 
     expect(mockOnUpdateState).toHaveBeenCalledWith('app-washer-1', 'running', 30);
+    expect(soundEffects.playWoodClick).toHaveBeenCalled();
   });
 
   it('accepts custom duration input in duration picker', async () => {
@@ -119,26 +183,6 @@ describe('ApplianceCard Component', () => {
     await user.click(dialogStartBtn);
 
     expect(mockOnUpdateState).toHaveBeenCalledWith('app-washer-1', 'running', 25);
-  });
-
-  it('transitions directly without picker when timer_enabled=false', async () => {
-    const user = userEvent.setup();
-    const noTimerAppliance: Appliance = {
-      ...baseAppliance,
-      timer_enabled: false,
-    };
-
-    render(
-      <ApplianceCard
-        appliance={noTimerAppliance}
-        onUpdateState={mockOnUpdateState}
-        onViewHistory={mockOnViewHistory}
-      />
-    );
-
-    await user.click(screen.getByRole('button', { name: /start cycle/i }));
-    expect(mockOnUpdateState).toHaveBeenCalledWith('app-washer-1', 'running');
-    expect(screen.queryByText(/Set Cycle Duration/i)).not.toBeInTheDocument();
   });
 
   it('renders live countdown when running with active timer', () => {
@@ -182,7 +226,7 @@ describe('ApplianceCard Component', () => {
     // Should render AWAITING CONFIRMATION
     expect(screen.getByText('AWAITING CONFIRMATION')).toBeInTheDocument();
     expect(screen.getByText(/Timer complete \(00:00\) — Confirmation needed/i)).toBeInTheDocument();
-    expect(soundEngine.playChimeSound).toHaveBeenCalled();
+    expect(soundEffects.playWoodClick).toHaveBeenCalled();
 
     // Confirm button should be enabled
     const confirmBtn = screen.getByRole('button', { name: /confirm & mark done/i });
@@ -224,5 +268,22 @@ describe('ApplianceCard Component', () => {
     await user.click(editBtn);
 
     expect(mockOnEdit).toHaveBeenCalledWith(baseAppliance);
+  });
+
+  it('calls onViewHistory when History button is clicked', async () => {
+    const user = userEvent.setup();
+
+    render(
+      <ApplianceCard
+        appliance={baseAppliance}
+        onUpdateState={mockOnUpdateState}
+        onViewHistory={mockOnViewHistory}
+      />
+    );
+
+    const historyBtn = screen.getByRole('button', { name: /history/i });
+    await user.click(historyBtn);
+
+    expect(mockOnViewHistory).toHaveBeenCalledWith(baseAppliance);
   });
 });

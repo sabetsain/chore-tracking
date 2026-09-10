@@ -3,12 +3,11 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import {
   RubberStampBadge,
+  StatusStamp,
+  IdentitySticker,
   PaperCard,
-  WashiTape,
-  PaperclipFastener,
   ScribbleCheckbox,
   TallyCounter,
-  SpiralSpine,
   NotebookTab,
 } from './index';
 
@@ -82,6 +81,17 @@ describe('Stationery Primitives', () => {
       expect(card.className).toContain('shadow-paper-lifted');
     });
 
+    it('applies soft porcelain canvas surface and stone hairline border by default', () => {
+      render(
+        <PaperCard data-testid="modern-card">
+          <p>Modern Porcelain Content</p>
+        </PaperCard>
+      );
+      const card = screen.getByTestId('modern-card');
+      expect(card.className).toContain('bg-[var(--canvas-card,#FDFAF6)]');
+      expect(card.className).toContain('border-[var(--border-stone,#E3DDD5)]');
+    });
+
     it('supports polymorphic as prop', () => {
       render(<PaperCard as="article" data-testid="article-card">Content</PaperCard>);
       const el = screen.getByTestId('article-card');
@@ -89,28 +99,18 @@ describe('Stationery Primitives', () => {
     });
   });
 
-  describe('WashiTape', () => {
-    it('renders with aria-hidden="true" and default styling', () => {
-      const { container } = render(<WashiTape />);
-      const tape = container.firstElementChild;
-      expect(tape).toHaveAttribute('aria-hidden', 'true');
-      expect(tape).toHaveClass('bg-yellow-200/80');
+  describe('StatusStamp & IdentitySticker exports', () => {
+    it('renders exported StatusStamp from index', () => {
+      render(<StatusStamp status="clean" />);
+      const stamp = screen.getByRole('status');
+      expect(stamp).toBeInTheDocument();
+      expect(stamp).toHaveTextContent('CLEAN');
     });
 
-    it('supports custom colors and numeric tilt rotation', () => {
-      const { container } = render(<WashiTape color="pink" tilt={-3.5} />);
-      const tape = container.firstElementChild as HTMLElement;
-      expect(tape).toHaveClass('bg-rose-200/80');
-      expect(tape.style.transform).toBe('translateX(-50%) rotate(-3.5deg)');
-    });
-  });
-
-  describe('PaperclipFastener', () => {
-    it('renders metallic paperclip with aria-hidden="true"', () => {
-      const { container } = render(<PaperclipFastener position="top-right" />);
-      const clip = container.querySelector('svg');
-      expect(clip).toHaveAttribute('aria-hidden', 'true');
-      expect(clip).toHaveClass('right-8');
+    it('renders exported IdentitySticker from index', () => {
+      render(<IdentitySticker glyph="☕" name="Alex" showLabel />);
+      expect(screen.getByRole('img')).toHaveTextContent('☕');
+      expect(screen.getByText('Alex')).toBeInTheDocument();
     });
   });
 
@@ -183,22 +183,6 @@ describe('Stationery Primitives', () => {
       const { container } = render(<TallyCounter count={15} />);
       const svgs = container.querySelectorAll('svg');
       expect(svgs.length).toBe(3);
-    });
-  });
-
-  describe('SpiralSpine', () => {
-    it('renders metal wire spiral coil spine with aria-hidden="true"', () => {
-      const { container } = render(<SpiralSpine count={6} />);
-      const spine = container.firstElementChild;
-      expect(spine).toHaveAttribute('aria-hidden', 'true');
-      const loops = container.querySelectorAll('svg');
-      expect(loops.length).toBe(6);
-    });
-
-    it('supports rivet type', () => {
-      const { container } = render(<SpiralSpine type="rivet" count={4} />);
-      const spine = container.firstElementChild;
-      expect(spine).toHaveAttribute('aria-hidden', 'true');
     });
   });
 

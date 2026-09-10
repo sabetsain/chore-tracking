@@ -31,10 +31,10 @@ export const PaperCard = React.forwardRef<HTMLElement, PaperCardProps>(
     ref
   ) => {
     const variantClasses: Record<PaperCardVariant, string> = {
-      card: 'bg-paper-card border-stone-200/80 dark:bg-[#222D42] dark:border-slate-700/80',
-      sheet: 'bg-paper-sheet border-stone-200/80 dark:bg-[#1A2234] dark:border-slate-700/80',
-      manila: 'bg-paper-manila border-amber-200/80 dark:bg-[#2C3952] dark:border-slate-600/80',
-      postit: 'bg-paper-postit border-yellow-200/80 dark:bg-[#37435B] dark:border-yellow-700/40',
+      card: 'bg-[var(--canvas-card,#FDFAF6)] dark:bg-[var(--canvas-card,#1F1D1A)] border-[var(--border-stone,#E3DDD5)] dark:border-[var(--border-stone,#2E2A26)]',
+      sheet: 'bg-[var(--canvas-card,#FDFAF6)] dark:bg-[var(--canvas-card,#1F1D1A)] border-[var(--border-stone,#E3DDD5)] dark:border-[var(--border-stone,#2E2A26)]',
+      manila: 'bg-paper-manila border-[var(--border-stone,#E3DDD5)] dark:bg-[#2C3952] dark:border-slate-600/80',
+      postit: 'bg-paper-postit border-[var(--border-stone,#E3DDD5)] dark:bg-[#37435B] dark:border-slate-600/80',
     };
 
     const tiltClasses: Record<PaperCardTilt, string> = {
