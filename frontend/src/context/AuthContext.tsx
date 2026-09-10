@@ -2,7 +2,7 @@ import React, { createContext, useContext, useState, useEffect, useCallback } fr
 import { Household, Member, MemberMe, AuthResponse } from '../types';
 import { api, getStoredToken, setStoredToken } from '../api/client';
 
-interface AuthContextType {
+export interface AuthContextType {
   token: string | null;
   member: Member | null;
   household: Household | null;
@@ -109,3 +109,23 @@ export function useAuth(): AuthContextType {
   }
   return context;
 }
+
+const defaultAuthContext: AuthContextType = {
+  token: null,
+  member: null,
+  household: null,
+  isAuthenticated: false,
+  isLoading: false,
+  login: async () => {},
+  join: async () => {},
+  createHousehold: async () => {},
+  logout: () => {},
+  updateStatus: async () => {},
+  refreshMe: async () => {},
+};
+
+export function useAuthSafe(): AuthContextType {
+  const context = useContext(AuthContext);
+  return context || defaultAuthContext;
+}
+
