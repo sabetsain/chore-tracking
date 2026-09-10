@@ -1,34 +1,35 @@
-# Graph Report - workspace  (2026-09-09)
+# Graph Report - workspace  (2026-09-10)
 
 ## Corpus Check
-- cluster-only mode — file stats not available
+- 197 files · ~122,322 words
+- Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 1109 nodes · 2158 edges · 108 communities (75 shown, 23 thin omitted)
-- Extraction: 88% EXTRACTED · 12% INFERRED · 0% AMBIGUOUS · INFERRED: 252 edges (avg confidence: 0.94)
+- 1243 nodes · 2416 edges · 105 communities (88 shown, 8 thin omitted)
+- Extraction: 89% EXTRACTED · 11% INFERRED · 0% AMBIGUOUS · INFERRED: 266 edges (avg confidence: 0.95)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `f87d2377`
+- Built from commit: `e515ea05`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
 ## Community Hubs (Navigation)
 - Member
-- households.py
-- Household Coordination App — Luxury Editorial Stationery Design System
+- do_run_migrations
+- Household Coordination App — Design System Specification
 - /opsx-archive Command
 - test_websockets.py
 - vitest
-- types/index.ts
+- App.tsx
 - ChoreDutyView.tsx
-- stationery.test.tsx
+- IdentitySticker.tsx
 - compilerOptions
 - Requirements
-- App.tsx
+- useHouseholdWebSocket.ts
 - ADDED Requirements
 - package.json
-- ApplianceCard.tsx
+- types/index.ts
 - Household Coordination App — Future Features & Product Roadmap
 - devDependencies
 - test_chores_crud.py
@@ -36,7 +37,7 @@
 - test_member_admin.py
 - Requirements
 - Requirement: Inertial Touch Gesture Page Turns
-- test_appliance_state.py
+- Appliance
 - StationerySoundEngine
 - ADDED Requirements
 - ADDED Requirements
@@ -44,7 +45,7 @@
 - test_auth.py
 - test_chore_unclaim_and_management.py
 - dependencies
-- test_appliance_sensor.py
+- Requirements
 - test_households.py
 - pushNotifications.ts
 - 2026-08-26-paper-notebook-design-system/design.md
@@ -53,10 +54,10 @@
 - ADDED Requirements
 - ADDED Requirements
 - Skill: openspec-new-change
-- push_service.py
+- PushSubscription
 - test_appliances_crud.py
 - test_chore_swap.py
-- test_full_roommate_lifecycle_simulation
+- SettingsView.tsx
 - manifest.json
 - compilerOptions
 - Household Core Specification
@@ -82,48 +83,46 @@
 - Skill: openspec-continue-change
 - Skill: openspec-sync-specs
 - scripts
-- PWAInstallPrompt.tsx
-- confetti.ts
+- Requirement: Core Appliance State Machine
+- ChoreDutyView
 - Notification System Specification
 - Requirement: Chore Definition and Configuration
 - 2026-08-27-refine-appliances-and-chores/tasks.md
 - /opsx-explore Command
 - /opsx-sync Command
 - test_health_check
-- MockWebSocket
-- ApplianceCreate
-- ApplianceStateUpdate
-- Member
-- delete
-- Member
-- patch
-- fixture
-- ChoreCreate
-- ChoreLogCreate
-- ChoreSwapRequest
-- ChoreUpdate
-- date
+- Requirement: Hybrid Completion Tracking
+- Decisions
+- test_chore_completion.py
+- Technical Design: Warm Minimalist UI Revamp
+- Decisions
+- test_chore_up_for_grabs.py
+- 2026-08-28-chore-bucket-rotation-and-uncheck/proposal.md
+- custom-appliance-engine/proposal.md
+- warm-minimalist-ui-revamp/proposal.md
+- custom-appliance-engine/tasks.md
+- Implementation Tasks: Warm Minimalist UI Revamp
+- Q: Why does Member connect Core Database Models & Chore Service to Backend API Routers & Alembic Environment, Household Creation & Join Tests, Member Admin & Permissions Tests, and Web Push Subscriptions & Notification Service?
+- 2026-08-28-chore-bucket-rotation-and-uncheck/tasks.md
 - PWA 192px Icon
 - PWA 512px App Icon
 - App Vector SVG Icon (House with Checkmark Badge)
+- @testing-library/jest-dom
+- vite.config.ts
 - Agent Instructions
-- get
-- Household
 - MVP Household Coordination Archive OpenSpec Metadata
-- post
-- SensorEventCreate
 
 ## God Nodes (most connected - your core abstractions)
-1. `Member` - 65 edges
-2. `Household` - 37 edges
+1. `Member` - 67 edges
+2. `Household` - 38 edges
 3. `ChoreAssignment` - 36 edges
 4. `Chore` - 33 edges
-5. `react` - 24 edges
-6. `PushSubscription` - 21 edges
-7. `Appliance` - 20 edges
-8. `vitest` - 18 edges
-9. `compilerOptions` - 17 edges
-10. `SoundEffects` - 15 edges
+5. `react` - 29 edges
+6. `Appliance` - 26 edges
+7. `vitest` - 24 edges
+8. `PushSubscription` - 22 edges
+9. `ApplianceStateLog` - 21 edges
+10. `@testing-library/react` - 20 edges
 
 ## Surprising Connections (you probably didn't know these)
 - `Zero-Friction Roommate Onboarding & Auth` --semantically_similar_to--> `Requirement: Roommate Join via Invite Code`  [INFERRED] [semantically similar]
@@ -151,71 +150,71 @@
 - **OpenSpec Core Skills Suite** — _opencode_skills_openspec_new_change_skill_new_change_skill, _opencode_skills_openspec_continue_change_skill_continue_change_skill, _opencode_skills_openspec_apply_change_skill_apply_change_skill, _opencode_skills_openspec_verify_change_skill_verify_change_skill, _opencode_skills_openspec_archive_change_skill_archive_change_skill, _opencode_skills_openspec_onboard_skill_onboard_skill [INFERRED 0.95]
 - **OpenSpec Standard Change Pipeline** — _opencode_commands_opsx_new_new_command, _opencode_commands_opsx_continue_continue_command, _opencode_commands_opsx_apply_apply_command, _opencode_commands_opsx_verify_verify_command, _opencode_commands_opsx_archive_archive_command [INFERRED 0.95]
 
-## Communities (108 total, 23 thin omitted)
+## Communities (105 total, 8 thin omitted)
 
 ### Community 0 - "Member"
 Cohesion: 0.06
-Nodes (125): Appliance, ApplianceStateLog, Chore, ChoreAssignment, ChoreLog, Household, Member, PushSubscription (+117 more)
+Nodes (118): Run migrations in 'offline' mode., run_migrations_offline(), Settings, Base, get_db(), AsyncSession, Chore, ChoreAssignment (+110 more)
 
-### Community 1 - "households.py"
-Cohesion: 0.06
-Nodes (54): do_run_migrations(), Run migrations in 'offline' mode., Run migrations in 'online' mode using async engine., Run migrations in 'online' mode using sync engine., Run migrations in 'online' mode., run_async_migrations(), run_migrations_offline(), run_migrations_online() (+46 more)
+### Community 1 - "do_run_migrations"
+Cohesion: 0.32
+Nodes (8): do_run_migrations(), Run migrations in 'online' mode using async engine., Run migrations in 'online' mode using sync engine., Run migrations in 'online' mode., run_async_migrations(), run_migrations_online(), run_sync_migrations(), Connection
 
-### Community 2 - "Household Coordination App — Luxury Editorial Stationery Design System"
-Cohesion: 0.05
-Nodes (37): 1.1 The Physical Notebook Metaphor, 1.2 Materiality, Paper Textures & Physics, 1.3 Lighting, Elevation & Natural Imperfection, 1. Desktop Two-Page Spread ($\ge 1024\text{px}$), 1. Executive Design Vision & Visual Thesis, 2.1 Daytime Paper Palette (Light Mode), 2.2 Pastel Highlighter Palette (Multiply Blend Overlays), 2.3 Night Journal Palette (Dark Mode) (+29 more)
+### Community 2 - "Household Coordination App — Design System Specification"
+Cohesion: 0.09
+Nodes (21): 10% Tactile Complementary Accents (Sage Green & Slate Navy Palette), 1. Core Vision & Design Philosophy, 2.1 The "Quiet Canvas" Rule, 2.2 Mobile-First Touch Ergonomics, 2. Spatial Architecture & Layout Principles, 30% Structural Neutrals, 3.1 Color Palette Values, 3.2 Rules for Preventing Color Clashing (+13 more)
 
 ### Community 3 - "/opsx-archive Command"
 Cohesion: 0.07
 Nodes (35): /opsx-apply Command, Store Selection Mechanism, Task-Driven Implementation Flow, /opsx-archive Command, Change Archival Workflow, Pre-Archive Validation Check, Batch Change Archival Workflow, /opsx-bulk-archive Command (+27 more)
 
 ### Community 4 - "test_websockets.py"
-Cohesion: 0.14
-Nodes (20): health_check(), get, decode_access_token(), ConnectionManager, Any, UUID, websocket_endpoint(), MockWebSocket (+12 more)
+Cohesion: 0.12
+Nodes (23): health_check(), get, decode_access_token(), get_current_member(), AsyncSession, ConnectionManager, Any, UUID (+15 more)
 
 ### Community 5 - "vitest"
-Cohesion: 0.13
-Nodes (13): ChoreDutyView(), Header(), HeaderProps, NavTab, SettingsView(), SettingsViewProps, useWakeLock(), UseWakeLockResult (+5 more)
+Cohesion: 0.14
+Nodes (9): BeforeInstallPromptEvent, PWAInstallPrompt(), PWAInstallPromptProps, RubberStampBadge(), StatusStamp(), soundEffects, @testing-library/react, @testing-library/user-event (+1 more)
 
-### Community 6 - "types/index.ts"
-Cohesion: 0.19
-Nodes (19): api, ApiError, getStoredToken(), request(), setStoredToken(), ApplianceDashboard(), ApplianceDashboardProps, AuthContext (+11 more)
+### Community 6 - "App.tsx"
+Cohesion: 0.16
+Nodes (19): api, ApiError, getStoredToken(), request(), setStoredToken(), App(), MainApp(), queryClient (+11 more)
 
 ### Community 7 - "ChoreDutyView.tsx"
 Cohesion: 0.18
-Nodes (18): ChoreDutyViewProps, ChoreLogModal(), CreateChoreModal(), CreateChoreModalProps, EditChoreModal(), EditChoreModalProps, PaperCard, PaperCardProps (+10 more)
+Nodes (21): ChoreDutyViewProps, ChoreLogModal(), ChoreLogModalProps, ChoreSwapModalProps, CreateChoreModal(), CreateChoreModalProps, EditChoreModal(), EditChoreModalProps (+13 more)
 
-### Community 8 - "stationery.test.tsx"
-Cohesion: 0.12
-Nodes (16): getDeterministicTilt(), IdentitySticker(), IdentityStickerProps, NotebookTab(), NotebookTabProps, DEFAULT_LABELS, DEFAULT_ROTATIONS, RubberStampBadge() (+8 more)
+### Community 8 - "IdentitySticker.tsx"
+Cohesion: 0.09
+Nodes (21): getDeterministicTilt(), getDeterministicVariant(), IdentitySticker(), IdentityStickerProps, IdentityStickerVariant, VARIANT_CLASSES, VARIANTS, DEFAULT_LABELS (+13 more)
 
 ### Community 9 - "compilerOptions"
-Cohesion: 0.08
-Nodes (24): compilerOptions, allowImportingTsExtensions, isolatedModules, jsx, lib, module, moduleResolution, noEmit (+16 more)
+Cohesion: 0.10
+Nodes (19): compilerOptions, allowImportingTsExtensions, isolatedModules, jsx, lib, module, moduleResolution, noEmit (+11 more)
 
 ### Community 10 - "Requirements"
 Cohesion: 0.09
 Nodes (22): Purpose, Requirement: Editorial Typographic Hierarchy and 24px Baseline Grid, Requirement: Micro-Haptic Signatures, Requirement: Reusable Stationery Primitives, Requirement: Stationery Color Palette and Theme Tokens, Requirement: Velocity-Sensitive Multi-Sensory Audio, Requirement: Zero-Latency Optimistic UI Mutations, Requirements (+14 more)
 
-### Community 11 - "App.tsx"
-Cohesion: 0.15
-Nodes (13): App(), MainApp(), queryClient, ChoreLogModalProps, ChoreSwapModal(), ChoreSwapModalProps, UpForGrabsPool(), useAppBadging() (+5 more)
+### Community 11 - "useHouseholdWebSocket.ts"
+Cohesion: 0.24
+Nodes (5): MockWebSocket, useHouseholdWebSocket(), UseHouseholdWebSocketOptions, WebSocketEvent, @tanstack/react-query
 
 ### Community 12 - "ADDED Requirements"
 Cohesion: 0.09
 Nodes (21): ADDED Requirements, Requirement: Interactive Component Presentation & Functional Integrity, Requirement: Lightweight CSS 3D Page Turn Engine, Requirement: Procedural Web Audio Sound Engine, Requirement: Reusable Stationery Primitives, Requirement: Stationery Color Palette and Theme Tokens, Requirement: Typographic Hierarchy and 24px Baseline Grid, Scenario: 1-tap appliance state advancement with stamp animation (+13 more)
 
 ### Community 13 - "package.json"
-Cohesion: 0.10
-Nodes (19): name, private, type, version, autoprefixer, jsdom, postcss, react-dom (+11 more)
+Cohesion: 0.12
+Nodes (16): name, private, type, version, autoprefixer, jsdom, postcss, react-dom (+8 more)
 
-### Community 14 - "ApplianceCard.tsx"
+### Community 14 - "types/index.ts"
 Cohesion: 0.17
-Nodes (12): ApplianceCard(), ApplianceCardProps, getApplianceIcon(), getNextStateConfig(), NextStateConfig, DEFAULT_LABELS, DEFAULT_ROTATIONS, StatusStamp() (+4 more)
+Nodes (22): AddApplianceModal(), AddApplianceModalProps, CANONICAL_STATES, ICON_OPTIONS, PRESET_TEMPLATES, ApplianceCard(), ApplianceCardProps, computeNextState() (+14 more)
 
 ### Community 15 - "Household Coordination App — Future Features & Product Roadmap"
-Cohesion: 0.12
-Nodes (16): 1. Executive Roadmap Vision & Philosophy, 2.1 Overview & Motivation, 2.2 Functional Architecture & State Graph Builder, 2. Feature Specification: Fully Customizable Appliance Engine, 3.1 Effort Weight Karma & Bidding Market, 3.2 Chore Check-Off with Polaroid/Receipt Photo Proof, 3.3 Grace Periods & Adaptive Away Rotations, 3. Feature Specification: Advanced Chore Economics & Ledger (+8 more)
+Cohesion: 0.08
+Nodes (23): 1. Executive Roadmap Vision & Philosophy, 2.1 Overview & Motivation, 2.2 Functional Architecture & State Graph Builder, 2. Feature Specification: Fully Customizable Appliance Engine, 3.1 Effort Weight Karma & Bidding Market, 3.2 Chore Check-Off with Polaroid/Receipt Photo Proof, 3.3 Grace Periods & Adaptive Away Rotations, 3. Feature Specification: Advanced Chore Economics & Ledger (+15 more)
 
 ### Community 16 - "devDependencies"
 Cohesion: 0.12
@@ -241,9 +240,9 @@ Nodes (13): ambient-hardware-pwa-integration Specification, Purpose, Requirement
 Cohesion: 0.14
 Nodes (13): Purpose, Requirement: Inertial Touch Gesture Page Turns, Requirement: Spring Physics and Shared Element Transitions, Requirement: Tension-Based Drag to Claim, Requirements, Scenario: Dragging sticky note past tear-off threshold, Scenario: Expanding appliance card into detailed slip, Scenario: Morphing chore card into swap proposal slip (+5 more)
 
-### Community 22 - "test_appliance_state.py"
-Cohesion: 0.41
-Nodes (11): AsyncClient, asyncio, AsyncSession, test_appliance_forced_state_transition(), test_appliance_invalid_transition_without_force_fails(), test_appliance_sequential_state_transitions(), test_appliance_state_cross_household_returns_404(), test_appliance_state_history() (+3 more)
+### Community 22 - "Appliance"
+Cohesion: 0.08
+Nodes (50): Appliance, ApplianceStateLog, create_appliance(), get_appliance_history(), ingest_sensor_event(), list_appliances(), AsyncSession, get (+42 more)
 
 ### Community 24 - "ADDED Requirements"
 Cohesion: 0.17
@@ -269,9 +268,9 @@ Nodes (10): AsyncClient, asyncio, AsyncSession, test_admin_can_unclaim_other_mem
 Cohesion: 0.18
 Nodes (11): dependencies, canvas-confetti, clsx, framer-motion, lucide-react, react, react-dom, roughjs (+3 more)
 
-### Community 30 - "test_appliance_sensor.py"
-Cohesion: 0.49
-Nodes (9): AsyncClient, asyncio, AsyncSession, test_sensor_event_appliance_not_found_returns_404(), test_sensor_event_completes_cycle_from_running(), test_sensor_event_ignored_when_no_threshold_met(), test_sensor_event_starts_cycle_from_dirty(), test_sensor_event_starts_cycle_from_empty() (+1 more)
+### Community 30 - "Requirements"
+Cohesion: 0.10
+Nodes (20): Purpose, Requirement: 4-State Ergonomic Button System, Requirement: 60-30-10 Warm Anti-Glare Color Palette, Requirement: IdentitySticker Primitive for Roommates and Chores, Requirement: Intentional Negative Space and Seamless Unified Canvas, Requirement: StatusStamp Primitive for System State Output, Requirement: Zero-Dependency Web Audio Synthesizer, Requirements (+12 more)
 
 ### Community 31 - "test_households.py"
 Cohesion: 0.47
@@ -305,29 +304,29 @@ Nodes (9): ADDED Requirements, Requirement: Micro-Haptic Signatures, Requirement
 Cohesion: 0.22
 Nodes (9): Fast-Forward Artifact Generation, Skill: openspec-ff-change, Change Initialization & Scaffolding, OpenSpec Schema Selection, Skill: openspec-new-change, Fast-Forward Artifact Creation Procedure, Workflow: opsx-ff, New Change Creation Procedure (+1 more)
 
-### Community 39 - "push_service.py"
-Cohesion: 0.50
-Nodes (8): create_appliance_payload(), create_chore_payload(), notify_household_appliance_clean(), notify_member_chore_assignment(), Any, AsyncSession, UUID, send_push_notification()
+### Community 39 - "PushSubscription"
+Cohesion: 0.22
+Nodes (25): PushSubscription, create_appliance_payload(), create_appliance_timer_payload(), create_chore_payload(), notify_household_appliance_clean(), notify_household_appliance_timer_complete(), notify_member_chore_assignment(), Any (+17 more)
 
 ### Community 40 - "test_appliances_crud.py"
-Cohesion: 0.44
-Nodes (8): AsyncClient, asyncio, AsyncSession, test_appliances_unauthenticated_returns_401(), test_create_custom_appliance_default_type(), test_create_custom_appliance_success(), test_list_appliances_cross_household_isolation(), test_list_appliances_default_seeded()
+Cohesion: 0.36
+Nodes (12): AsyncClient, asyncio, AsyncSession, test_appliances_unauthenticated_returns_401(), test_create_custom_appliance_default_type(), test_create_custom_appliance_invalid_steps_fails(), test_create_custom_appliance_success(), test_create_custom_appliance_with_cycle_steps_and_timer() (+4 more)
 
 ### Community 41 - "test_chore_swap.py"
 Cohesion: 0.44
 Nodes (8): AsyncClient, asyncio, AsyncSession, test_swap_chore_assignments_success(), test_swap_chore_different_weeks_fails(), test_swap_chore_same_assignment_fails(), test_swap_completed_chore_fails(), test_swap_cross_household_returns_404()
 
-### Community 42 - "test_full_roommate_lifecycle_simulation"
-Cohesion: 0.22
-Nodes (7): MockWebSocket, AsyncClient, asyncio, AsyncSession, Mock WebSocket to capture broadcasts during multi-client simulation., Comprehensive End-to-End Simulation of a 3-Roommate Household: 1. Roommate 1…, test_full_roommate_lifecycle_simulation()
+### Community 42 - "SettingsView.tsx"
+Cohesion: 0.19
+Nodes (11): Header(), HeaderProps, NavTab, SettingsView(), SettingsViewProps, NotebookTab(), NotebookTabProps, useWakeLock() (+3 more)
 
 ### Community 43 - "manifest.json"
 Cohesion: 0.22
 Nodes (8): background_color, description, display, icons, name, short_name, start_url, theme_color
 
 ### Community 44 - "compilerOptions"
-Cohesion: 0.22
-Nodes (8): compilerOptions, allowSyntheticDefaultImports, composite, module, moduleResolution, skipLibCheck, include, vite.config.ts
+Cohesion: 0.25
+Nodes (7): compilerOptions, allowSyntheticDefaultImports, composite, module, moduleResolution, skipLibCheck, include
 
 ### Community 45 - "Household Core Specification"
 Cohesion: 0.22
@@ -398,8 +397,8 @@ Cohesion: 0.47
 Nodes (6): Backend Python Dependencies, FastAPI Backend Service, PostgreSQL Database Service, Frontend Nginx Service, Docker Compose Stack, Frontend HTML Entrypoint
 
 ### Community 62 - "test_migrations.py"
-Cohesion: 0.33
-Nodes (4): alembic_config(), asyncio, test_async_migration_upgrade_and_downgrade(), fixture
+Cohesion: 0.29
+Nodes (4): alembic_config(), asyncio, fixture, test_async_migration_upgrade_and_downgrade()
 
 ### Community 63 - "Household Coordination App Documentation"
 Cohesion: 0.33
@@ -421,13 +420,13 @@ Nodes (5): Delta Specs Format (Added/Modified/Removed), Intelligent Delta Spec M
 Cohesion: 0.40
 Nodes (5): scripts, build, dev, preview, test
 
-### Community 68 - "PWAInstallPrompt.tsx"
-Cohesion: 0.50
-Nodes (3): BeforeInstallPromptEvent, PWAInstallPrompt(), PWAInstallPromptProps
+### Community 68 - "Requirement: Core Appliance State Machine"
+Cohesion: 0.11
+Nodes (17): ADDED Requirements, MODIFIED Requirements, Requirement: Core Appliance State Machine, Requirement: Mandatory Run Timers and Human Confirmation, Requirement: Preset and Custom Appliance Management, Scenario: Aborting / Resetting an active cycle, Scenario: Advancing appliance to its deterministic next state, Scenario: Creating a custom appliance with a linear cycle (+9 more)
 
-### Community 69 - "confetti.ts"
-Cohesion: 0.60
-Nodes (3): ConfettiOptions, triggerPaperDustCelebration(), canvas-confetti
+### Community 69 - "ChoreDutyView"
+Cohesion: 0.47
+Nodes (4): ChoreDutyView(), ConfettiOptions, triggerPaperDustCelebration(), canvas-confetti
 
 ### Community 70 - "Notification System Specification"
 Cohesion: 0.40
@@ -453,24 +452,76 @@ Nodes (4): Delta Spec Synchronization, /opsx-sync Command, Delta Sync Protocol, 
 Cohesion: 0.50
 Nodes (3): AsyncClient, asyncio, test_health_check()
 
+### Community 76 - "Requirement: Hybrid Completion Tracking"
+Cohesion: 0.12
+Nodes (15): ADDED Requirements, MODIFIED Requirements, Requirement: Collaborative Weekly Chore Reassignment, Requirement: Dynamic Bucket Placement for New Chores, Requirement: Hybrid Completion Tracking, Requirement: Weekly Duty Assignment and Fair Rotation, Scenario: Adding a chore mid-week, Scenario: Away member handling in bucket rotation (+7 more)
+
+### Community 79 - "Decisions"
+Cohesion: 0.17
+Nodes (11): Context, Decision 1: Positional Step Slots (`state_step_1` .. `state_step_5`) on `appliances`, Decision 2: Canonical Universe of Supported States, Decision 3: Deterministic Next-State Computation, Decision 4: Mandatory Run Timer & Confirmation Gate, Decision 5: Cycle Interruption / Abort Action, Decision 6: Editing Cycle Steps with Auto-Reset Safeguard, Decision 7: Legacy Appliance Migration Strategy (+3 more)
+
+### Community 80 - "test_chore_completion.py"
+Cohesion: 0.47
+Nodes (9): AsyncClient, asyncio, AsyncSession, test_complete_and_log_cross_household_returns_404(), test_complete_by_admin_even_if_assigned_to_other(), test_complete_by_assigned_member_success(), test_complete_by_non_assigned_non_admin_fails_403(), test_log_continuous_duty_chore() (+1 more)
+
+### Community 82 - "Technical Design: Warm Minimalist UI Revamp"
+Cohesion: 0.20
+Nodes (9): 1. Architectural Approach, 2. CSS Variable Overhaul (`frontend/src/index.css`), 3.1 `StatusStamp.tsx`, 3.2 `IdentitySticker.tsx`, 3.3 The 4-State Button Pattern, 3. Tactile Primitives Specification, 4. Web Audio Synthesizer (`soundEffects.ts`), 5. Deprecation & Cleanup Plan (+1 more)
+
+### Community 83 - "Decisions"
+Cohesion: 0.22
+Nodes (8): 1. Partitioning Strategy: Greedy LPT (Longest Processing Time) Bucket Partitioning, 2. Cyclical Weekly Rotation, 3. Separation of Persistent Buckets and Transient Weekly Overrides, 4. Assigned Member Check / Uncheck Authorization, Context, Decisions, Goals / Non-Goals, Risks / Trade-offs
+
+### Community 84 - "test_chore_up_for_grabs.py"
+Cohesion: 0.46
+Nodes (7): AsyncClient, asyncio, AsyncSession, test_claim_completed_chore_fails(), test_up_for_grabs_cross_household_returns_404(), test_up_for_grabs_pool_and_claim_unassigned(), test_up_for_grabs_pool_includes_away_member_chores()
+
+### Community 85 - "2026-08-28-chore-bucket-rotation-and-uncheck/proposal.md"
+Cohesion: 0.29
+Nodes (6): Capabilities, Impact, Modified Capabilities, New Capabilities, What Changes, Why
+
+### Community 88 - "custom-appliance-engine/proposal.md"
+Cohesion: 0.29
+Nodes (6): Capabilities, Impact, Modified Capabilities, New Capabilities, What Changes, Why
+
+### Community 89 - "warm-minimalist-ui-revamp/proposal.md"
+Cohesion: 0.29
+Nodes (6): Capabilities, Impact, Modified Capabilities, New Capabilities, What Changes, Why
+
+### Community 90 - "custom-appliance-engine/tasks.md"
+Cohesion: 0.33
+Nodes (5): 1. Database Schema & Migration, 2. Backend API & Transition Validation, 3. Frontend Types, Rubber Stamps, & Timer Engine, 4. Guided "Add & Edit Appliance" Modal UI, 5. Verification & Testing
+
+### Community 91 - "Implementation Tasks: Warm Minimalist UI Revamp"
+Cohesion: 0.33
+Nodes (5): Implementation Tasks: Warm Minimalist UI Revamp, Phase 1: Design Tokens & CSS Overhaul, Phase 2: Core Components & Audio Synthesis (TDD), Phase 3: Appliance & Chore View Modernization, Phase 4: Verification & Regression Testing
+
+### Community 92 - "Q: Why does Member connect Core Database Models & Chore Service to Backend API Routers & Alembic Environment, Household Creation & Join Tests, Member Admin & Permissions Tests, and Web Push Subscriptions & Notification Service?"
+Cohesion: 0.40
+Nodes (4): Answer, Outcome, Q: Why does Member connect Core Database Models & Chore Service to Backend API Routers & Alembic Environment, Household Creation & Join Tests, Member Admin & Permissions Tests, and Web Push Subscriptions & Notification Service?, Source Nodes
+
+### Community 93 - "2026-08-28-chore-bucket-rotation-and-uncheck/tasks.md"
+Cohesion: 0.50
+Nodes (3): 1. Backend Core & API Implementation (TDD), 2. Frontend Stationery UI & Interaction (TDD), 3. End-to-End Verification & Knowledge Graph Sync
+
 ## Knowledge Gaps
-- **365 isolated node(s):** `UseHouseholdWebSocketOptions`, `ApplianceCardProps`, `NextStateConfig`, `StatusStampProps`, `StatusStampStatus` (+360 more)
-  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 465 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
-- **23 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **442 isolated node(s):** `name`, `private`, `version`, `type`, `dev` (+437 more)
+  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 533 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
+- **8 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `Member` connect `Member` to `households.py`, `test_full_roommate_lifecycle_simulation`, `test_member_admin.py`, `test_households.py`?**
-  _High betweenness centrality (0.020) - this node is a cross-community bridge._
+- **Why does `Member` connect `Member` to `test_websockets.py`, `PushSubscription`, `test_member_admin.py`, `Appliance`, `test_households.py`?**
+  _High betweenness centrality (0.019) - this node is a cross-community bridge._
 - **Why does `devDependencies` connect `devDependencies` to `package.json`?**
-  _High betweenness centrality (0.009) - this node is a cross-community bridge._
-- **Why does `react` connect `ChoreDutyView.tsx` to `vitest`, `types/index.ts`, `stationery.test.tsx`, `App.tsx`, `package.json`, `ApplianceCard.tsx`, `Onboarding.tsx`?**
-  _High betweenness centrality (0.008) - this node is a cross-community bridge._
-- **Are the 49 inferred relationships involving `Member` (e.g. with `create_appliance()` and `get_appliance_history()`) actually correct?**
-  _`Member` has 49 INFERRED edges - model-reasoned connections that need verification._
-- **Are the 24 inferred relationships involving `Household` (e.g. with `login()` and `activate_rotation()`) actually correct?**
-  _`Household` has 24 INFERRED edges - model-reasoned connections that need verification._
+  _High betweenness centrality (0.013) - this node is a cross-community bridge._
+- **Why does `ChoreAssignment` connect `Member` to `test_chore_swap.py`, `test_chore_completion.py`, `test_chore_rotation.py`, `test_chore_up_for_grabs.py`, `Appliance`, `test_chore_unclaim_and_management.py`?**
+  _High betweenness centrality (0.010) - this node is a cross-community bridge._
+- **Are the 51 inferred relationships involving `Member` (e.g. with `create_appliance()` and `get_appliance_history()`) actually correct?**
+  _`Member` has 51 INFERRED edges - model-reasoned connections that need verification._
+- **Are the 25 inferred relationships involving `Household` (e.g. with `login()` and `activate_rotation()`) actually correct?**
+  _`Household` has 25 INFERRED edges - model-reasoned connections that need verification._
 - **Are the 22 inferred relationships involving `ChoreAssignment` (e.g. with `claim_chore_assignment()` and `complete_chore_assignment()`) actually correct?**
   _`ChoreAssignment` has 22 INFERRED edges - model-reasoned connections that need verification._
 - **Are the 26 inferred relationships involving `Chore` (e.g. with `claim_chore_assignment()` and `complete_chore_assignment()`) actually correct?**
