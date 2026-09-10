@@ -111,4 +111,47 @@ describe('Header Component', () => {
       expect(screen.getByText(/copied/i)).toBeInTheDocument();
     });
   });
+
+  it('renders audio mute toggle button and toggles sound mute state on click', async () => {
+    const user = userEvent.setup();
+    const { soundEffects } = await import('../utils/soundEffects');
+    const { soundEngine } = await import('../utils/soundEngine');
+    vi.spyOn(soundEffects, 'getMuted').mockReturnValue(false);
+    const toggleSpy = vi.spyOn(soundEffects, 'toggleMuted').mockReturnValue(true);
+    const soundEngineSpy = vi.spyOn(soundEngine, 'setEnabled');
+
+    render(
+      <Header
+        household={mockHousehold}
+        member={mockActiveMember}
+        activeTab="appliances"
+        onTabChange={vi.fn()}
+      />
+    );
+
+    const muteBtn = screen.getByRole('button', { name: /mute audio feedback/i });
+    expect(muteBtn).toBeInTheDocument();
+
+    await user.click(muteBtn);
+
+    expect(toggleSpy).toHaveBeenCalled();
+    expect(soundEngineSpy).toHaveBeenCalledWith(false);
+    expect(screen.getByRole('button', { name: /unmute audio feedback/i })).toBeInTheDocument();
+  });
+
+  it('does not render SpiralSpine component', () => {
+    const { container } = render(
+      <Header
+        household={mockHousehold}
+        member={mockActiveMember}
+        activeTab="appliances"
+        onTabChange={vi.fn()}
+      />
+    );
+
+    // No spiral coils or spiral spines
+    expect(container.querySelector('[aria-label="Spiral binding"]')).toBeNull();
+    expect(container.querySelector('svg[data-testid="spiral-loop"]')).toBeNull();
+  });
 });
+

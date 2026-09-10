@@ -10,12 +10,14 @@ import {
   Waves,
   Wind,
   CookingPot,
+  Loader2,
 } from 'lucide-react';
 import { Appliance, ApplianceState, ApplianceType } from '../types';
 import { formatElapsedTime } from '../utils/time';
-import { soundEngine } from '../utils/soundEngine';
+import { soundEffects } from '../utils/soundEffects';
 import { PaperCard } from './stationery/PaperCard';
-import { RubberStampBadge } from './stationery/RubberStampBadge';
+import { StatusStamp } from './stationery/StatusStamp';
+import { IdentitySticker } from './stationery/IdentitySticker';
 
 interface ApplianceCardProps {
   appliance: Appliance;
@@ -37,21 +39,21 @@ function getNextStateConfig(type: ApplianceType, currentState: ApplianceState): 
         return {
           next: 'running',
           label: 'Start Cycle',
-          actionBg: 'bg-blue-600 hover:bg-blue-700 text-white',
+          actionBg: 'bg-accent-slate hover:bg-[#1E334A] text-white',
           icon: Play,
         };
       case 'running':
         return {
           next: 'clean_needs_emptying',
           label: 'Mark Clean',
-          actionBg: 'bg-emerald-600 hover:bg-emerald-700 text-white',
+          actionBg: 'bg-accent-sage hover:bg-[#2F523F] text-white',
           icon: CheckCircle2,
         };
       case 'clean_needs_emptying':
         return {
           next: 'empty',
           label: 'Mark Emptied',
-          actionBg: 'bg-slate-700 hover:bg-slate-800 text-white',
+          actionBg: 'bg-accent-slate hover:bg-[#1E334A] text-white',
           icon: Trash2,
         };
       case 'dirty':
@@ -59,7 +61,7 @@ function getNextStateConfig(type: ApplianceType, currentState: ApplianceState): 
         return {
           next: 'running',
           label: 'Start Cycle',
-          actionBg: 'bg-blue-600 hover:bg-blue-700 text-white',
+          actionBg: 'bg-accent-slate hover:bg-[#1E334A] text-white',
           icon: Play,
         };
     }
@@ -71,21 +73,21 @@ function getNextStateConfig(type: ApplianceType, currentState: ApplianceState): 
       return {
         next: 'running',
         label: 'Start Cycle',
-        actionBg: 'bg-blue-600 hover:bg-blue-700 text-white',
+        actionBg: 'bg-accent-slate hover:bg-[#1E334A] text-white',
         icon: Play,
       };
     case 'dirty':
       return {
         next: 'running',
         label: 'Start Cycle',
-        actionBg: 'bg-blue-600 hover:bg-blue-700 text-white',
+        actionBg: 'bg-accent-slate hover:bg-[#1E334A] text-white',
         icon: Play,
       };
     case 'running':
       return {
         next: 'clean_needs_emptying',
         label: 'Mark Clean',
-        actionBg: 'bg-emerald-600 hover:bg-emerald-700 text-white',
+        actionBg: 'bg-accent-sage hover:bg-[#2F523F] text-white',
         icon: CheckCircle2,
       };
     case 'clean_needs_emptying':
@@ -93,7 +95,7 @@ function getNextStateConfig(type: ApplianceType, currentState: ApplianceState): 
       return {
         next: 'dirty',
         label: 'Mark Emptied',
-        actionBg: 'bg-slate-700 hover:bg-slate-800 text-white',
+        actionBg: 'bg-accent-slate hover:bg-[#1E334A] text-white',
         icon: Trash2,
       };
   }
@@ -122,7 +124,7 @@ export function ApplianceCard({ appliance, onUpdateState, onViewHistory }: Appli
   const handleAction = async () => {
     setLoading(true);
     try {
-      soundEngine.playStampSound();
+      soundEffects.playWoodClick();
       await onUpdateState(appliance.id, nextConfig.next);
     } finally {
       setLoading(false);
@@ -140,7 +142,7 @@ export function ApplianceCard({ appliance, onUpdateState, onViewHistory }: Appli
       <div>
         <div className="flex items-start justify-between gap-2 mb-3">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-amber-100/80 dark:bg-[#2C3952] border border-amber-200/80 dark:border-slate-600 flex items-center justify-center text-amber-900 dark:text-amber-200 shadow-sm">
+            <div className="w-10 h-10 rounded-xl bg-stone-100 dark:bg-[#2C3952] border border-border-stone dark:border-slate-600 flex items-center justify-center text-accent-slate dark:text-slate-200 shadow-sm">
               <Icon className="w-5 h-5" />
             </div>
             <div>
@@ -156,7 +158,7 @@ export function ApplianceCard({ appliance, onUpdateState, onViewHistory }: Appli
           <button
             type="button"
             onClick={() => onViewHistory(appliance)}
-            className="p-1.5 text-ink-graphite hover:text-ink-navy dark:text-slate-400 dark:hover:text-slate-200 hover:bg-amber-100/60 dark:hover:bg-slate-700 rounded-lg transition"
+            className="p-1.5 text-ink-graphite hover:text-ink-navy dark:text-slate-400 dark:hover:text-slate-200 hover:bg-stone-100 dark:hover:bg-slate-700 rounded-lg transition"
             title="View Activity History"
             aria-label="History"
           >
@@ -164,42 +166,66 @@ export function ApplianceCard({ appliance, onUpdateState, onViewHistory }: Appli
           </button>
         </div>
 
-        {/* Rubber Stamp Status Badge & Duration */}
+        {/* StatusStamp Badge & Duration */}
         <div className="flex items-center justify-between gap-3 my-3">
-          <RubberStampBadge
+          <StatusStamp
             status={appliance.current_state}
-            animated={true}
             size="md"
+            animated={true}
           />
 
-          <div className="flex items-center gap-1.5 text-xs text-ink-graphite dark:text-slate-400 font-mono font-medium shrink-0">
+          <div className="flex items-center gap-1.5 text-xs text-ink-graphite dark:text-slate-400 font-mono font-medium tabular-nums shrink-0">
             <Clock className="w-3.5 h-3.5 opacity-70" />
-            <span>{formatElapsedTime(appliance.state_updated_at)}</span>
+            <span className="tabular-nums">{formatElapsedTime(appliance.state_updated_at)}</span>
           </div>
         </div>
 
         {/* Actor Info */}
         <div className="flex items-center gap-1.5 text-xs text-ink-graphite dark:text-slate-400 mb-4 font-sans">
-          <User className="w-3.5 h-3.5 text-ink-muted" />
-          <span>
-            by{' '}
-            <strong className="font-sans font-semibold text-xs text-ink-navy dark:text-slate-200">
-              {appliance.updated_by_member ? appliance.updated_by_member.nickname : 'System/Sensor'}
-            </strong>
-          </span>
+          {appliance.updated_by_member ? (
+            <>
+              <IdentitySticker name={appliance.updated_by_member.nickname} size="sm" />
+              <span>
+                by{' '}
+                <strong className="font-sans font-semibold text-xs text-ink-navy dark:text-slate-200">
+                  {appliance.updated_by_member.nickname}
+                </strong>
+              </span>
+            </>
+          ) : (
+            <>
+              <User className="w-3.5 h-3.5 text-ink-muted" />
+              <span>
+                by{' '}
+                <strong className="font-sans font-semibold text-xs text-ink-navy dark:text-slate-200">
+                  System/Sensor
+                </strong>
+              </span>
+            </>
+          )}
         </div>
       </div>
 
-      {/* 1-Tap Next Action Button */}
+      {/* Full-width 4-state action button */}
       <button
         type="button"
         disabled={loading}
         onClick={handleAction}
-        className={`w-full py-2.5 px-4 rounded-lg font-sans text-sm font-bold tracking-wide shadow-paper-sm hover:shadow-paper-md transition-all active:scale-[0.98] flex items-center justify-center gap-2 ${nextConfig.actionBg} disabled:opacity-50`}
+        className={`w-full min-h-[46px] py-3 px-4 rounded-xl font-sans text-sm font-bold tracking-wide transition-all duration-150 flex items-center justify-center gap-2 shadow-[0_2px_0_rgba(30,35,43,0.12)] hover:translate-y-[-1px] hover:shadow-[0_3px_0_rgba(30,35,43,0.15)] focus-visible:ring-2 focus-visible:ring-accent-slate focus-visible:outline-none active:translate-y-[1px] active:shadow-none disabled:opacity-60 disabled:pointer-events-none ${nextConfig.actionBg}`}
       >
-        <ActionIcon className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-        <span>{loading ? 'Updating...' : nextConfig.label}</span>
+        {loading ? (
+          <>
+            <Loader2 className="w-4 h-4 animate-spin" />
+            <span>Updating...</span>
+          </>
+        ) : (
+          <>
+            <ActionIcon className="w-4 h-4" />
+            <span>{nextConfig.label}</span>
+          </>
+        )}
       </button>
     </PaperCard>
   );
 }
+

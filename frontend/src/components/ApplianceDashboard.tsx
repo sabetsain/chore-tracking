@@ -10,7 +10,6 @@ import { Appliance, ApplianceState, ApplianceStateLog, ApplianceType } from '../
 import { ApplianceCard } from './ApplianceCard';
 import { formatDateTime } from '../utils/time';
 import { PaperCard } from './stationery/PaperCard';
-import { PaperclipFastener } from './stationery/PaperclipFastener';
 
 interface ApplianceDashboardProps {
   appliances: Appliance[];
@@ -85,7 +84,7 @@ export function ApplianceDashboard({
         <button
           type="button"
           onClick={() => setShowAddModal(true)}
-          className="inline-flex items-center self-start sm:self-center gap-1.5 px-4 py-2 bg-indigo-700 hover:bg-indigo-800 text-white text-sm font-sans font-bold rounded-lg shadow-paper-sm hover:shadow-paper-md transition-all active:scale-95"
+          className="inline-flex items-center self-start sm:self-center gap-1.5 px-4 py-2 bg-accent-slate hover:bg-[#1E334A] text-white text-sm font-sans font-bold rounded-lg shadow-paper-sm hover:shadow-paper-md transition-all active:scale-95"
         >
           <Plus className="w-4 h-4" />
           <span>Add Appliance</span>
@@ -95,7 +94,7 @@ export function ApplianceDashboard({
       {/* Grid of Appliances */}
       {appliances.length === 0 ? (
         <PaperCard variant="card" className="p-8 text-center border-dashed border-2 border-stone-300 dark:border-slate-700">
-          <Sparkles className="w-8 h-8 text-amber-500 mx-auto mb-2 opacity-80" />
+          <Sparkles className="w-8 h-8 text-accent-slate mx-auto mb-2 opacity-80" />
           <p className="text-base font-serif font-bold text-ink-navy dark:text-slate-200">No appliances added yet</p>
           <p className="text-xs text-ink-muted dark:text-slate-400 mt-1 font-sans">
             Add a dishwasher, washing machine, or dryer to start tracking!
@@ -130,19 +129,12 @@ export function ApplianceDashboard({
               transition={{ type: 'spring', stiffness: 350, damping: 25 }}
               className="relative max-w-md w-full"
             >
-              <motion.div
-                initial={{ y: -20, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                transition={{ delay: 0.08, type: 'spring', stiffness: 400, damping: 20 }}
-              >
-                <PaperclipFastener position="top-left" />
-              </motion.div>
               <PaperCard
-                variant="manila"
+                variant="sheet"
                 layoutId={`appliance-${selectedAppliance.id}`}
-                className="-rotate-1 p-6 shadow-paper-lifted max-h-[85vh] flex flex-col border border-amber-300/80 dark:border-slate-600"
+                className="-rotate-1 p-6 shadow-paper-lifted max-h-[85vh] flex flex-col border border-border-stone dark:border-slate-600"
               >
-                <div className="flex items-center justify-between pb-3 border-b border-amber-300/60 dark:border-slate-600">
+                <div className="flex items-center justify-between pb-3 border-b border-border-stone dark:border-slate-600">
                   <div>
                     <h3 className="font-serif font-bold text-xl text-ink-navy dark:text-slate-100">
                       Activity History
@@ -154,7 +146,7 @@ export function ApplianceDashboard({
                   <button
                     type="button"
                     onClick={() => setSelectedAppliance(null)}
-                    className="p-1 rounded-lg text-ink-muted hover:text-ink-navy dark:text-slate-400 dark:hover:text-slate-200 hover:bg-amber-200/50 dark:hover:bg-slate-700 transition"
+                    className="p-1 rounded-lg text-ink-muted hover:text-ink-navy dark:text-slate-400 dark:hover:text-slate-200 hover:bg-stone-100 dark:hover:bg-slate-700 transition"
                     aria-label="Close History"
                   >
                     <X className="w-5 h-5" />
@@ -170,7 +162,7 @@ export function ApplianceDashboard({
                     historyLogs.map((log) => (
                       <div
                         key={log.id}
-                        className="p-3 bg-paper-sheet dark:bg-[#1A2234] rounded-lg border border-amber-200/80 dark:border-slate-700 flex items-center justify-between text-xs shadow-paper-sm"
+                        className="p-3 bg-paper-sheet dark:bg-[#1A2234] rounded-lg border border-border-stone dark:border-slate-700 flex items-center justify-between text-xs shadow-paper-sm"
                       >
                         <div>
                           <div className="font-sans font-semibold text-sm text-ink-navy dark:text-slate-100 capitalize">
@@ -195,11 +187,11 @@ export function ApplianceDashboard({
                   )}
                 </div>
 
-                <div className="pt-3 border-t border-amber-300/60 dark:border-slate-600">
+                <div className="pt-3 border-t border-border-stone dark:border-slate-600">
                   <button
                     type="button"
                     onClick={() => setSelectedAppliance(null)}
-                    className="w-full py-2.5 bg-paper-card dark:bg-[#222D42] hover:bg-amber-100/60 dark:hover:bg-[#2C3952] text-ink-navy dark:text-slate-200 font-sans text-sm font-bold rounded-lg border border-stone-300 dark:border-slate-600 shadow-paper-sm transition active:scale-[0.98]"
+                    className="w-full py-2.5 bg-paper-card dark:bg-[#222D42] hover:bg-stone-100 dark:hover:bg-[#2C3952] text-ink-navy dark:text-slate-200 font-sans text-sm font-bold rounded-lg border border-stone-300 dark:border-slate-600 shadow-paper-sm transition active:scale-[0.98]"
                   >
                     Close
                   </button>
@@ -226,13 +218,6 @@ export function ApplianceDashboard({
               transition={{ type: 'spring', stiffness: 350, damping: 25 }}
               className="relative max-w-md w-full"
             >
-              <motion.div
-                initial={{ y: -20, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                transition={{ delay: 0.08, type: 'spring', stiffness: 400, damping: 20 }}
-              >
-                <PaperclipFastener position="top-left" />
-              </motion.div>
               <PaperCard
                 variant="sheet"
                 className="rotate-1 p-6 shadow-paper-lifted border border-stone-300 dark:border-slate-700"
@@ -269,7 +254,7 @@ export function ApplianceDashboard({
                       placeholder="Appliance name (e.g. Kitchen Dishwasher)"
                       value={newAppName}
                       onChange={(e) => setNewAppName(e.target.value)}
-                      className="w-full px-3.5 py-2.5 bg-paper-card dark:bg-[#222D42] border border-stone-300 dark:border-slate-600 rounded-lg text-sm text-ink-navy dark:text-slate-100 placeholder:text-ink-muted dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-amber-700 dark:focus:ring-amber-500 transition font-sans"
+                      className="w-full px-3.5 py-2.5 bg-paper-card dark:bg-[#222D42] border border-stone-300 dark:border-slate-600 rounded-lg text-sm text-ink-navy dark:text-slate-100 placeholder:text-ink-muted dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-accent-slate transition font-sans"
                     />
                   </div>
 
@@ -280,7 +265,7 @@ export function ApplianceDashboard({
                     <select
                       value={newAppType}
                       onChange={(e) => setNewAppType(e.target.value as ApplianceType)}
-                      className="w-full px-3.5 py-2.5 bg-paper-card dark:bg-[#222D42] border border-stone-300 dark:border-slate-600 rounded-lg text-sm text-ink-navy dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-amber-700 dark:focus:ring-amber-500 transition font-sans"
+                      className="w-full px-3.5 py-2.5 bg-paper-card dark:bg-[#222D42] border border-stone-300 dark:border-slate-600 rounded-lg text-sm text-ink-navy dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-accent-slate transition font-sans"
                     >
                       <option value="dishwasher">Dishwasher</option>
                       <option value="washer">Washing Machine</option>
@@ -299,7 +284,7 @@ export function ApplianceDashboard({
                     <button
                       type="submit"
                       disabled={submittingAdd}
-                      className="flex-1 py-2.5 bg-indigo-700 hover:bg-indigo-800 text-white text-sm font-sans font-bold rounded-lg shadow-paper-sm transition disabled:opacity-50"
+                      className="flex-1 py-2.5 bg-accent-slate hover:bg-[#1E334A] text-white text-sm font-sans font-bold rounded-lg shadow-paper-sm transition disabled:opacity-50"
                     >
                       {submittingAdd ? 'Adding...' : 'Save Appliance'}
                     </button>

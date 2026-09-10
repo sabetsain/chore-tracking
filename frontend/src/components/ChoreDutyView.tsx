@@ -5,7 +5,6 @@ import {
   ArrowLeftRight,
   Moon,
   Sun,
-  User,
   Star,
   RotateCcw,
   Shuffle,
@@ -19,7 +18,9 @@ import { CreateChoreModal } from './CreateChoreModal';
 import { PaperCard } from './stationery/PaperCard';
 import { ScribbleCheckbox } from './stationery/ScribbleCheckbox';
 import { TallyCounter } from './stationery/TallyCounter';
+import { IdentitySticker } from './stationery/IdentitySticker';
 import { soundEngine } from '../utils/soundEngine';
+import { soundEffects } from '../utils/soundEffects';
 import { triggerPaperDustCelebration } from '../utils/confetti';
 
 interface ChoreDutyViewProps {
@@ -108,7 +109,7 @@ export function ChoreDutyView({
   const handleComplete = async (assignmentId: string) => {
     setCompletingId(assignmentId);
     try {
-      soundEngine.playPencilScribbleSound();
+      soundEffects.playWoodClick();
       await onCompleteChore(assignmentId);
 
       // Check if all assigned duties are completed
@@ -126,6 +127,7 @@ export function ChoreDutyView({
   const handleUncomplete = async (assignmentId: string) => {
     setCompletingId(assignmentId);
     try {
+      soundEffects.playWoodClick();
       soundEngine.playEraserSound();
       if (onUncompleteChore) {
         await onUncompleteChore(assignmentId);
@@ -203,14 +205,14 @@ export function ChoreDutyView({
   const isAway = currentMember.status === 'away';
 
   return (
-    <div className="space-y-6 notebook-ruled-surface notebook-margin-guide p-4 sm:p-6 rounded-xl border border-stone-300 dark:border-slate-700">
+    <div className="space-y-8">
       {/* Top Banner / Member Status */}
       <PaperCard variant="card" className="p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border border-stone-200/80 dark:border-slate-700/80">
         <div>
           <div className="flex items-center gap-2">
-            <h2 className="text-2xl sm:text-3xl font-serif font-bold text-ink-navy dark:text-slate-100">Weekly Chore Duties</h2>
+            <h2 className="text-2xl sm:text-3xl font-sans font-bold text-ink-navy dark:text-slate-100">Weekly Chore Duties</h2>
             {isAway && (
-              <span className="px-2.5 py-0.5 rounded-lg bg-amber-100 dark:bg-amber-900/50 border border-amber-300 dark:border-amber-700 text-amber-900 dark:text-amber-200 text-xs font-sans font-semibold">
+              <span className="px-2.5 py-0.5 rounded-lg bg-stone-100 dark:bg-slate-800 border border-border-stone dark:border-slate-700 text-accent-slate dark:text-slate-300 text-xs font-sans font-semibold">
                 Away
               </span>
             )}
@@ -260,7 +262,7 @@ export function ChoreDutyView({
             <button
               type="button"
               onClick={() => setShowCreateModal(true)}
-              className="inline-flex items-center gap-1.5 px-4 py-2 bg-indigo-700 hover:bg-indigo-800 text-white text-sm font-sans font-bold rounded-lg shadow-paper-sm hover:shadow-paper-md transition-all active:scale-95"
+              className="inline-flex items-center gap-1.5 px-4 py-2 bg-accent-slate hover:bg-[#1E334A] text-white text-sm font-sans font-bold rounded-lg shadow-paper-sm hover:shadow-paper-md transition-all active:scale-95"
             >
               <Plus className="w-4 h-4" />
               <span>Add Chore</span>
@@ -273,8 +275,8 @@ export function ChoreDutyView({
             onClick={handleAwayToggle}
             className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-sans font-bold transition border shadow-paper-sm active:scale-95 ${
               isAway
-                ? 'bg-amber-600 hover:bg-amber-700 text-white border-amber-700'
-                : 'bg-paper-card dark:bg-[#222D42] hover:bg-amber-100/60 dark:hover:bg-slate-700 text-ink-navy dark:text-slate-200 border-stone-300 dark:border-slate-600'
+                ? 'bg-accent-slate hover:bg-[#1E334A] text-white border-accent-slate'
+                : 'bg-paper-card dark:bg-[#222D42] hover:bg-stone-100 dark:hover:bg-slate-700 text-ink-navy dark:text-slate-200 border-stone-300 dark:border-slate-600'
             }`}
           >
             {isAway ? (
@@ -284,7 +286,7 @@ export function ChoreDutyView({
               </>
             ) : (
               <>
-                <Moon className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+                <Moon className="w-4 h-4 text-accent-slate dark:text-slate-400" />
                 <span>{togglingAway ? 'Updating...' : 'Set Away'}</span>
               </>
             )}
@@ -294,9 +296,9 @@ export function ChoreDutyView({
 
       {/* Paused Rotation Banner */}
       {!isRotationActive && (
-        <PaperCard variant="card" className="p-6 text-center space-y-3 bg-amber-50/50 dark:bg-slate-800/60 border border-dashed border-amber-300 dark:border-amber-700/60">
+        <PaperCard variant="card" className="p-6 text-center space-y-3 bg-stone-50/50 dark:bg-slate-800/60 border border-dashed border-border-stone dark:border-slate-700">
           <div className="text-3xl">🎲</div>
-          <h3 className="text-lg font-serif font-bold text-ink-navy dark:text-slate-100">
+          <h3 className="text-lg font-sans font-bold text-ink-navy dark:text-slate-100">
             Chore rotation is currently paused. Chores are available in the Up-for-Grabs pool.
           </h3>
           <p className="text-xs text-ink-graphite dark:text-slate-400 max-w-md mx-auto font-sans">
@@ -308,7 +310,7 @@ export function ChoreDutyView({
                 type="button"
                 disabled={rotating}
                 onClick={handleActivateRotation}
-                className="inline-flex items-center gap-2 px-5 py-2.5 bg-indigo-700 hover:bg-indigo-800 text-white text-sm font-sans font-bold rounded-lg shadow-paper-sm hover:shadow-paper-md transition-all active:scale-95 disabled:opacity-50"
+                className="inline-flex items-center gap-2 px-5 py-2.5 bg-accent-slate hover:bg-[#1E334A] text-white text-sm font-sans font-bold rounded-lg shadow-paper-sm hover:shadow-paper-md transition-all active:scale-95 disabled:opacity-50"
               >
                 <RotateCcw className={`w-4 h-4 ${rotating ? 'animate-spin' : ''}`} />
                 <span>{rotating ? 'Distributing...' : '🎲 Distribute into Buckets & Start Rotation'}</span>
@@ -321,11 +323,11 @@ export function ChoreDutyView({
       {/* My Duties Section */}
       <div className="space-y-4 pt-2">
         <div className="flex items-center justify-between pb-1 border-b border-stone-200/80 dark:border-slate-700/80">
-          <h3 className="text-xl font-serif font-bold text-ink-navy dark:text-slate-100 flex items-center gap-2">
-            <User className="w-4 h-4 text-indigo-700 dark:text-indigo-400" />
+          <h3 className="text-xl font-sans font-bold text-ink-navy dark:text-slate-100 flex items-center gap-2">
+            <IdentitySticker name={currentMember.nickname} size="sm" />
             <span>My Duties ({currentMember.nickname})</span>
           </h3>
-          <span className="font-sans font-semibold text-xs text-ink-graphite dark:text-slate-300 bg-amber-100/60 dark:bg-slate-700 px-2.5 py-0.5 rounded border border-amber-200/60 dark:border-slate-600">
+          <span className="font-sans font-semibold text-xs text-ink-graphite dark:text-slate-300 bg-stone-100 dark:bg-slate-700 px-2.5 py-0.5 rounded border border-border-stone dark:border-slate-600">
             {myAssignments.filter((a) => a.status === 'completed').length} / {myAssignments.length} done
           </span>
         </div>
@@ -344,7 +346,7 @@ export function ChoreDutyView({
                 className={`p-5 flex flex-col justify-between transition border ${
                   assignment.status === 'completed'
                     ? 'border-emerald-300 dark:border-emerald-700 bg-emerald-50/40 dark:bg-emerald-950/20'
-                    : 'border-stone-200/80 dark:border-slate-700/80 hover:border-indigo-300 shadow-paper-sm'
+                    : 'border-stone-200/80 dark:border-slate-700/80 hover:border-accent-slate/50 shadow-paper-sm'
                 }`}
               >
                 <div>
@@ -361,7 +363,7 @@ export function ChoreDutyView({
                           }
                         }}
                         label={
-                          <span className="font-serif font-bold text-lg text-ink-navy dark:text-slate-100 leading-snug">
+                          <span className="font-sans font-bold text-lg text-ink-navy dark:text-slate-100 leading-snug">
                             {assignment.chore.title}
                           </span>
                         }
@@ -395,8 +397,8 @@ export function ChoreDutyView({
                           <Trash2 className="w-3.5 h-3.5" />
                         </button>
                       )}
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-highlighter-yellow text-amber-950 font-sans font-bold text-xs border border-amber-300/80 shadow-sm">
-                        <Star className="w-3 h-3 fill-amber-500 text-amber-600" />
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-stone-100 dark:bg-slate-800 text-ink-navy dark:text-slate-200 font-sans font-bold text-xs border border-border-stone dark:border-slate-700 shadow-sm">
+                        <Star className="w-3 h-3 fill-accent-slate text-accent-slate" />
                         {assignment.chore.effort_weight} pts
                       </span>
                     </div>
@@ -409,7 +411,8 @@ export function ChoreDutyView({
                   )}
 
                   <div className="flex items-center gap-2 mb-3">
-                    <span className="text-[11px] font-mono font-medium px-2 py-0.5 rounded bg-paper-manila dark:bg-slate-700 text-ink-graphite dark:text-slate-300 border border-amber-200/80 dark:border-slate-600">
+                    <IdentitySticker name={currentMember.nickname} size="sm" />
+                    <span className="text-[11px] font-mono font-medium px-2 py-0.5 rounded bg-stone-100 dark:bg-slate-700 text-ink-graphite dark:text-slate-300 border border-border-stone dark:border-slate-600">
                       {assignment.chore.completion_type === 'single_weekly'
                         ? 'Weekly check-off'
                         : 'Continuous duty'}
@@ -442,7 +445,7 @@ export function ChoreDutyView({
                           type="button"
                           disabled={completingId === assignment.id}
                           onClick={() => handleUncomplete(assignment.id)}
-                          className="flex-1 py-2 px-3 bg-amber-50/80 dark:bg-amber-950/40 hover:bg-amber-100 dark:hover:bg-amber-900/50 text-amber-900 dark:text-amber-200 font-sans font-semibold text-xs rounded-lg border border-amber-300/80 dark:border-amber-700 transition flex items-center justify-center gap-1.5 active:scale-95 disabled:opacity-50 shadow-paper-sm"
+                          className="flex-1 min-h-[44px] py-2 px-3 bg-stone-100 dark:bg-slate-800 hover:bg-stone-200 dark:hover:bg-slate-700 text-ink-navy dark:text-slate-200 font-sans font-semibold text-xs rounded-lg border border-border-stone dark:border-slate-700 shadow-[0_2px_0_rgba(30,35,43,0.12)] hover:translate-y-[-1px] focus-visible:ring-2 focus-visible:ring-accent-slate focus-visible:outline-none active:translate-y-[1px] active:shadow-none transition-all flex items-center justify-center gap-1.5 active:scale-95 disabled:opacity-50"
                           title="Undo chore completion"
                           aria-label="Undo chore completion"
                         >
@@ -454,7 +457,7 @@ export function ChoreDutyView({
                           type="button"
                           disabled={completingId === assignment.id}
                           onClick={() => handleComplete(assignment.id)}
-                          className="flex-1 py-2 px-3 bg-indigo-700 hover:bg-indigo-800 text-white font-sans font-bold text-sm rounded-lg shadow-paper-sm transition flex items-center justify-center gap-1.5 disabled:opacity-50 active:scale-95"
+                          className="flex-1 min-h-[44px] py-2 px-3 bg-accent-sage hover:bg-emerald-700 text-white font-sans font-bold text-sm rounded-lg shadow-[0_2px_0_rgba(30,35,43,0.12)] hover:translate-y-[-1px] hover:shadow-[0_3px_0_rgba(30,35,43,0.15)] focus-visible:ring-2 focus-visible:ring-accent-slate focus-visible:outline-none active:translate-y-[1px] active:shadow-none transition-all flex items-center justify-center gap-1.5 disabled:opacity-50"
                         >
                           <CheckCircle className="w-4 h-4" />
                           <span>{completingId === assignment.id ? 'Marking...' : 'Mark Done'}</span>
@@ -464,7 +467,7 @@ export function ChoreDutyView({
                       <button
                         type="button"
                         onClick={() => setActiveLogAssignment(assignment)}
-                        className="flex-1 py-2 px-3 bg-indigo-700 hover:bg-indigo-800 text-white font-sans font-bold text-sm rounded-lg shadow-paper-sm transition flex items-center justify-center gap-1.5 active:scale-95"
+                        className="flex-1 min-h-[44px] py-2 px-3 bg-accent-sage hover:bg-emerald-700 text-white font-sans font-bold text-sm rounded-lg shadow-[0_2px_0_rgba(30,35,43,0.12)] hover:translate-y-[-1px] hover:shadow-[0_3px_0_rgba(30,35,43,0.15)] focus-visible:ring-2 focus-visible:ring-accent-slate focus-visible:outline-none active:translate-y-[1px] active:shadow-none transition-all flex items-center justify-center gap-1.5"
                       >
                         <Plus className="w-4 h-4" />
                         <span>+ Log Duty</span>
@@ -476,7 +479,7 @@ export function ChoreDutyView({
                         type="button"
                         disabled={unclaimingId === assignment.id}
                         onClick={() => handleUnclaim(assignment.id)}
-                        className="py-2 px-3 bg-stone-100 dark:bg-slate-700 hover:bg-stone-200 dark:hover:bg-slate-600 text-ink-navy dark:text-slate-200 font-sans font-semibold text-xs rounded-lg border border-stone-300 dark:border-slate-500 shadow-paper-sm transition flex items-center justify-center gap-1 active:scale-95 disabled:opacity-50"
+                        className="min-h-[44px] py-2 px-3 bg-stone-100 dark:bg-slate-700 hover:bg-stone-200 dark:hover:bg-slate-600 text-ink-navy dark:text-slate-200 font-sans font-semibold text-xs rounded-lg border border-stone-300 dark:border-slate-500 shadow-[0_2px_0_rgba(30,35,43,0.12)] hover:translate-y-[-1px] focus-visible:ring-2 focus-visible:ring-accent-slate focus-visible:outline-none active:translate-y-[1px] active:shadow-none transition-all flex items-center justify-center gap-1 disabled:opacity-50"
                         title="Release chore back to Up-for-Grabs pool"
                         aria-label="Release or Unclaim Chore"
                       >
@@ -489,7 +492,7 @@ export function ChoreDutyView({
                       <button
                         type="button"
                         onClick={() => onOpenSwap(assignment)}
-                        className="py-2 px-3 bg-paper-manila dark:bg-[#2C3952] hover:bg-amber-200/80 dark:hover:bg-slate-600 text-ink-navy dark:text-slate-200 font-sans font-bold text-sm rounded-lg border border-amber-300/80 dark:border-slate-500 shadow-paper-sm transition flex items-center gap-1 active:scale-95"
+                        className="min-h-[44px] py-2 px-3 bg-stone-100 dark:bg-slate-700 hover:bg-stone-200 dark:hover:bg-slate-600 text-ink-navy dark:text-slate-200 font-sans font-bold text-sm rounded-lg border border-border-stone dark:border-slate-500 shadow-[0_2px_0_rgba(30,35,43,0.12)] hover:translate-y-[-1px] focus-visible:ring-2 focus-visible:ring-accent-slate focus-visible:outline-none active:translate-y-[1px] active:shadow-none transition-all flex items-center gap-1"
                         title="Swap chore with roommate"
                         aria-label="Swap Chore"
                       >
@@ -518,7 +521,7 @@ export function ChoreDutyView({
                             handleReassign(assignment.id, targetId);
                           }
                         }}
-                        className="w-full py-1 px-2 text-xs font-sans bg-paper-card dark:bg-[#222D42] text-ink-navy dark:text-slate-200 border border-stone-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-1 focus:ring-indigo-500 cursor-pointer"
+                        className="w-full py-1 px-2 text-xs font-sans bg-paper-card dark:bg-[#222D42] text-ink-navy dark:text-slate-200 border border-stone-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-1 focus:ring-accent-slate cursor-pointer"
                       >
                         {activeMembers.map((m) => (
                           <option key={m.id} value={m.id}>
@@ -539,16 +542,16 @@ export function ChoreDutyView({
       {Array.from(otherMembersMap.values()).map(({ member, assignments: memberAssignments }) => (
         <div key={member.id} className="space-y-4 pt-4 border-t border-stone-200/80 dark:border-slate-700/80">
           <div className="flex items-center justify-between pb-1">
-            <h3 className="text-xl font-serif font-bold text-ink-navy dark:text-slate-100 flex items-center gap-2">
-              <User className="w-4 h-4 text-ink-graphite dark:text-slate-400" />
+            <h3 className="text-xl font-sans font-bold text-ink-navy dark:text-slate-100 flex items-center gap-2">
+              <IdentitySticker name={member.nickname} size="sm" />
               <span>{member.nickname}'s Duties</span>
               {member.status === 'away' && (
-                <span className="px-2 py-0.5 rounded text-xs font-sans font-semibold uppercase bg-amber-100 dark:bg-amber-900/50 text-amber-900 dark:text-amber-200 border border-amber-300 dark:border-amber-700">
+                <span className="px-2 py-0.5 rounded text-xs font-sans font-semibold uppercase bg-stone-100 dark:bg-slate-800 text-accent-slate dark:text-slate-300 border border-border-stone dark:border-slate-700">
                   Away
                 </span>
               )}
             </h3>
-            <span className="font-sans font-semibold text-xs text-ink-graphite dark:text-slate-300 bg-amber-100/60 dark:bg-slate-700 px-2.5 py-0.5 rounded border border-amber-200/60 dark:border-slate-600">
+            <span className="font-sans font-semibold text-xs text-ink-graphite dark:text-slate-300 bg-stone-100 dark:bg-slate-700 px-2.5 py-0.5 rounded border border-border-stone dark:border-slate-600">
               {memberAssignments.filter((a) => a.status === 'completed').length} / {memberAssignments.length} done
             </span>
           </div>
@@ -568,7 +571,7 @@ export function ChoreDutyView({
                         checked={assignment.status === 'completed'}
                         disabled={true}
                         label={
-                          <span className="font-serif font-bold text-lg text-ink-navy dark:text-slate-100 leading-snug">
+                          <span className="font-sans font-bold text-lg text-ink-navy dark:text-slate-100 leading-snug">
                             {assignment.chore.title}
                           </span>
                         }
@@ -602,8 +605,8 @@ export function ChoreDutyView({
                           <Trash2 className="w-3.5 h-3.5" />
                         </button>
                       )}
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-highlighter-yellow text-amber-950 font-sans font-bold text-xs border border-amber-300/80 shadow-sm shrink-0">
-                        <Star className="w-3 h-3 text-amber-600 fill-amber-500" />
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-stone-100 dark:bg-slate-800 text-ink-navy dark:text-slate-200 font-sans font-bold text-xs border border-border-stone dark:border-slate-700 shadow-sm shrink-0">
+                        <Star className="w-3 h-3 text-accent-slate fill-accent-slate" />
                         {assignment.chore.effort_weight} pts
                       </span>
                     </div>
@@ -616,7 +619,8 @@ export function ChoreDutyView({
                   )}
 
                   <div className="flex items-center gap-2">
-                    <span className="text-[11px] font-mono font-medium px-2 py-0.5 rounded bg-paper-manila dark:bg-slate-700 text-ink-graphite dark:text-slate-300 border border-amber-200/80 dark:border-slate-600">
+                    <IdentitySticker name={member.nickname} size="sm" />
+                    <span className="text-[11px] font-mono font-medium px-2 py-0.5 rounded bg-stone-100 dark:bg-slate-700 text-ink-graphite dark:text-slate-300 border border-border-stone dark:border-slate-600">
                       {assignment.chore.completion_type === 'single_weekly'
                         ? 'Weekly check-off'
                         : 'Continuous duty'}
@@ -645,7 +649,7 @@ export function ChoreDutyView({
                       <button
                         type="button"
                         onClick={() => setActiveLogAssignment(assignment)}
-                        className="w-full py-1.5 px-2.5 bg-paper-card dark:bg-[#222D42] hover:bg-amber-100/60 dark:hover:bg-slate-700 text-ink-navy dark:text-slate-200 font-sans font-bold text-xs rounded-lg border border-stone-300 dark:border-slate-600 transition flex items-center justify-center gap-1.5 shadow-paper-sm active:scale-95"
+                        className="w-full min-h-[44px] py-2 px-3 bg-paper-card dark:bg-[#222D42] hover:bg-stone-100 dark:hover:bg-slate-700 text-ink-navy dark:text-slate-200 font-sans font-bold text-xs rounded-lg border border-stone-300 dark:border-slate-600 shadow-[0_2px_0_rgba(30,35,43,0.12)] hover:translate-y-[-1px] focus-visible:ring-2 focus-visible:ring-accent-slate focus-visible:outline-none active:translate-y-[1px] active:shadow-none transition-all flex items-center justify-center gap-1.5"
                       >
                         <Plus className="w-3.5 h-3.5" />
                         <span>+ Log Instance</span>
@@ -672,7 +676,7 @@ export function ChoreDutyView({
                             handleReassign(assignment.id, targetId);
                           }
                         }}
-                        className="w-full py-1 px-2 text-xs font-sans bg-paper-card dark:bg-[#222D42] text-ink-navy dark:text-slate-200 border border-stone-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-1 focus:ring-indigo-500 cursor-pointer"
+                        className="w-full py-1 px-2 text-xs font-sans bg-paper-card dark:bg-[#222D42] text-ink-navy dark:text-slate-200 border border-stone-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-1 focus:ring-accent-slate cursor-pointer"
                       >
                         {activeMembers.map((m) => (
                           <option key={m.id} value={m.id}>

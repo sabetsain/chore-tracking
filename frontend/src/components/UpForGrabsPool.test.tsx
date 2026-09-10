@@ -93,6 +93,8 @@ describe('UpForGrabsPool & ChoreSwapModal Components', () => {
 
   it('renders up-for-grabs chores and triggers claim action', async () => {
     const user = userEvent.setup();
+    const { soundEffects } = await import('../utils/soundEffects');
+    const woodClickSpy = vi.spyOn(soundEffects, 'playWoodClick');
     mockOnClaim.mockResolvedValueOnce(undefined);
 
     render(
@@ -110,6 +112,7 @@ describe('UpForGrabsPool & ChoreSwapModal Components', () => {
     await user.click(claimButtons[0]);
 
     expect(mockOnClaim).toHaveBeenCalledWith('a-open-1');
+    expect(woodClickSpy).toHaveBeenCalled();
   });
 
   it('submits chore swap in ChoreSwapModal', async () => {

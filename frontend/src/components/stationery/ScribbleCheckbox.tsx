@@ -130,7 +130,7 @@ export const ScribbleCheckbox: React.FC<ScribbleCheckboxProps> = ({
           {checked && (
             <path
               d={checkPathData}
-              stroke="#15803d"
+              stroke="var(--accent-sage, #3E6B52)"
               strokeWidth="2.75"
               strokeLinecap="round"
               strokeLinejoin="round"

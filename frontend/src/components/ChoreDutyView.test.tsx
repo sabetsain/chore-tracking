@@ -3,6 +3,7 @@ import userEvent from '@testing-library/user-event';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { ChoreDutyView } from './ChoreDutyView';
 import { ChoreAssignment, Member } from '../types';
+import { soundEffects } from '../utils/soundEffects';
 
 describe('ChoreDutyView Component', () => {
   const currentMember: Member = {
@@ -110,6 +111,8 @@ describe('ChoreDutyView Component', () => {
 
   it('completes single_weekly chore on 1-tap Mark Done', async () => {
     const user = userEvent.setup();
+    const { soundEffects } = await import('../utils/soundEffects');
+    const woodClickSpy = vi.spyOn(soundEffects, 'playWoodClick');
     mockOnCompleteChore.mockResolvedValueOnce(undefined);
 
     render(
@@ -124,9 +127,12 @@ describe('ChoreDutyView Component', () => {
     );
 
     const markDoneBtn = screen.getByRole('button', { name: /mark done/i });
+    expect(markDoneBtn.className).toContain('min-h-[44px]');
+    expect(markDoneBtn.className).toContain('bg-accent-sage');
     await user.click(markDoneBtn);
 
     expect(mockOnCompleteChore).toHaveBeenCalledWith('a-1');
+    expect(woodClickSpy).toHaveBeenCalled();
   });
 
   it('opens log duty modal and logs duty instance for continuous_duty chore', async () => {
@@ -379,6 +385,75 @@ describe('ChoreDutyView Component', () => {
 
     await user.click(pauseBtn);
     expect(mockOnDeactivateRotation).toHaveBeenCalled();
+  });
+
+  it('renders IdentitySticker avatars for current member and roommates', () => {
+    render(
+      <ChoreDutyView
+        currentMember={currentMember}
+        assignments={mockAssignments}
+        onCompleteChore={mockOnCompleteChore}
+        onLogDuty={mockOnLogDuty}
+        onToggleAway={mockOnToggleAway}
+      />
+    );
+
+    // Alex's sticker for My Duties
+    const alexStickers = screen.getAllByRole('img', { name: /Alex's sticker/i });
+    expect(alexStickers.length).toBeGreaterThanOrEqual(1);
+
+    // Sam's sticker for Sam's Duties
+    const samStickers = screen.getAllByRole('img', { name: /Sam's sticker/i });
+    expect(samStickers.length).toBeGreaterThanOrEqual(1);
+  });
+
+  it('plays wood click sound effect on complete and uncomplete', async () => {
+    const user = userEvent.setup();
+    const woodClickSpy = vi.spyOn(soundEffects, 'playWoodClick');
+    mockOnCompleteChore.mockResolvedValueOnce(undefined);
+    const mockOnUncompleteChore = vi.fn().mockResolvedValueOnce(undefined);
+
+    const { rerender } = render(
+      <ChoreDutyView
+        currentMember={currentMember}
+        assignments={mockAssignments}
+        onCompleteChore={mockOnCompleteChore}
+        onUncompleteChore={mockOnUncompleteChore}
+        onLogDuty={mockOnLogDuty}
+        onToggleAway={mockOnToggleAway}
+      />
+    );
+
+    const markDoneBtn = screen.getByRole('button', { name: /mark done/i });
+    await user.click(markDoneBtn);
+
+    expect(woodClickSpy).toHaveBeenCalledTimes(1);
+
+    // Rerender with completed status
+    const completedAssignments: ChoreAssignment[] = [
+      {
+        ...mockAssignments[0],
+        status: 'completed',
+        completed_at: new Date().toISOString(),
+      },
+    ];
+
+    rerender(
+      <ChoreDutyView
+        currentMember={currentMember}
+        assignments={completedAssignments}
+        onCompleteChore={mockOnCompleteChore}
+        onUncompleteChore={mockOnUncompleteChore}
+        onLogDuty={mockOnLogDuty}
+        onToggleAway={mockOnToggleAway}
+      />
+    );
+
+    const checkbox = screen.getByRole('checkbox', { name: /Deep Clean Bathroom/i });
+    await user.click(checkbox);
+
+    expect(woodClickSpy).toHaveBeenCalledTimes(2);
+    woodClickSpy.mockRestore();
   });
 });
 

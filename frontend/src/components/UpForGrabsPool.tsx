@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import { Sparkles, Hand, Star, Moon, AlertCircle, ArrowDown, Pencil, Trash2 } from 'lucide-react';
-import { motion, useMotionValue, useTransform } from 'framer-motion';
+import { motion, useMotionValue } from 'framer-motion';
 import { Chore, ChoreAssignment } from '../types';
 import { PaperCard } from './stationery/PaperCard';
-import { WashiTape } from './stationery/WashiTape';
 import { soundEngine } from '../utils/soundEngine';
+import { soundEffects } from '../utils/soundEffects';
 
 interface UpForGrabsPoolProps {
   chores: ChoreAssignment[];
@@ -31,13 +31,9 @@ function DraggableMemoNote({
   onDelete,
 }: DraggableMemoNoteProps) {
   const isAwayMember = assignment.member && assignment.member.status === 'away';
-  const tapeColor = idx % 3 === 0 ? 'yellow' : idx % 3 === 1 ? 'green' : 'orange';
-  const baseTilt = idx % 2 === 0 ? -1.5 : 1.5;
   const isClaiming = claimingId === assignment.id;
 
   const y = useMotionValue(0);
-  const tapeOpacity = useTransform(y, [0, 80], [1, 0.2]);
-  const tapeRotate = useTransform(y, [0, 80], [baseTilt, baseTilt + 12]);
 
   const handleDragEnd = (_: any, info: { offset: { y: number }; velocity: { y: number } }) => {
     if (info.offset.y >= 80 || info.velocity.y > 400) {
@@ -47,16 +43,12 @@ function DraggableMemoNote({
 
   return (
     <div className="relative pt-2 select-none">
-      {/* Animated Washi Tape with peel-away opacity on drag */}
-      <motion.div
-        style={{
-          opacity: tapeOpacity,
-          rotate: tapeRotate,
-        }}
-        className="absolute top-0 left-1/2 -translate-x-1/2 z-10 pointer-events-none"
-      >
-        <WashiTape color={tapeColor} tilt={0} width="w-24" />
-      </motion.div>
+      {/* Clean minimal pill badge */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 z-10 pointer-events-none">
+        <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase tracking-wider bg-stone-100 dark:bg-slate-800 text-ink-navy dark:text-slate-200 border border-border-stone dark:border-slate-700 shadow-sm">
+          Open Duty
+        </span>
+      </div>
 
       <motion.div
         drag={isClaiming ? false : 'y'}
@@ -69,7 +61,7 @@ function DraggableMemoNote({
       >
         <PaperCard
           variant={idx % 2 === 0 ? 'postit' : 'manila'}
-          className="p-5 min-h-[220px] flex flex-col justify-between border border-amber-300/80 dark:border-slate-600 shadow-paper-sm hover:shadow-paper-md transition-shadow cursor-grab active:cursor-grabbing"
+          className="p-5 min-h-[220px] flex flex-col justify-between border border-border-stone dark:border-slate-600 shadow-paper-sm hover:shadow-paper-md transition-shadow cursor-grab active:cursor-grabbing"
         >
           <div>
             <div className="flex items-start justify-between gap-2 mb-2 pt-1">
@@ -84,7 +76,7 @@ function DraggableMemoNote({
                       e.stopPropagation();
                       onEdit(assignment.chore);
                     }}
-                    className="p-1 rounded text-ink-muted hover:text-ink-navy dark:text-slate-400 dark:hover:text-slate-200 hover:bg-amber-100/60 dark:hover:bg-slate-700 transition"
+                    className="p-1 rounded text-ink-muted hover:text-ink-navy dark:text-slate-400 dark:hover:text-slate-200 hover:bg-stone-100 dark:hover:bg-slate-700 transition"
                     title="Edit Chore"
                     aria-label={`Edit ${assignment.chore.title}`}
                   >
@@ -101,15 +93,15 @@ function DraggableMemoNote({
                         await onDelete(assignment.chore.id);
                       }
                     }}
-                    className="p-1 rounded text-ink-muted hover:text-stamp-dirty dark:text-slate-400 dark:hover:text-red-300 hover:bg-amber-100/60 dark:hover:bg-slate-700 transition"
+                    className="p-1 rounded text-ink-muted hover:text-stamp-dirty dark:text-slate-400 dark:hover:text-red-300 hover:bg-stone-100 dark:hover:bg-slate-700 transition"
                     title="Delete Chore"
                     aria-label={`Delete ${assignment.chore.title}`}
                   >
                     <Trash2 className="w-3.5 h-3.5" />
                   </button>
                 )}
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-highlighter-yellow text-amber-950 font-sans font-bold text-xs border border-amber-300/80 shadow-sm">
-                  <Star className="w-3.5 h-3.5 fill-amber-500 text-amber-600" />
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-stone-100 dark:bg-slate-800 text-ink-navy dark:text-slate-200 font-sans font-bold text-xs border border-border-stone dark:border-slate-700 shadow-sm">
+                  <Star className="w-3.5 h-3.5 fill-accent-slate text-accent-slate" />
                   {assignment.chore.effort_weight} pts
                 </span>
               </div>
@@ -123,7 +115,7 @@ function DraggableMemoNote({
 
             <div className="flex items-center gap-2 mb-4 flex-wrap">
               {isAwayMember ? (
-                <span className="inline-flex items-center gap-1 text-xs font-sans font-semibold px-2 py-0.5 rounded bg-amber-200/80 dark:bg-amber-900/60 text-amber-950 dark:text-amber-200 border border-amber-300 dark:border-amber-700">
+                <span className="inline-flex items-center gap-1 text-xs font-sans font-semibold px-2 py-0.5 rounded bg-stone-100 dark:bg-slate-800 text-accent-slate dark:text-slate-300 border border-border-stone dark:border-slate-700">
                   <Moon className="w-3 h-3" />
                   {assignment.member!.nickname} (Away)
                 </span>
@@ -149,7 +141,7 @@ function DraggableMemoNote({
               type="button"
               disabled={isClaiming}
               onClick={() => onClaim(assignment.id)}
-              className="w-full py-2.5 px-4 bg-amber-800 hover:bg-amber-900 text-white text-sm font-sans font-bold rounded-lg shadow-paper-sm hover:shadow-paper-md transition-all flex items-center justify-center gap-2 disabled:opacity-50 active:scale-95"
+              className="w-full py-2.5 px-4 bg-accent-slate hover:bg-[#1E334A] text-white text-sm font-sans font-bold rounded-lg shadow-paper-sm hover:shadow-paper-md transition-all flex items-center justify-center gap-2 disabled:opacity-50 active:scale-95"
             >
               <Hand className="w-4 h-4" />
               <span>{isClaiming ? 'Claiming...' : 'Claim Chore'}</span>
@@ -174,6 +166,7 @@ export function UpForGrabsPool({
     setClaimingId(assignmentId);
     setError(null);
     try {
+      soundEffects.playWoodClick();
       soundEngine.playTapePeelSound();
       await onClaimChore(assignmentId);
     } catch (err: any) {
@@ -186,7 +179,7 @@ export function UpForGrabsPool({
   if (chores.length === 0) {
     return (
       <PaperCard variant="card" className="p-8 text-center border-dashed border-2 border-stone-300 dark:border-slate-700">
-        <Sparkles className="w-8 h-8 text-amber-500 mx-auto mb-2 opacity-80" />
+        <Sparkles className="w-8 h-8 text-accent-slate mx-auto mb-2 opacity-80" />
         <h3 className="text-xl font-serif font-bold text-ink-navy dark:text-slate-100">No Chores Up for Grabs</h3>
         <p className="text-xs text-ink-muted dark:text-slate-400 mt-1 font-sans">
           All chores are currently assigned to active roommates!
@@ -200,14 +193,14 @@ export function UpForGrabsPool({
       <div className="flex items-center justify-between pb-2 border-b border-stone-200/80 dark:border-slate-700/80">
         <div>
           <h3 className="text-2xl font-serif font-bold text-ink-navy dark:text-slate-100 flex items-center gap-2">
-            <Sparkles className="w-5 h-5 text-amber-500" />
+            <Sparkles className="w-5 h-5 text-accent-slate" />
             <span>Up for Grabs Pool</span>
           </h3>
           <p className="text-xs text-ink-graphite dark:text-slate-400 font-sans mt-0.5">
             Pinned sticky memo notes: unassigned tasks and chores from roommates currently marked Away.
           </p>
         </div>
-        <span className="px-3 py-1 rounded-lg bg-amber-100 dark:bg-amber-900/60 text-amber-900 dark:text-amber-200 text-xs font-sans font-bold border border-amber-300 dark:border-amber-700 shadow-sm">
+        <span className="px-3 py-1 rounded-lg bg-stone-100 dark:bg-slate-800 text-accent-slate dark:text-slate-200 text-xs font-sans font-bold border border-border-stone dark:border-slate-700 shadow-sm">
           {chores.length} Available
         </span>
       </div>

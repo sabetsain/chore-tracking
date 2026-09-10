@@ -3,7 +3,6 @@ import { X, Plus, AlertCircle, Star } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { ChoreCompletionType } from '../types';
 import { PaperCard } from './stationery/PaperCard';
-import { PaperclipFastener } from './stationery/PaperclipFastener';
 
 interface CreateChoreModalProps {
   onClose: () => void;
@@ -57,13 +56,6 @@ export function CreateChoreModal({ onClose, onCreateChore }: CreateChoreModalPro
         transition={{ type: 'spring', stiffness: 350, damping: 25 }}
         className="relative max-w-md w-full"
       >
-        <motion.div
-          initial={{ y: -20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: 0.08, type: 'spring', stiffness: 400, damping: 20 }}
-        >
-          <PaperclipFastener position="top-left" />
-        </motion.div>
         <PaperCard
           variant="sheet"
           className="rotate-1 p-6 shadow-paper-lifted border border-stone-300 dark:border-slate-700"
@@ -106,7 +98,7 @@ export function CreateChoreModal({ onClose, onCreateChore }: CreateChoreModalPro
                 placeholder="e.g. Deep Clean Oven or Water Houseplants"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                className="w-full px-3.5 py-2.5 bg-paper-card dark:bg-[#222D42] border border-stone-300 dark:border-slate-600 rounded-lg text-sm text-ink-navy dark:text-slate-100 placeholder:text-ink-muted dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-amber-700 dark:focus:ring-amber-500 transition font-sans"
+                className="w-full px-3.5 py-2.5 bg-paper-card dark:bg-[#222D42] border border-stone-300 dark:border-slate-600 rounded-lg text-sm text-ink-navy dark:text-slate-100 placeholder:text-ink-muted dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-accent-slate transition font-sans"
               />
             </div>
 
@@ -120,7 +112,7 @@ export function CreateChoreModal({ onClose, onCreateChore }: CreateChoreModalPro
                 placeholder="Brief instructions or checklist details for roommates"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                className="w-full px-3.5 py-2.5 bg-paper-card dark:bg-[#222D42] border border-stone-300 dark:border-slate-600 rounded-lg text-sm text-ink-navy dark:text-slate-100 placeholder:text-ink-muted dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-amber-700 dark:focus:ring-amber-500 transition font-sans"
+                className="w-full px-3.5 py-2.5 bg-paper-card dark:bg-[#222D42] border border-stone-300 dark:border-slate-600 rounded-lg text-sm text-ink-navy dark:text-slate-100 placeholder:text-ink-muted dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-accent-slate transition font-sans"
               />
             </div>
 
@@ -138,11 +130,11 @@ export function CreateChoreModal({ onClose, onCreateChore }: CreateChoreModalPro
                       onClick={() => setEffortWeight(pts)}
                       className={`flex-1 py-2 px-1 rounded-lg text-xs font-sans font-bold border transition flex items-center justify-center gap-1 ${
                         isSelected
-                          ? 'bg-amber-100 dark:bg-amber-950/60 border-amber-400 text-amber-950 dark:text-amber-200 ring-1 ring-amber-400 shadow-sm'
-                          : 'bg-paper-card dark:bg-[#222D42] border-stone-300 dark:border-slate-600 text-ink-graphite dark:text-slate-300 hover:border-amber-300'
+                          ? 'bg-accent-slate text-white border-accent-slate shadow-sm'
+                          : 'bg-paper-card dark:bg-[#222D42] border-stone-300 dark:border-slate-600 text-ink-graphite dark:text-slate-300 hover:border-accent-slate/50'
                       }`}
                     >
-                      <Star className={`w-3 h-3 ${isSelected ? 'fill-amber-500 text-amber-600' : 'text-ink-muted'}`} />
+                      <Star className={`w-3 h-3 ${isSelected ? 'fill-white text-white' : 'text-ink-muted'}`} />
                       <span>{pts} pt{pts > 1 ? 's' : ''}</span>
                     </button>
                   );
@@ -160,8 +152,8 @@ export function CreateChoreModal({ onClose, onCreateChore }: CreateChoreModalPro
                   onClick={() => setCompletionType('single_weekly')}
                   className={`p-3 rounded-lg border text-left transition flex flex-col justify-between ${
                     completionType === 'single_weekly'
-                      ? 'bg-amber-50 dark:bg-amber-950/40 border-amber-400 ring-1 ring-amber-400'
-                      : 'bg-paper-card dark:bg-[#222D42] border-stone-300 dark:border-slate-600 hover:border-amber-300'
+                      ? 'bg-stone-100 dark:bg-slate-800 border-accent-slate ring-1 ring-accent-slate'
+                      : 'bg-paper-card dark:bg-[#222D42] border-stone-300 dark:border-slate-600 hover:border-accent-slate/50'
                   }`}
                 >
                   <span className="font-serif font-bold text-xs text-ink-navy dark:text-slate-100">
@@ -177,8 +169,8 @@ export function CreateChoreModal({ onClose, onCreateChore }: CreateChoreModalPro
                   onClick={() => setCompletionType('continuous_duty')}
                   className={`p-3 rounded-lg border text-left transition flex flex-col justify-between ${
                     completionType === 'continuous_duty'
-                      ? 'bg-amber-50 dark:bg-amber-950/40 border-amber-400 ring-1 ring-amber-400'
-                      : 'bg-paper-card dark:bg-[#222D42] border-stone-300 dark:border-slate-600 hover:border-amber-300'
+                      ? 'bg-stone-100 dark:bg-slate-800 border-accent-slate ring-1 ring-accent-slate'
+                      : 'bg-paper-card dark:bg-[#222D42] border-stone-300 dark:border-slate-600 hover:border-accent-slate/50'
                   }`}
                 >
                   <span className="font-serif font-bold text-xs text-ink-navy dark:text-slate-100">
@@ -202,7 +194,7 @@ export function CreateChoreModal({ onClose, onCreateChore }: CreateChoreModalPro
               <button
                 type="submit"
                 disabled={loading}
-                className="flex-1 py-2.5 bg-indigo-700 hover:bg-indigo-800 text-white text-sm font-sans font-bold rounded-lg shadow-paper-sm transition disabled:opacity-50 flex items-center justify-center gap-1.5 active:scale-95"
+                className="flex-1 py-2.5 bg-accent-slate hover:bg-[#1E334A] text-white text-sm font-sans font-bold rounded-lg shadow-paper-sm transition disabled:opacity-50 flex items-center justify-center gap-1.5 active:scale-95"
               >
                 <Plus className="w-4 h-4" />
                 <span>{loading ? 'Adding...' : 'Save Chore'}</span>

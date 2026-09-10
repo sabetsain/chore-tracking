@@ -204,4 +204,30 @@ describe('SettingsView Component', () => {
 
     expect(screen.getByText('Countertop Fridge Kiosk Mode')).toBeInTheDocument();
   });
+
+  it('synchronizes both soundEngine and soundEffects when sound setting is toggled', async () => {
+    const user = userEvent.setup();
+    const { soundEngine } = await import('../utils/soundEngine');
+    const { soundEffects } = await import('../utils/soundEffects');
+    const soundEngineSpy = vi.spyOn(soundEngine, 'setEnabled');
+    const soundEffectsSpy = vi.spyOn(soundEffects, 'setMuted');
+
+    render(
+      <SettingsView
+        household={mockHousehold}
+        member={adminMember}
+        onRegenerateCode={mockOnRegenerateCode}
+        onLogout={mockOnLogout}
+        onToggleAway={mockOnToggleAway}
+      />
+    );
+
+    const soundBtn = screen.getByRole('button', { name: /toggle sound effects/i });
+    expect(soundBtn).toBeInTheDocument();
+
+    await user.click(soundBtn);
+
+    expect(soundEngineSpy).toHaveBeenCalled();
+    expect(soundEffectsSpy).toHaveBeenCalled();
+  });
 });

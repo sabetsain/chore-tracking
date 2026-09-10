@@ -226,9 +226,8 @@ function MainApp() {
     : [];
 
   return (
-    <div className="min-h-screen bg-paper-desk dark:bg-[#080D17] text-ink-navy dark:text-slate-100 flex flex-col items-center py-3 sm:py-6 px-2 sm:px-4 transition-colors duration-200">
-      <div className="w-full max-w-5xl flex flex-col">
-        {/* Tactile Spiral Binder Header */}
+    <div className="min-h-screen bg-canvas-bg dark:bg-canvas-bg text-ink-navy dark:text-slate-100 flex flex-col items-center py-4 sm:py-8 px-4 sm:px-6 transition-colors duration-200">
+      <div className="w-full max-w-5xl flex flex-col gap-6">
         <Header
           household={household}
           member={member}
@@ -236,16 +235,14 @@ function MainApp() {
           onTabChange={handleTabChange}
         />
 
-        {/* Main Working Sheet Container */}
-        <div className="w-full relative -mt-0.5 px-2 sm:px-4">
-          <main
-            id={`panel-${activeTab}`}
-            role="tabpanel"
-            aria-labelledby={`tab-${activeTab}`}
-            key={activeTab}
-            className="bg-paper-sheet dark:bg-[#1A2234] page-stack min-h-[750px] sm:min-h-[850px] rounded-b-xl border-x-2 border-b-2 border-stone-300 dark:border-slate-700 shadow-binder-spine relative overflow-hidden p-4 sm:p-8"
-          >
-            <PWAInstallPrompt />
+        <main
+          id={`panel-${activeTab}`}
+          role="tabpanel"
+          aria-labelledby={`tab-${activeTab}`}
+          key={activeTab}
+          className="w-full flex flex-col gap-6"
+        >
+          <PWAInstallPrompt />
 
             {activeTab === 'appliances' && (
               <ApplianceDashboard
@@ -341,7 +338,6 @@ function MainApp() {
             )}
           </main>
         </div>
-      </div>
 
       {/* Chore Swap Modal */}
       {swapSourceAssignment && (
@@ -377,8 +373,8 @@ function RootView() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-paper-desk dark:bg-[#080D17] flex items-center justify-center">
-        <Loader2 className="w-8 h-8 text-amber-700 animate-spin" />
+      <div className="min-h-screen bg-canvas-bg dark:bg-canvas-bg flex items-center justify-center">
+        <Loader2 className="w-8 h-8 text-accent-slate animate-spin" />
       </div>
     );
   }
