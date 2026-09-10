@@ -59,15 +59,9 @@ async def test_sensor_event_starts_cycle_from_dirty(client: AsyncClient, db_sess
     )
     dishwasher = next(a for a in list_res.json() if a["name"] == "Dishwasher")
     app_id = dishwasher["id"]
+    assert dishwasher["current_state"] == "dirty"
 
-    # Alice sets to dirty
-    await client.post(
-        f"/api/v1/appliances/{app_id}/state",
-        headers={"Authorization": f"Bearer {token}"},
-        json={"to_state": "dirty"},
-    )
-
-    # Sensor detects high power > 50W
+    # Sensor detects high power > 50W from dirty state
     res = await client.post(
         f"/api/v1/appliances/{app_id}/sensor-event",
         json={"power_watts": 1200.0},
@@ -82,11 +76,11 @@ async def test_sensor_event_starts_cycle_from_dirty(client: AsyncClient, db_sess
         .order_by(ApplianceStateLog.created_at.asc())
     )
     logs = (await db_session.execute(stmt)).scalars().all()
-    assert len(logs) == 2
-    assert logs[1].from_state == "dirty"
-    assert logs[1].to_state == "running"
-    assert logs[1].trigger_source == "sensor_webhook"
-    assert logs[1].actor_member_id is None
+    assert len(logs) == 1
+    assert logs[0].from_state == "dirty"
+    assert logs[0].to_state == "running"
+    assert logs[0].trigger_source == "sensor_webhook"
+    assert logs[0].actor_member_id is None
 
 
 @pytest.mark.asyncio
@@ -104,11 +98,11 @@ async def test_sensor_event_completes_cycle_from_running(client: AsyncClient, db
     dryer = next(a for a in list_res.json() if a["name"] == "Dryer")
     app_id = dryer["id"]
 
-    # Transition to running
+    # Transition to running with required timer
     await client.post(
         f"/api/v1/appliances/{app_id}/state",
         headers={"Authorization": f"Bearer {token}"},
-        json={"to_state": "running"},
+        json={"to_state": "running", "timer_duration_minutes": 45},
     )
 
     # Sensor detects cycle completion (< 5W)
@@ -117,7 +111,7 @@ async def test_sensor_event_completes_cycle_from_running(client: AsyncClient, db
         json={"power_watts": 1.5, "device_id": "plug_dryer"},
     )
     assert res.status_code == 200
-    assert res.json()["current_state"] == "clean_needs_emptying"
+    assert res.json()["current_state"] == "needs_attention"
 
     # Verify log
     stmt = (
@@ -130,7 +124,7 @@ async def test_sensor_event_completes_cycle_from_running(client: AsyncClient, db
     assert logs[0].from_state == "empty"
     assert logs[0].to_state == "running"
     assert logs[1].from_state == "running"
-    assert logs[1].to_state == "clean_needs_emptying"
+    assert logs[1].to_state == "needs_attention"
     assert logs[1].trigger_source == "sensor_webhook"
     assert logs[1].actor_member_id is None
 
@@ -147,14 +141,9 @@ async def test_sensor_event_ignored_when_no_threshold_met(client: AsyncClient, d
         "/api/v1/appliances",
         headers={"Authorization": f"Bearer {token}"},
     )
-    app_id = list_res.json()[0]["id"]
-
-    # Alice sets to dirty
-    await client.post(
-        f"/api/v1/appliances/{app_id}/state",
-        headers={"Authorization": f"Bearer {token}"},
-        json={"to_state": "dirty"},
-    )
+    dishwasher = next(a for a in list_res.json() if a["name"] == "Dishwasher")
+    app_id = dishwasher["id"]
+    assert dishwasher["current_state"] == "dirty"
 
     # Low power reading (20W, not > 50W, and not running)
     res1 = await client.post(
@@ -172,15 +161,13 @@ async def test_sensor_event_ignored_when_no_threshold_met(client: AsyncClient, d
     assert res2.status_code == 200
     assert res2.json()["current_state"] == "dirty"
 
-    # Only 1 log should exist (the manual dirty transition)
+    # No state transition logs should exist
     stmt = (
         select(ApplianceStateLog)
         .where(ApplianceStateLog.appliance_id == uuid.UUID(app_id))
     )
     logs = (await db_session.execute(stmt)).scalars().all()
-    assert len(logs) == 1
-    assert logs[0].from_state == "empty"
-    assert logs[0].to_state == "dirty"
+    assert len(logs) == 0
 
 
 @pytest.mark.asyncio

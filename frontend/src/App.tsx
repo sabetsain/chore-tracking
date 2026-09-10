@@ -14,7 +14,14 @@ import { useHouseholdWebSocket } from './hooks/useHouseholdWebSocket';
 import { usePushNotifications } from './hooks/usePushNotifications';
 import { useAppBadging } from './hooks/useAppBadging';
 import { api } from './api/client';
-import { ApplianceState, ApplianceType, Chore, ChoreAssignment, ChoreCompletionType } from './types';
+import {
+  ApplianceCreate,
+  ApplianceState,
+  ApplianceUpdate,
+  Chore,
+  ChoreAssignment,
+  ChoreCompletionType,
+} from './types';
 import { soundEngine } from './utils/soundEngine';
 import { Loader2 } from 'lucide-react';
 
@@ -74,15 +81,37 @@ function MainApp() {
 
   // Mutations
   const updateAppStateMutation = useMutation({
-    mutationFn: ({ id, toState }: { id: string; toState: ApplianceState }) =>
-      api.updateApplianceState(id, toState),
+    mutationFn: ({
+      id,
+      toState,
+      timerDurationMinutes,
+    }: {
+      id: string;
+      toState: ApplianceState;
+      timerDurationMinutes?: number;
+    }) => api.updateApplianceState(id, toState, timerDurationMinutes),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['appliances'] });
     },
   });
 
   const createApplianceMutation = useMutation({
-    mutationFn: (data: { name: string; type: ApplianceType }) => api.createAppliance(data),
+    mutationFn: (data: ApplianceCreate) => api.createAppliance(data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['appliances'] });
+    },
+  });
+
+  const updateApplianceMutation = useMutation({
+    mutationFn: ({ id, data }: { id: string; data: ApplianceUpdate }) =>
+      api.updateAppliance(id, data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['appliances'] });
+    },
+  });
+
+  const resetApplianceMutation = useMutation({
+    mutationFn: (id: string) => api.resetAppliance(id),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['appliances'] });
     },
@@ -250,12 +279,18 @@ function MainApp() {
             {activeTab === 'appliances' && (
               <ApplianceDashboard
                 appliances={appliances}
-                onUpdateState={async (id, toState) => {
-                  await updateAppStateMutation.mutateAsync({ id, toState });
+                onUpdateState={async (id, toState, timerDurationMinutes) => {
+                  await updateAppStateMutation.mutateAsync({ id, toState, timerDurationMinutes });
                 }}
                 onFetchHistory={async (id) => api.getApplianceHistory(id)}
                 onCreateAppliance={async (data) => {
                   await createApplianceMutation.mutateAsync(data);
+                }}
+                onUpdateAppliance={async (id, data) => {
+                  await updateApplianceMutation.mutateAsync({ id, data });
+                }}
+                onResetAppliance={async (id) => {
+                  await resetApplianceMutation.mutateAsync(id);
                 }}
               />
             )}

@@ -2,7 +2,14 @@ import React, { useMemo } from 'react';
 import clsx from 'clsx';
 import { motion } from 'framer-motion';
 
-export type StampStatus = 'clean' | 'dirty' | 'running' | 'empty' | 'clean_needs_emptying' | (string & {});
+export type StampStatus =
+  | 'clean'
+  | 'dirty'
+  | 'running'
+  | 'empty'
+  | 'needs_attention'
+  | 'clean_needs_emptying'
+  | (string & {});
 
 export interface RubberStampBadgeProps {
   status: StampStatus;
@@ -15,11 +22,12 @@ export interface RubberStampBadgeProps {
 }
 
 const DEFAULT_LABELS: Record<string, string> = {
-  clean: 'CLEAN',
-  dirty: 'DIRTY',
-  running: 'RUNNING',
+  clean: 'CLEAN & READY',
+  dirty: 'DIRTY / LOAD',
+  running: 'CYCLE IN PROGRESS',
   empty: 'READY TO RUN!',
-  clean_needs_emptying: 'CLEAN - NEEDS EMPTYING',
+  needs_attention: 'NEEDS EMPTYING',
+  clean_needs_emptying: 'NEEDS EMPTYING',
 };
 
 const DEFAULT_ROTATIONS: Record<string, number> = {
@@ -27,6 +35,7 @@ const DEFAULT_ROTATIONS: Record<string, number> = {
   dirty: 3.2,
   running: -1.2,
   empty: -2.0,
+  needs_attention: 1.8,
   clean_needs_emptying: 1.8,
 };
 
@@ -58,6 +67,7 @@ export const RubberStampBadge: React.FC<RubberStampBadgeProps> = ({
         return 'stamp-running text-stamp-running border-stamp-running';
       case 'empty':
         return 'stamp-clean text-stamp-clean border-stamp-clean';
+      case 'needs_attention':
       case 'clean_needs_emptying':
         return 'stamp-empty text-stamp-empty border-stamp-empty';
       default:

@@ -485,8 +485,10 @@ async def test_weekly_rotation_idempotent(client: AsyncClient, db_session: Async
     assert res2.status_code == 200
     assert res1.json()[0]["id"] == res2.json()[0]["id"]
 
-    # Verify only 1 record in DB
-    all_assign = await db_session.execute(select(ChoreAssignment))
+    # Verify only 1 record in DB for week1
+    all_assign = await db_session.execute(
+        select(ChoreAssignment).where(ChoreAssignment.week_start_date == date.fromisoformat(week1))
+    )
     assert len(all_assign.scalars().all()) == 1
 
 

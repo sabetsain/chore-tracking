@@ -1,7 +1,7 @@
 import uuid
 from datetime import date, datetime
 from typing import Literal, Optional
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, computed_field, model_validator
 
 
 
@@ -145,9 +145,103 @@ class ChoreReassignRequest(BaseModel):
 
 
 
+CANONICAL_APPLIANCE_STATES = ("empty", "dirty", "running", "needs_attention", "clean")
+
+
 class ApplianceCreate(BaseModel):
     name: str = Field(..., min_length=1, max_length=100)
-    type: Literal["dishwasher", "washer", "dryer", "custom"] = "custom"
+    type: Optional[str] = "custom"
+    icon: Optional[str] = None
+    state_step_1: Optional[str] = None
+    state_step_2: Optional[str] = None
+    state_step_3: Optional[str] = None
+    state_step_4: Optional[str] = None
+    state_step_5: Optional[str] = None
+    cycle_steps: Optional[list[str]] = None
+    timer_enabled: bool = False
+    default_timer_minutes: Optional[int] = None
+
+    @model_validator(mode="after")
+    def validate_and_populate_steps(self) -> "ApplianceCreate":
+        if self.icon and (not self.type or self.type == "custom"):
+            self.type = self.icon
+
+        if self.cycle_steps is not None:
+            if len(self.cycle_steps) < 2 or len(self.cycle_steps) > 5:
+                raise ValueError("cycle_steps must have between 2 and 5 steps")
+            for step in self.cycle_steps:
+                if step not in CANONICAL_APPLIANCE_STATES:
+                    raise ValueError(f"Invalid cycle step '{step}'. Must be one of {CANONICAL_APPLIANCE_STATES}")
+            self.state_step_1 = self.cycle_steps[0]
+            self.state_step_2 = self.cycle_steps[1]
+            self.state_step_3 = self.cycle_steps[2] if len(self.cycle_steps) > 2 else None
+            self.state_step_4 = self.cycle_steps[3] if len(self.cycle_steps) > 3 else None
+            self.state_step_5 = self.cycle_steps[4] if len(self.cycle_steps) > 4 else None
+        elif self.state_step_1 is not None or self.state_step_2 is not None:
+            steps = [s for s in [self.state_step_1, self.state_step_2, self.state_step_3, self.state_step_4, self.state_step_5] if s is not None]
+            if len(steps) < 2 or len(steps) > 5:
+                raise ValueError("Appliance must have between 2 and 5 configured steps")
+            for step in steps:
+                if step not in CANONICAL_APPLIANCE_STATES:
+                    raise ValueError(f"Invalid cycle step '{step}'. Must be one of {CANONICAL_APPLIANCE_STATES}")
+        else:
+            if self.type == "dishwasher":
+                self.state_step_1 = "dirty"
+                self.state_step_2 = "running"
+                self.state_step_3 = "needs_attention"
+                self.timer_enabled = True
+                if self.default_timer_minutes is None:
+                    self.default_timer_minutes = 60
+            elif self.type in ("washer", "dryer"):
+                self.state_step_1 = "empty"
+                self.state_step_2 = "running"
+                self.state_step_3 = "needs_attention"
+                self.timer_enabled = True
+                if self.default_timer_minutes is None:
+                    self.default_timer_minutes = 45
+            else:
+                self.state_step_1 = "empty"
+                self.state_step_2 = "running"
+                self.state_step_3 = "needs_attention"
+        return self
+
+
+class ApplianceUpdate(BaseModel):
+    name: Optional[str] = Field(default=None, min_length=1, max_length=100)
+    type: Optional[str] = None
+    icon: Optional[str] = None
+    state_step_1: Optional[str] = None
+    state_step_2: Optional[str] = None
+    state_step_3: Optional[str] = None
+    state_step_4: Optional[str] = None
+    state_step_5: Optional[str] = None
+    cycle_steps: Optional[list[str]] = None
+    timer_enabled: Optional[bool] = None
+    default_timer_minutes: Optional[int] = None
+
+    @model_validator(mode="after")
+    def validate_and_populate_steps(self) -> "ApplianceUpdate":
+        if self.icon and not self.type:
+            self.type = self.icon
+        if self.cycle_steps is not None:
+            if len(self.cycle_steps) < 2 or len(self.cycle_steps) > 5:
+                raise ValueError("cycle_steps must have between 2 and 5 steps")
+            for step in self.cycle_steps:
+                if step not in CANONICAL_APPLIANCE_STATES:
+                    raise ValueError(f"Invalid cycle step '{step}'. Must be one of {CANONICAL_APPLIANCE_STATES}")
+            self.state_step_1 = self.cycle_steps[0]
+            self.state_step_2 = self.cycle_steps[1]
+            self.state_step_3 = self.cycle_steps[2] if len(self.cycle_steps) > 2 else None
+            self.state_step_4 = self.cycle_steps[3] if len(self.cycle_steps) > 3 else None
+            self.state_step_5 = self.cycle_steps[4] if len(self.cycle_steps) > 4 else None
+        elif any(s is not None for s in [self.state_step_1, self.state_step_2, self.state_step_3, self.state_step_4, self.state_step_5]):
+            steps = [s for s in [self.state_step_1, self.state_step_2, self.state_step_3, self.state_step_4, self.state_step_5] if s is not None]
+            if len(steps) < 2 or len(steps) > 5:
+                raise ValueError("Appliance must have between 2 and 5 configured steps")
+            for step in steps:
+                if step not in CANONICAL_APPLIANCE_STATES:
+                    raise ValueError(f"Invalid cycle step '{step}'. Must be one of {CANONICAL_APPLIANCE_STATES}")
+        return self
 
 
 class ApplianceOut(BaseModel):
@@ -162,10 +256,42 @@ class ApplianceOut(BaseModel):
     updated_by_member_id: Optional[uuid.UUID] = None
     updated_by_member: Optional[MemberOut] = None
 
+    state_step_1: str = "empty"
+    state_step_2: str = "running"
+    state_step_3: Optional[str] = None
+    state_step_4: Optional[str] = None
+    state_step_5: Optional[str] = None
+
+    timer_enabled: bool = False
+    default_timer_minutes: Optional[int] = None
+    timer_duration_minutes: Optional[int] = None
+    timer_started_at: Optional[datetime] = None
+    timer_ends_at: Optional[datetime] = None
+
+    @computed_field
+    @property
+    def next_state(self) -> str:
+        steps = [s for s in [self.state_step_1, self.state_step_2, self.state_step_3, self.state_step_4, self.state_step_5] if s]
+        if not steps:
+            return self.current_state
+        curr = self.current_state
+        if curr == "clean_needs_emptying" and "needs_attention" in steps:
+            curr = "needs_attention"
+        if curr not in steps:
+            return steps[0]
+        idx = steps.index(curr)
+        return steps[(idx + 1) % len(steps)]
+
+    @computed_field
+    @property
+    def icon(self) -> str:
+        return self.type
+
 
 class ApplianceStateUpdate(BaseModel):
-    to_state: Literal["empty", "dirty", "running", "clean_needs_emptying"]
+    to_state: Literal["empty", "dirty", "running", "needs_attention", "clean", "clean_needs_emptying"]
     force: Optional[bool] = False
+    timer_duration_minutes: Optional[int] = None
 
 
 class ApplianceStateLogOut(BaseModel):

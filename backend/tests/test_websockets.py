@@ -95,10 +95,10 @@ async def test_ws_broadcast_appliance_state_changed(client: AsyncClient):
     dishwasher = next(a for a in appliances_res.json() if a["type"] == "dishwasher")
     dishwasher_id = dishwasher["id"]
 
-    # Update state: empty -> dirty
+    # Update state: dirty -> running
     update_res = await client.post(
         f"/api/v1/appliances/{dishwasher_id}/state",
-        json={"to_state": "dirty"},
+        json={"to_state": "running", "timer_duration_minutes": 60},
         headers=headers,
     )
     assert update_res.status_code == 200
@@ -107,7 +107,7 @@ async def test_ws_broadcast_appliance_state_changed(client: AsyncClient):
     assert len(mock_ws.messages) >= 1
     event = mock_ws.messages[-1]
     assert event["event"] == "APPLIANCE_STATE_CHANGED"
-    assert event["data"]["current_state"] == "dirty"
+    assert event["data"]["current_state"] == "running"
     assert event["data"]["id"] == dishwasher_id
 
     # Clean up

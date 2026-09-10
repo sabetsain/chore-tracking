@@ -288,6 +288,70 @@ async def test_appliance_and_state_logs(db_session: AsyncSession):
 
 
 @pytest.mark.asyncio
+async def test_custom_appliance_model_methods_and_constraints(db_session: AsyncSession):
+    household = Household(name="Custom House", invite_code="CUST01")
+    db_session.add(household)
+    await db_session.commit()
+
+    hh_id = household.id
+
+    # 1. Helper methods
+    app = Appliance(
+        household_id=hh_id,
+        name="Espresso Machine",
+        type="coffee",
+        state_step_1="empty",
+        state_step_2="running",
+        state_step_3="needs_attention",
+        current_state="empty",
+        timer_enabled=True,
+        default_timer_minutes=15,
+    )
+    db_session.add(app)
+    await db_session.commit()
+    await db_session.refresh(app)
+
+    assert app.get_ordered_steps() == ["empty", "running", "needs_attention"]
+    assert app.get_next_state("empty") == "running"
+    assert app.get_next_state("running") == "needs_attention"
+    assert app.get_next_state("needs_attention") == "empty"
+    assert app.get_next_state() == "running"  # defaults to current_state ("empty")
+    # Alias handling for legacy clean_needs_emptying
+    assert app.get_next_state("clean_needs_emptying") == "empty"
+    # Fallback when unknown state
+    assert app.get_next_state("unknown") == "empty"
+
+    # 2. Check constraint: current_state not in steps
+    invalid_state_app = Appliance(
+        household_id=hh_id,
+        name="Bad State",
+        type="custom",
+        state_step_1="empty",
+        state_step_2="running",
+        current_state="clean",
+    )
+    db_session.add(invalid_state_app)
+    with pytest.raises(IntegrityError):
+        await db_session.commit()
+    await db_session.rollback()
+
+    # 3. Check constraint: non-canonical step
+    invalid_step_app = Appliance(
+        household_id=hh_id,
+        name="Bad Step",
+        type="custom",
+        state_step_1="empty",
+        state_step_2="broken",
+        current_state="empty",
+    )
+    db_session.add(invalid_step_app)
+    with pytest.raises(IntegrityError):
+        await db_session.commit()
+    await db_session.rollback()
+
+
+
+@pytest.mark.asyncio
 async def test_push_subscription(db_session: AsyncSession):
     household = Household(name="Push House", invite_code="PUSH01")
     db_session.add(household)

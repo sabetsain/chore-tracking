@@ -1,4 +1,5 @@
 import uuid
+from datetime import datetime, timezone
 import pytest
 from httpx import AsyncClient
 from sqlalchemy import select
@@ -16,53 +17,54 @@ async def test_appliance_sequential_state_transitions(client: AsyncClient, db_se
     token = hh_res.json()["access_token"]
     alice_id = hh_res.json()["member"]["id"]
 
-    # List appliances to get Dishwasher ID
+    # List appliances to get Washer ID
     list_res = await client.get(
         "/api/v1/appliances",
         headers={"Authorization": f"Bearer {token}"},
     )
-    dishwasher = next(a for a in list_res.json() if a["name"] == "Dishwasher")
-    app_id = dishwasher["id"]
-    assert dishwasher["current_state"] == "empty"
+    washer = next(a for a in list_res.json() if a["name"] == "Washer")
+    app_id = washer["id"]
+    assert washer["current_state"] == "empty"
 
-    # 1. Transition: empty -> dirty
+    # 1. Transition: empty -> running (requires timer_duration_minutes since timer_enabled=True)
     res1 = await client.post(
         f"/api/v1/appliances/{app_id}/state",
         headers={"Authorization": f"Bearer {token}"},
-        json={"to_state": "dirty"},
+        json={"to_state": "running", "timer_duration_minutes": 45},
     )
     assert res1.status_code == 200
     data1 = res1.json()
-    assert data1["current_state"] == "dirty"
+    assert data1["current_state"] == "running"
     assert data1["updated_by_member_id"] == alice_id
     assert data1["updated_by_member"]["nickname"] == "Alice"
+    assert data1["timer_duration_minutes"] == 45
+    assert data1["timer_started_at"] is not None
+    assert data1["timer_ends_at"] is not None
+    assert data1["next_state"] == "needs_attention"
 
-    # 2. Transition: dirty -> running
+    # 2. Transition: running -> clean_needs_emptying (alias for needs_attention)
     res2 = await client.post(
-        f"/api/v1/appliances/{app_id}/state",
-        headers={"Authorization": f"Bearer {token}"},
-        json={"to_state": "running"},
-    )
-    assert res2.status_code == 200
-    assert res2.json()["current_state"] == "running"
-
-    # 3. Transition: running -> clean_needs_emptying
-    res3 = await client.post(
         f"/api/v1/appliances/{app_id}/state",
         headers={"Authorization": f"Bearer {token}"},
         json={"to_state": "clean_needs_emptying"},
     )
-    assert res3.status_code == 200
-    assert res3.json()["current_state"] == "clean_needs_emptying"
+    assert res2.status_code == 200
+    data2 = res2.json()
+    assert data2["current_state"] == "needs_attention"
+    assert data2["timer_duration_minutes"] is None
+    assert data2["timer_started_at"] is None
+    assert data2["timer_ends_at"] is None
+    assert data2["next_state"] == "empty"
 
-    # 4. Transition: clean_needs_emptying -> empty
-    res4 = await client.post(
+    # 3. Transition: needs_attention -> empty
+    res3 = await client.post(
         f"/api/v1/appliances/{app_id}/state",
         headers={"Authorization": f"Bearer {token}"},
         json={"to_state": "empty"},
     )
-    assert res4.status_code == 200
-    assert res4.json()["current_state"] == "empty"
+    assert res3.status_code == 200
+    assert res3.json()["current_state"] == "empty"
+    assert res3.json()["next_state"] == "running"
 
     # Verify state logs in DB
     stmt = (
@@ -71,11 +73,10 @@ async def test_appliance_sequential_state_transitions(client: AsyncClient, db_se
         .order_by(ApplianceStateLog.created_at.asc())
     )
     logs = (await db_session.execute(stmt)).scalars().all()
-    assert len(logs) == 4
-    assert logs[0].from_state == "empty" and logs[0].to_state == "dirty"
-    assert logs[1].from_state == "dirty" and logs[1].to_state == "running"
-    assert logs[2].from_state == "running" and logs[2].to_state == "clean_needs_emptying"
-    assert logs[3].from_state == "clean_needs_emptying" and logs[3].to_state == "empty"
+    assert len(logs) == 3
+    assert logs[0].from_state == "empty" and logs[0].to_state == "running"
+    assert logs[1].from_state == "running" and logs[1].to_state == "needs_attention"
+    assert logs[2].from_state == "needs_attention" and logs[2].to_state == "empty"
     for log in logs:
         assert log.trigger_source == "manual"
         assert str(log.actor_member_id) == alice_id
@@ -93,13 +94,14 @@ async def test_appliance_invalid_transition_without_force_fails(client: AsyncCli
         "/api/v1/appliances",
         headers={"Authorization": f"Bearer {token}"},
     )
-    app_id = list_res.json()[0]["id"]
+    washer = next(a for a in list_res.json() if a["name"] == "Washer")
+    app_id = washer["id"]
 
-    # Attempt empty -> clean_needs_emptying without force -> 400
+    # Attempt empty -> needs_attention without force -> 400 (expected next is running)
     res = await client.post(
         f"/api/v1/appliances/{app_id}/state",
         headers={"Authorization": f"Bearer {token}"},
-        json={"to_state": "clean_needs_emptying"},
+        json={"to_state": "needs_attention"},
     )
     assert res.status_code == 400
     assert "Invalid state transition" in res.json()["detail"]
@@ -125,17 +127,101 @@ async def test_appliance_forced_state_transition(client: AsyncClient):
         "/api/v1/appliances",
         headers={"Authorization": f"Bearer {token}"},
     )
-    app_id = list_res.json()[0]["id"]
+    washer = next(a for a in list_res.json() if a["name"] == "Washer")
+    app_id = washer["id"]
     # Currently "empty"
 
-    # Force transition empty -> clean_needs_emptying
+    # Force transition empty -> needs_attention
     res = await client.post(
         f"/api/v1/appliances/{app_id}/state",
         headers={"Authorization": f"Bearer {token}"},
-        json={"to_state": "clean_needs_emptying", "force": True},
+        json={"to_state": "needs_attention", "force": True},
     )
     assert res.status_code == 200
-    assert res.json()["current_state"] == "clean_needs_emptying"
+    assert res.json()["current_state"] == "needs_attention"
+
+
+@pytest.mark.asyncio
+async def test_appliance_timer_validation_required(client: AsyncClient):
+    hh_res = await client.post(
+        "/api/v1/households",
+        json={"name": "Timer Validate House", "nickname": "Alice"},
+    )
+    token = hh_res.json()["access_token"]
+
+    list_res = await client.get(
+        "/api/v1/appliances",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    washer = next(a for a in list_res.json() if a["name"] == "Washer")
+    app_id = washer["id"]
+
+    # Transition to running without timer_duration_minutes fails
+    res_no_timer = await client.post(
+        f"/api/v1/appliances/{app_id}/state",
+        headers={"Authorization": f"Bearer {token}"},
+        json={"to_state": "running"},
+    )
+    assert res_no_timer.status_code == 400
+    assert "Timer duration" in res_no_timer.json()["detail"]
+
+    # Transition to running with duration <= 0 fails
+    res_zero_timer = await client.post(
+        f"/api/v1/appliances/{app_id}/state",
+        headers={"Authorization": f"Bearer {token}"},
+        json={"to_state": "running", "timer_duration_minutes": 0},
+    )
+    assert res_zero_timer.status_code == 400
+    assert "Timer duration" in res_zero_timer.json()["detail"]
+
+
+@pytest.mark.asyncio
+async def test_appliance_reset_cycle_endpoint(client: AsyncClient, db_session: AsyncSession):
+    hh_res = await client.post(
+        "/api/v1/households",
+        json={"name": "Reset Cycle House", "nickname": "Alice"},
+    )
+    token = hh_res.json()["access_token"]
+    alice_id = hh_res.json()["member"]["id"]
+
+    list_res = await client.get(
+        "/api/v1/appliances",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    washer = next(a for a in list_res.json() if a["name"] == "Washer")
+    app_id = washer["id"]
+
+    # Start washer running
+    await client.post(
+        f"/api/v1/appliances/{app_id}/state",
+        headers={"Authorization": f"Bearer {token}"},
+        json={"to_state": "running", "timer_duration_minutes": 45},
+    )
+
+    # Call reset
+    reset_res = await client.post(
+        f"/api/v1/appliances/{app_id}/reset",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    assert reset_res.status_code == 200
+    data = reset_res.json()
+    assert data["current_state"] == "empty"
+    assert data["timer_duration_minutes"] is None
+    assert data["timer_started_at"] is None
+    assert data["timer_ends_at"] is None
+
+    # Check state log recorded trigger_source='reset'
+    stmt = (
+        select(ApplianceStateLog)
+        .where(ApplianceStateLog.appliance_id == uuid.UUID(app_id))
+        .order_by(ApplianceStateLog.created_at.desc())
+    )
+    latest_log = (await db_session.execute(stmt)).scalars().first()
+    assert latest_log is not None
+    assert latest_log.trigger_source == "reset"
+    assert latest_log.from_state == "running"
+    assert latest_log.to_state == "empty"
+    assert str(latest_log.actor_member_id) == alice_id
 
 
 @pytest.mark.asyncio
@@ -158,20 +244,21 @@ async def test_appliance_state_history(client: AsyncClient):
         "/api/v1/appliances",
         headers={"Authorization": f"Bearer {token_alice}"},
     )
-    app_id = list_res.json()[0]["id"]
+    washer = next(a for a in list_res.json() if a["name"] == "Washer")
+    app_id = washer["id"]
 
-    # Alice sets dirty
+    # Alice sets running
     await client.post(
         f"/api/v1/appliances/{app_id}/state",
         headers={"Authorization": f"Bearer {token_alice}"},
-        json={"to_state": "dirty"},
+        json={"to_state": "running", "timer_duration_minutes": 45},
     )
 
-    # Bob sets running
+    # Bob sets needs_attention
     await client.post(
         f"/api/v1/appliances/{app_id}/state",
         headers={"Authorization": f"Bearer {token_bob}"},
-        json={"to_state": "running"},
+        json={"to_state": "needs_attention"},
     )
 
     # Fetch history
@@ -183,15 +270,14 @@ async def test_appliance_state_history(client: AsyncClient):
     logs = hist_res.json()
     assert len(logs) == 2
 
-    # Verify logs have actor details
-    # Order should be descending (most recent first)
-    assert logs[0]["from_state"] == "dirty"
-    assert logs[0]["to_state"] == "running"
+    # Verify logs have actor details (most recent first)
+    assert logs[0]["from_state"] == "running"
+    assert logs[0]["to_state"] == "needs_attention"
     assert logs[0]["trigger_source"] == "manual"
     assert logs[0]["actor_member"]["nickname"] == "Bob"
 
     assert logs[1]["from_state"] == "empty"
-    assert logs[1]["to_state"] == "dirty"
+    assert logs[1]["to_state"] == "running"
     assert logs[1]["trigger_source"] == "manual"
     assert logs[1]["actor_member"]["nickname"] == "Alice"
 
@@ -217,7 +303,7 @@ async def test_appliance_state_cross_household_returns_404(client: AsyncClient):
     res = await client.post(
         f"/api/v1/appliances/{app1_id}/state",
         headers={"Authorization": f"Bearer {token2}"},
-        json={"to_state": "dirty"},
+        json={"to_state": "running", "timer_duration_minutes": 45},
     )
     assert res.status_code == 404
 
@@ -228,9 +314,16 @@ async def test_appliance_state_cross_household_returns_404(client: AsyncClient):
     )
     assert hist_res.status_code == 404
 
+    # User 2 tries to reset User 1's appliance
+    reset_res = await client.post(
+        f"/api/v1/appliances/{app1_id}/reset",
+        headers={"Authorization": f"Bearer {token2}"},
+    )
+    assert reset_res.status_code == 404
+
 
 @pytest.mark.asyncio
-async def test_washer_and_dryer_transitions_skip_dirty(client: AsyncClient, db_session: AsyncSession):
+async def test_washer_and_dryer_transitions_skip_dirty(client: AsyncClient):
     hh_res = await client.post(
         "/api/v1/households",
         json={"name": "Laundry House", "nickname": "Alice"},
@@ -245,25 +338,25 @@ async def test_washer_and_dryer_transitions_skip_dirty(client: AsyncClient, db_s
     washer = next(a for a in appliances if a["type"] == "washer")
     dryer = next(a for a in appliances if a["type"] == "dryer")
 
-    # Washer: empty -> running (Start Cycle directly)
+    # Washer: empty -> running (requires timer)
     res_washer_run = await client.post(
         f"/api/v1/appliances/{washer['id']}/state",
         headers={"Authorization": f"Bearer {token}"},
-        json={"to_state": "running"},
+        json={"to_state": "running", "timer_duration_minutes": 45},
     )
     assert res_washer_run.status_code == 200
     assert res_washer_run.json()["current_state"] == "running"
 
-    # Washer: running -> clean_needs_emptying
+    # Washer: running -> needs_attention
     res_washer_clean = await client.post(
         f"/api/v1/appliances/{washer['id']}/state",
         headers={"Authorization": f"Bearer {token}"},
-        json={"to_state": "clean_needs_emptying"},
+        json={"to_state": "needs_attention"},
     )
     assert res_washer_clean.status_code == 200
-    assert res_washer_clean.json()["current_state"] == "clean_needs_emptying"
+    assert res_washer_clean.json()["current_state"] == "needs_attention"
 
-    # Washer: clean_needs_emptying -> empty
+    # Washer: needs_attention -> empty
     res_washer_empty = await client.post(
         f"/api/v1/appliances/{washer['id']}/state",
         headers={"Authorization": f"Bearer {token}"},
@@ -272,11 +365,11 @@ async def test_washer_and_dryer_transitions_skip_dirty(client: AsyncClient, db_s
     assert res_washer_empty.status_code == 200
     assert res_washer_empty.json()["current_state"] == "empty"
 
-    # Dryer: empty -> running (Start Cycle directly)
+    # Dryer: empty -> running (requires timer)
     res_dryer_run = await client.post(
         f"/api/v1/appliances/{dryer['id']}/state",
         headers={"Authorization": f"Bearer {token}"},
-        json={"to_state": "running"},
+        json={"to_state": "running", "timer_duration_minutes": 45},
     )
     assert res_dryer_run.status_code == 200
     assert res_dryer_run.json()["current_state"] == "running"
@@ -317,7 +410,7 @@ async def test_washer_and_dryer_reject_dirty_state(client: AsyncClient):
 
 
 @pytest.mark.asyncio
-async def test_dishwasher_transition_clean_to_dirty(client: AsyncClient, db_session: AsyncSession):
+async def test_dishwasher_3_step_cycle(client: AsyncClient):
     hh_res = await client.post(
         "/api/v1/households",
         json={"name": "Dishwasher Cycle House", "nickname": "Alice"},
@@ -330,38 +423,31 @@ async def test_dishwasher_transition_clean_to_dirty(client: AsyncClient, db_sess
     )
     dishwasher = next(a for a in list_res.json() if a["type"] == "dishwasher")
     app_id = dishwasher["id"]
+    assert dishwasher["current_state"] == "dirty"
 
-    # 1. empty -> dirty
+    # 1. dirty -> running
     res1 = await client.post(
         f"/api/v1/appliances/{app_id}/state",
         headers={"Authorization": f"Bearer {token}"},
-        json={"to_state": "dirty"},
+        json={"to_state": "running", "timer_duration_minutes": 60},
     )
     assert res1.status_code == 200
+    assert res1.json()["current_state"] == "running"
 
-    # 2. dirty -> running
+    # 2. running -> needs_attention
     res2 = await client.post(
         f"/api/v1/appliances/{app_id}/state",
         headers={"Authorization": f"Bearer {token}"},
-        json={"to_state": "running"},
+        json={"to_state": "needs_attention"},
     )
     assert res2.status_code == 200
+    assert res2.json()["current_state"] == "needs_attention"
 
-    # 3. running -> clean_needs_emptying
+    # 3. needs_attention -> dirty (cycle resets for next load)
     res3 = await client.post(
-        f"/api/v1/appliances/{app_id}/state",
-        headers={"Authorization": f"Bearer {token}"},
-        json={"to_state": "clean_needs_emptying"},
-    )
-    assert res3.status_code == 200
-
-    # 4. clean_needs_emptying -> dirty (Directly emptied back to dirty for new load)
-    res4 = await client.post(
         f"/api/v1/appliances/{app_id}/state",
         headers={"Authorization": f"Bearer {token}"},
         json={"to_state": "dirty"},
     )
-    assert res4.status_code == 200
-    assert res4.json()["current_state"] == "dirty"
-
-
+    assert res3.status_code == 200
+    assert res3.json()["current_state"] == "dirty"

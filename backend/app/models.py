@@ -325,12 +325,76 @@ class Appliance(Base):
         nullable=True,
     )
 
+    # Step slots (2 to 5 steps)
+    state_step_1: Mapped[str] = mapped_column(
+        String(30), nullable=False, default="empty", server_default="empty"
+    )
+    state_step_2: Mapped[str] = mapped_column(
+        String(30), nullable=False, default="running", server_default="running"
+    )
+    state_step_3: Mapped[Optional[str]] = mapped_column(
+        String(30), nullable=True
+    )
+    state_step_4: Mapped[Optional[str]] = mapped_column(
+        String(30), nullable=True
+    )
+    state_step_5: Mapped[Optional[str]] = mapped_column(
+        String(30), nullable=True
+    )
+
+    # Timer columns
+    timer_enabled: Mapped[bool] = mapped_column(
+        Boolean, nullable=False, default=False, server_default="false"
+    )
+    default_timer_minutes: Mapped[Optional[int]] = mapped_column(
+        Integer, nullable=True
+    )
+    timer_duration_minutes: Mapped[Optional[int]] = mapped_column(
+        Integer, nullable=True
+    )
+    timer_started_at: Mapped[Optional[datetime]] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+    timer_ends_at: Mapped[Optional[datetime]] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+
     __table_args__ = (
         CheckConstraint(
-            "current_state IN ('empty', 'dirty', 'running', 'clean_needs_emptying')",
-            name="ck_appliance_current_state",
+            "current_state IN (state_step_1, state_step_2, COALESCE(state_step_3, state_step_1), COALESCE(state_step_4, state_step_1), COALESCE(state_step_5, state_step_1))",
+            name="ck_appliance_current_state_in_steps",
+        ),
+        CheckConstraint(
+            "state_step_1 IN ('empty', 'dirty', 'running', 'needs_attention', 'clean') AND "
+            "state_step_2 IN ('empty', 'dirty', 'running', 'needs_attention', 'clean') AND "
+            "(state_step_3 IS NULL OR state_step_3 IN ('empty', 'dirty', 'running', 'needs_attention', 'clean')) AND "
+            "(state_step_4 IS NULL OR state_step_4 IN ('empty', 'dirty', 'running', 'needs_attention', 'clean')) AND "
+            "(state_step_5 IS NULL OR state_step_5 IN ('empty', 'dirty', 'running', 'needs_attention', 'clean'))",
+            name="ck_appliance_canonical_states",
         ),
     )
+
+    def get_ordered_steps(self) -> list[str]:
+        steps = [
+            self.state_step_1,
+            self.state_step_2,
+            self.state_step_3,
+            self.state_step_4,
+            self.state_step_5,
+        ]
+        return [s for s in steps if s]
+
+    def get_next_state(self, current: Optional[str] = None) -> str:
+        steps = self.get_ordered_steps()
+        if not steps:
+            return "empty"
+        target = current if current is not None else self.current_state
+        if target == "clean_needs_emptying" and "needs_attention" in steps:
+            target = "needs_attention"
+        if target not in steps:
+            return steps[0]
+        idx = steps.index(target)
+        return steps[(idx + 1) % len(steps)]
 
     # Relationships
     household: Mapped["Household"] = relationship(

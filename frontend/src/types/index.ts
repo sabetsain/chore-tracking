@@ -28,18 +28,64 @@ export interface AuthResponse {
   household: Household;
 }
 
-export type ApplianceType = 'dishwasher' | 'washer' | 'dryer' | 'custom';
-export type ApplianceState = 'empty' | 'dirty' | 'running' | 'clean_needs_emptying';
+export type ApplianceType = 'dishwasher' | 'washer' | 'dryer' | 'custom' | string;
+export type ApplianceState = 'empty' | 'dirty' | 'running' | 'needs_attention' | 'clean' | 'clean_needs_emptying';
 
 export interface Appliance {
   id: string;
   household_id: string;
   name: string;
   type: ApplianceType;
+  icon?: string;
   current_state: ApplianceState;
   state_updated_at: string;
   updated_by_member_id?: string | null;
   updated_by_member?: Member | null;
+  state_step_1: string;
+  state_step_2: string;
+  state_step_3?: string | null;
+  state_step_4?: string | null;
+  state_step_5?: string | null;
+  timer_enabled: boolean;
+  default_timer_minutes?: number | null;
+  timer_duration_minutes?: number | null;
+  timer_started_at?: string | null;
+  timer_ends_at?: string | null;
+  next_state?: string | null;
+}
+
+export interface ApplianceCreate {
+  name: string;
+  type?: string;
+  icon?: string;
+  cycle_steps?: string[];
+  state_step_1?: string;
+  state_step_2?: string;
+  state_step_3?: string | null;
+  state_step_4?: string | null;
+  state_step_5?: string | null;
+  timer_enabled?: boolean;
+  default_timer_minutes?: number | null;
+}
+
+export interface ApplianceUpdate {
+  name?: string;
+  type?: string;
+  icon?: string;
+  cycle_steps?: string[];
+  state_step_1?: string;
+  state_step_2?: string;
+  state_step_3?: string | null;
+  state_step_4?: string | null;
+  state_step_5?: string | null;
+  timer_enabled?: boolean;
+  default_timer_minutes?: number | null;
+}
+
+export interface ApplianceStateUpdate {
+  to_state: ApplianceState;
+  force?: boolean;
+  timer_duration_minutes?: number | null;
 }
 
 export interface ApplianceStateLog {

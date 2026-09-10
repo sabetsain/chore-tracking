@@ -77,7 +77,10 @@ async def test_full_roommate_lifecycle_simulation(client: AsyncClient, db_sessio
         assert "Washer" in app_names
         assert "Dryer" in app_names
         for a in appliances:
-            assert a["current_state"] == "empty"
+            if a["name"] == "Dishwasher":
+                assert a["current_state"] == "dirty"
+            else:
+                assert a["current_state"] == "empty"
             assert a["household_id"] == str(household_id)
 
         dishwasher_id = app_names["Dishwasher"]
@@ -237,39 +240,31 @@ async def test_full_roommate_lifecycle_simulation(client: AsyncClient, db_sessio
         assert any("chore" in p.lower() or "assigned" in p.lower() or "kitchen" in p.lower() for p in dispatched_payloads)
 
         # =========================================================================
-        # STEP 5: Roommate 1 starts Dishwasher (empty -> dirty -> running)
+        # =========================================================================
+        # STEP 5: Roommate 1 starts Dishwasher (dirty -> running with timer)
         # =========================================================================
         ws_r1.messages.clear()
         ws_r2.messages.clear()
         ws_r3.messages.clear()
 
-        # empty -> dirty
-        d_dirty_res = await client.post(
-            f"/api/v1/appliances/{dishwasher_id}/state",
-            headers=r1_headers,
-            json={"to_state": "dirty"},
-        )
-        assert d_dirty_res.status_code == 200
-        assert d_dirty_res.json()["current_state"] == "dirty"
-        assert d_dirty_res.json()["updated_by_member_id"] == r1_id
-
         # dirty -> running
         d_run_res = await client.post(
             f"/api/v1/appliances/{dishwasher_id}/state",
             headers=r1_headers,
-            json={"to_state": "running"},
+            json={"to_state": "running", "timer_duration_minutes": 60},
         )
         assert d_run_res.status_code == 200
         assert d_run_res.json()["current_state"] == "running"
+        assert d_run_res.json()["updated_by_member_id"] == r1_id
 
         # Verify all roommates received WebSocket events for running dishwasher
         for ws in [ws_r1, ws_r2, ws_r3]:
             app_events = [m for m in ws.messages if m["event"] == "APPLIANCE_STATE_CHANGED"]
-            assert len(app_events) == 2
+            assert len(app_events) == 1
             assert app_events[-1]["data"]["current_state"] == "running"
 
         # =========================================================================
-        # STEP 6: IoT sensor webhook triggers power drop (<5W) -> Dishwasher clean
+        # STEP 6: IoT sensor webhook triggers power drop (<5W) -> Dishwasher clean (needs_attention)
         # =========================================================================
         mock_webpush.reset_mock()
         ws_r1.messages.clear()
@@ -281,14 +276,14 @@ async def test_full_roommate_lifecycle_simulation(client: AsyncClient, db_sessio
             json={"power_watts": 1.8, "device_id": "smart_plug_dishwasher_01"},
         )
         assert sensor_res.status_code == 200
-        assert sensor_res.json()["current_state"] == "clean_needs_emptying"
+        assert sensor_res.json()["current_state"] == "needs_attention"
         assert sensor_res.json()["updated_by_member_id"] is None
 
         # Verify WebSocket broadcast to all roommates
         for ws in [ws_r1, ws_r2, ws_r3]:
             app_events = [m for m in ws.messages if m["event"] == "APPLIANCE_STATE_CHANGED"]
             assert len(app_events) == 1
-            assert app_events[0]["data"]["current_state"] == "clean_needs_emptying"
+            assert app_events[0]["data"]["current_state"] == "needs_attention"
 
         # Verify push notification sent to all roommates about clean Dishwasher
         assert mock_webpush.called
@@ -297,7 +292,7 @@ async def test_full_roommate_lifecycle_simulation(client: AsyncClient, db_sessio
         assert "Dishwasher" in clean_push_data or "clean" in clean_push_data.lower()
 
         # =========================================================================
-        # STEP 7: Roommate 2 (Sam) empties Dishwasher (clean_needs_emptying -> empty)
+        # STEP 7: Roommate 2 (Sam) empties Dishwasher (needs_attention -> dirty)
         # =========================================================================
         ws_r1.messages.clear()
         ws_r2.messages.clear()
@@ -306,10 +301,10 @@ async def test_full_roommate_lifecycle_simulation(client: AsyncClient, db_sessio
         d_empty_res = await client.post(
             f"/api/v1/appliances/{dishwasher_id}/state",
             headers=r2_headers,
-            json={"to_state": "empty"},
+            json={"to_state": "dirty"},
         )
         assert d_empty_res.status_code == 200
-        assert d_empty_res.json()["current_state"] == "empty"
+        assert d_empty_res.json()["current_state"] == "dirty"
         assert d_empty_res.json()["updated_by_member_id"] == r2_id
         assert d_empty_res.json()["updated_by_member"]["nickname"] == "Sam"
 
@@ -317,7 +312,7 @@ async def test_full_roommate_lifecycle_simulation(client: AsyncClient, db_sessio
         for ws in [ws_r1, ws_r2, ws_r3]:
             app_events = [m for m in ws.messages if m["event"] == "APPLIANCE_STATE_CHANGED"]
             assert len(app_events) == 1
-            assert app_events[0]["data"]["current_state"] == "empty"
+            assert app_events[0]["data"]["current_state"] == "dirty"
 
         # Verify complete state transition history
         history_res = await client.get(
@@ -326,19 +321,16 @@ async def test_full_roommate_lifecycle_simulation(client: AsyncClient, db_sessio
         )
         assert history_res.status_code == 200
         history_logs = history_res.json()
-        assert len(history_logs) == 4
+        assert len(history_logs) == 3
         # Ordered descending (most recent first)
-        assert history_logs[0]["from_state"] == "clean_needs_emptying" and history_logs[0]["to_state"] == "empty"
+        assert history_logs[0]["from_state"] == "needs_attention" and history_logs[0]["to_state"] == "dirty"
         assert history_logs[0]["trigger_source"] == "manual" and history_logs[0]["actor_member"]["nickname"] == "Sam"
 
-        assert history_logs[1]["from_state"] == "running" and history_logs[1]["to_state"] == "clean_needs_emptying"
+        assert history_logs[1]["from_state"] == "running" and history_logs[1]["to_state"] == "needs_attention"
         assert history_logs[1]["trigger_source"] == "sensor_webhook" and history_logs[1]["actor_member"] is None
 
         assert history_logs[2]["from_state"] == "dirty" and history_logs[2]["to_state"] == "running"
         assert history_logs[2]["trigger_source"] == "manual" and history_logs[2]["actor_member"]["nickname"] == "Alex"
-
-        assert history_logs[3]["from_state"] == "empty" and history_logs[3]["to_state"] == "dirty"
-        assert history_logs[3]["trigger_source"] == "manual" and history_logs[3]["actor_member"]["nickname"] == "Alex"
 
         # =========================================================================
         # STEP 8: Roommate 1 logs 2 instances of Trash duty (continuous_duty)

@@ -104,3 +104,30 @@ async def notify_member_chore_assignment(
     payload = create_chore_payload(chore_title, message=message)
     for sub in subscriptions:
         await send_push_notification(db, sub, payload)
+
+
+def create_appliance_timer_payload(appliance_name: str, message: Optional[str] = None) -> dict[str, Any]:
+    return {
+        "title": f"{appliance_name} Timer Finished",
+        "body": message or f"{appliance_name} cycle timer completed - confirmation needed.",
+        "tag": f"appliance-timer-{appliance_name.lower().replace(' ', '-')}",
+        "data": {
+            "type": "appliance_timer_complete",
+            "appliance_name": appliance_name,
+        },
+    }
+
+
+async def notify_household_appliance_timer_complete(
+    db: AsyncSession,
+    household_id: uuid.UUID,
+    appliance_name: str,
+    message: Optional[str] = None,
+) -> None:
+    stmt = select(PushSubscription).where(PushSubscription.household_id == household_id)
+    res = await db.execute(stmt)
+    subscriptions = res.scalars().all()
+    payload = create_appliance_timer_payload(appliance_name, message=message)
+    for sub in subscriptions:
+        await send_push_notification(db, sub, payload)
+

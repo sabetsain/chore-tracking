@@ -18,19 +18,22 @@ describe('Stationery Primitives', () => {
       render(<RubberStampBadge status="clean" />);
       const badge = screen.getByRole('status');
       expect(badge).toBeInTheDocument();
-      expect(badge).toHaveTextContent('CLEAN');
-      expect(badge).toHaveAttribute('aria-label', 'Status: CLEAN');
+      expect(badge).toHaveTextContent('CLEAN & READY');
+      expect(badge).toHaveAttribute('aria-label', 'Status: CLEAN & READY');
     });
 
-    it('renders with state dirty, running, and clean_needs_emptying', () => {
+    it('renders with state dirty, running, needs_attention, and clean_needs_emptying', () => {
       const { rerender } = render(<RubberStampBadge status="dirty" />);
-      expect(screen.getByRole('status')).toHaveTextContent('DIRTY');
+      expect(screen.getByRole('status')).toHaveTextContent('DIRTY / LOAD');
 
       rerender(<RubberStampBadge status="running" />);
-      expect(screen.getByRole('status')).toHaveTextContent('RUNNING');
+      expect(screen.getByRole('status')).toHaveTextContent('CYCLE IN PROGRESS');
+
+      rerender(<RubberStampBadge status="needs_attention" />);
+      expect(screen.getByRole('status')).toHaveTextContent('NEEDS EMPTYING');
 
       rerender(<RubberStampBadge status="clean_needs_emptying" />);
-      expect(screen.getByRole('status')).toHaveTextContent('CLEAN - NEEDS EMPTYING');
+      expect(screen.getByRole('status')).toHaveTextContent('NEEDS EMPTYING');
 
       rerender(<RubberStampBadge status="empty" />);
       expect(screen.getByRole('status')).toHaveTextContent('READY TO RUN!');

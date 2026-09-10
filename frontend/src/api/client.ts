@@ -1,7 +1,9 @@
 import {
   Appliance,
+  ApplianceCreate,
   ApplianceState,
   ApplianceStateLog,
+  ApplianceUpdate,
   AuthResponse,
   Chore,
   ChoreAssignment,
@@ -112,16 +114,49 @@ export const api = {
   // Appliances
   listAppliances: () => request<Appliance[]>('/appliances'),
 
-  createAppliance: (data: { name: string; type: string }) =>
+  createAppliance: (data: ApplianceCreate | { name: string; type: string }) =>
     request<Appliance>('/appliances', {
       method: 'POST',
       body: JSON.stringify(data),
     }),
 
-  updateApplianceState: (applianceId: string, toState: ApplianceState, force = false) =>
-    request<Appliance>(`/appliances/${applianceId}/state`, {
+  updateAppliance: (applianceId: string, data: ApplianceUpdate) =>
+    request<Appliance>(`/appliances/${applianceId}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    }),
+
+  resetAppliance: (applianceId: string) =>
+    request<Appliance>(`/appliances/${applianceId}/reset`, {
       method: 'POST',
-      body: JSON.stringify({ to_state: toState, force }),
+    }),
+
+  updateApplianceState: (
+    applianceId: string,
+    toState: ApplianceState,
+    timerDurationMinutesOrForce?: number | boolean | null,
+    force = false
+  ) => {
+    let timer_duration_minutes: number | undefined;
+    let isForce = force;
+    if (typeof timerDurationMinutesOrForce === 'boolean') {
+      isForce = timerDurationMinutesOrForce;
+    } else if (typeof timerDurationMinutesOrForce === 'number') {
+      timer_duration_minutes = timerDurationMinutesOrForce;
+    }
+    return request<Appliance>(`/appliances/${applianceId}/state`, {
+      method: 'POST',
+      body: JSON.stringify({
+        to_state: toState,
+        force: isForce,
+        ...(timer_duration_minutes !== undefined ? { timer_duration_minutes } : {}),
+      }),
+    });
+  },
+
+  deleteAppliance: (applianceId: string) =>
+    request<void>(`/appliances/${applianceId}`, {
+      method: 'DELETE',
     }),
 
   getApplianceHistory: (applianceId: string) =>

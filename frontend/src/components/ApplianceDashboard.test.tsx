@@ -12,6 +12,10 @@ describe('ApplianceDashboard Component', () => {
       name: 'Kitchen Dishwasher',
       type: 'dishwasher',
       current_state: 'dirty',
+      state_step_1: 'dirty',
+      state_step_2: 'running',
+      state_step_3: 'needs_attention',
+      timer_enabled: false,
       state_updated_at: new Date(Date.now() - 30 * 60 * 1000).toISOString(), // 30 mins ago
       updated_by_member: {
         id: 'm-1',
@@ -27,7 +31,11 @@ describe('ApplianceDashboard Component', () => {
       household_id: 'h-1',
       name: 'Main Washing Machine',
       type: 'washer',
-      current_state: 'clean_needs_emptying',
+      current_state: 'needs_attention',
+      state_step_1: 'empty',
+      state_step_2: 'running',
+      state_step_3: 'needs_attention',
+      timer_enabled: false,
       state_updated_at: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(), // 2 hours ago
       updated_by_member: {
         id: 'm-2',
@@ -62,6 +70,8 @@ describe('ApplianceDashboard Component', () => {
   const mockOnUpdateState = vi.fn();
   const mockOnFetchHistory = vi.fn();
   const mockOnCreateAppliance = vi.fn();
+  const mockOnUpdateAppliance = vi.fn();
+  const mockOnResetAppliance = vi.fn();
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -80,7 +90,7 @@ describe('ApplianceDashboard Component', () => {
     expect(screen.getByText('Kitchen Dishwasher')).toBeInTheDocument();
     expect(screen.getByText('Main Washing Machine')).toBeInTheDocument();
     expect(screen.getByText(/dirty/i)).toBeInTheDocument();
-    expect(screen.getByText(/clean.*needs emptying/i)).toBeInTheDocument();
+    expect(screen.getByText(/needs emptying/i)).toBeInTheDocument();
     expect(screen.getByText(/Sam/i)).toBeInTheDocument();
     expect(screen.getByText(/Alex/i)).toBeInTheDocument();
   });
@@ -128,7 +138,7 @@ describe('ApplianceDashboard Component', () => {
     });
   });
 
-  it('opens add appliance modal and creates appliance', async () => {
+  it('opens guided add appliance modal and creates custom appliance', async () => {
     const user = userEvent.setup();
     mockOnCreateAppliance.mockResolvedValueOnce(undefined);
 
@@ -145,7 +155,6 @@ describe('ApplianceDashboard Component', () => {
     await user.click(addBtn);
 
     expect(screen.getByPlaceholderText(/appliance name/i)).toBeInTheDocument();
-    expect(screen.queryByRole('option', { name: /custom appliance/i })).not.toBeInTheDocument();
     await user.type(screen.getByPlaceholderText(/appliance name/i), 'Balcony Dryer');
 
     const submitBtn = screen.getByRole('button', { name: /save appliance|create/i });
@@ -154,12 +163,68 @@ describe('ApplianceDashboard Component', () => {
     expect(mockOnCreateAppliance).toHaveBeenCalledWith(
       expect.objectContaining({
         name: 'Balcony Dryer',
-        type: 'dishwasher',
       })
     );
   });
 
-  it('renders "Start Cycle" directly for empty appliances and "Mark Emptied" directly to dirty for clean dishwasher', async () => {
+  it('opens edit modal from appliance card and updates appliance', async () => {
+    const user = userEvent.setup();
+    mockOnUpdateAppliance.mockResolvedValueOnce(undefined);
+
+    render(
+      <ApplianceDashboard
+        appliances={mockAppliances}
+        onUpdateState={mockOnUpdateState}
+        onFetchHistory={mockOnFetchHistory}
+        onCreateAppliance={mockOnCreateAppliance}
+        onUpdateAppliance={mockOnUpdateAppliance}
+        onResetAppliance={mockOnResetAppliance}
+      />
+    );
+
+    const editBtns = screen.getAllByRole('button', { name: /edit appliance/i });
+    await user.click(editBtns[0]);
+
+    expect(screen.getByText(/Edit Appliance/i)).toBeInTheDocument();
+    const nameInput = screen.getByPlaceholderText(/appliance name/i);
+    expect(nameInput).toHaveValue('Kitchen Dishwasher');
+
+    await user.clear(nameInput);
+    await user.type(nameInput, 'Modern Kitchen Dishwasher');
+
+    const updateBtn = screen.getByRole('button', { name: /update appliance/i });
+    await user.click(updateBtn);
+
+    expect(mockOnUpdateAppliance).toHaveBeenCalledWith(
+      'app-1',
+      expect.objectContaining({
+        name: 'Modern Kitchen Dishwasher',
+      })
+    );
+  });
+
+  it('triggers reset action on an appliance', async () => {
+    const user = userEvent.setup();
+    mockOnResetAppliance.mockResolvedValueOnce(undefined);
+
+    render(
+      <ApplianceDashboard
+        appliances={mockAppliances}
+        onUpdateState={mockOnUpdateState}
+        onFetchHistory={mockOnFetchHistory}
+        onCreateAppliance={mockOnCreateAppliance}
+        onUpdateAppliance={mockOnUpdateAppliance}
+        onResetAppliance={mockOnResetAppliance}
+      />
+    );
+
+    const resetBtns = screen.getAllByRole('button', { name: /abort \/ reset cycle/i });
+    await user.click(resetBtns[0]);
+
+    expect(mockOnResetAppliance).toHaveBeenCalledWith('app-1');
+  });
+
+  it('renders "Start Cycle" directly for empty appliances and "Mark Emptied" for clean dishwasher', async () => {
     const user = userEvent.setup();
     mockOnUpdateState.mockResolvedValue(undefined);
 
@@ -170,6 +235,10 @@ describe('ApplianceDashboard Component', () => {
         name: 'Main Washing Machine',
         type: 'washer',
         current_state: 'empty',
+        state_step_1: 'empty',
+        state_step_2: 'running',
+        state_step_3: 'needs_attention',
+        timer_enabled: false,
         state_updated_at: new Date().toISOString(),
       },
       {
@@ -178,6 +247,10 @@ describe('ApplianceDashboard Component', () => {
         name: 'Main Clothes Dryer',
         type: 'dryer',
         current_state: 'empty',
+        state_step_1: 'empty',
+        state_step_2: 'running',
+        state_step_3: 'needs_attention',
+        timer_enabled: false,
         state_updated_at: new Date().toISOString(),
       },
       {
@@ -185,7 +258,11 @@ describe('ApplianceDashboard Component', () => {
         household_id: 'h-1',
         name: 'Kitchen Dishwasher',
         type: 'dishwasher',
-        current_state: 'clean_needs_emptying',
+        current_state: 'needs_attention',
+        state_step_1: 'dirty',
+        state_step_2: 'running',
+        state_step_3: 'needs_attention',
+        timer_enabled: false,
         state_updated_at: new Date().toISOString(),
       },
     ];
@@ -207,7 +284,7 @@ describe('ApplianceDashboard Component', () => {
     await user.click(startCycleBtns[0]);
     expect(mockOnUpdateState).toHaveBeenCalledWith('washer-1', 'running');
 
-    // Dishwasher in clean_needs_emptying: Button should say "Mark Emptied" and transition directly to 'dirty'
+    // Dishwasher in needs_attention: Button should say "Mark Emptied" and transition to 'dirty'
     const markEmptiedBtn = screen.getByRole('button', { name: /mark emptied/i });
     await user.click(markEmptiedBtn);
     expect(mockOnUpdateState).toHaveBeenCalledWith('dw-1', 'dirty');

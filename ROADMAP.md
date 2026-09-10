@@ -277,8 +277,8 @@ An open, shared interactive canvas integrated into the left page spread or an am
 
 | Feature Phase | Name | Target Capabilities | Status |
 | :--- | :--- | :--- | :--- |
-| **Phase 1** | **Custom Appliance Engine** | Custom cycle graph builder, arbitrary state definitions, custom stamp styling, power profile calibration. | **Planned (Spec in Section 2)** |
-| **Phase 2** | **Culinary & Smart Pantry Engine** | Pantry inventory, 1-tap `LOW` / `OUT` stamps, dinner duty recipe suggestions, local store API price estimation. | **Planned (Spec in Section 5)** |
+| **Phase 1** | **Custom Appliance Engine** | Linear cycle step builder (2-5 slots), canonical state stamps, timer duration picker with mandatory human confirmation, cycle abort & edit safeguards. | **Completed (OpenSpec change: `custom-appliance-engine`)** |
+| **Phase 2** | **Culinary & Smart Pantry Engine** | Pantry inventory, 1-tap `LOW` / `OUT` stamps, dinner duty recipe suggestions, local store API price estimation. | **Next Priority (Spec in Section 5)** |
 | **Phase 3** | **The Digital Kitchen Bench** | Ambient multiplayer co-presence, communal fridge magnet graffito, kettle bell, gratitude wax seals, milestone bead string. | **Planned (Spec in Section 6)** |
 | **Phase 4** | **Chore Bounties & Proof** | Subtasks, Polaroid photo receipts, karma ledger, vacation rebalancing. | **Backlog (Spec in Section 3)** |
 | **Phase 5** | **Ambient Hardware & E-Ink IoT** | Home Assistant MQTT bridge, ESP32 e-ink fridge display firmware, smart plug auto-sensing. | **Backlog (Spec in Section 4)** |

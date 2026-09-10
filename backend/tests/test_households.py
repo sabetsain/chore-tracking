@@ -49,7 +49,10 @@ async def test_create_household_success(client: AsyncClient, db_session: AsyncSe
     appliance_names = {app.name for app in appliances}
     assert appliance_names == {"Dishwasher", "Washer", "Dryer"}
     for app in appliances:
-        assert app.current_state == "empty"
+        if app.name == "Dishwasher":
+            assert app.current_state == "dirty"
+        else:
+            assert app.current_state == "empty"
 
 
 @pytest.mark.asyncio
