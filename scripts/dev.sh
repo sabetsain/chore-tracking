@@ -130,7 +130,10 @@ case "$CMD" in
         echo "  Frontend: http://localhost:5173"
         echo "  Backend:  http://localhost:8000 (Docs: /docs)"
         echo "Press Ctrl+C to halt local servers."
-        wait -n "$BACKEND_PID" "$FRONTEND_PID" 2>/dev/null || true
+        while kill -0 "$BACKEND_PID" 2>/dev/null && kill -0 "$FRONTEND_PID" 2>/dev/null; do
+            sleep 1 &
+            wait $! 2>/dev/null || true
+        done
         cleanup
         ;;
     backend)
@@ -141,7 +144,10 @@ case "$CMD" in
         echo ""
         echo "FastAPI backend is live on http://localhost:8000 (Docs: /docs)"
         echo "Press Ctrl+C to halt backend server."
-        wait "$BACKEND_PID" 2>/dev/null || true
+        while kill -0 "$BACKEND_PID" 2>/dev/null; do
+            sleep 1 &
+            wait $! 2>/dev/null || true
+        done
         cleanup
         ;;
     frontend)
@@ -150,7 +156,10 @@ case "$CMD" in
         echo ""
         echo "Vite frontend is live on http://localhost:5173"
         echo "Press Ctrl+C to halt frontend server."
-        wait "$FRONTEND_PID" 2>/dev/null || true
+        while kill -0 "$FRONTEND_PID" 2>/dev/null; do
+            sleep 1 &
+            wait $! 2>/dev/null || true
+        done
         cleanup
         ;;
     db)
