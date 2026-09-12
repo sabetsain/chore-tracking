@@ -1,61 +1,71 @@
 # stationery-design-system Specification
 
 ## Purpose
-Establishes the design tokens, typography, luxury paper materiality, multi-sensory audio, micro-haptics, and responsive layout rules for the Household Coordination App per the Paper Notebook Design System (DESIGN.md v2.1.0).
+Modernizes the Household Coordination App design system from skeuomorphic paper notebook styling to warm minimalist functionalism, rooted in color wheel harmony, intentional negative space, tactile status stamps, community identity stickers, and ergonomic button interaction psychology.
 
 ## Requirements
 
-### Requirement: Stationery Color Palette and Theme Tokens
-The frontend SHALL define and expose physical stationery CSS custom properties and Tailwind CSS color tokens for both Daytime Paper (light mode) and Night Journal (dark mode) environments.
+### Requirement: 60-30-10 Warm Anti-Glare Color Palette
+The frontend SHALL expose calibrated CSS custom properties for Daytime Warm Linen and Night Journal environments, enforcing the 60-30-10 distribution rule without pure `#FFFFFF` digital glare.
 
-#### Scenario: Daytime Paper theme tokens active in light mode
-- **WHEN** the application is loaded in light mode
-- **THEN** the base page background is `--paper-bg` (`#FAF7F0`), card surfaces use `--paper-card` (`#FAF6EE`), primary ink is `--ink-navy` (`#0F172A`), secondary ink is `--ink-graphite` (`#475569`), and margin guidelines use `--rule-margin` (`rgba(239, 68, 68, 0.65)`).
+#### Scenario: Daytime Warm Linen tokens active in light mode
+- **WHEN** the application is loaded in default light mode
+- **THEN** the base canvas background is `--canvas-bg` (`#F4EFEA`), elevated cards use `--canvas-card` (`#FDFAF6`), primary ink is `--ink-primary` (`#1E232B`), and borders use `--border-stone` (`#E3DDD5`).
 
-#### Scenario: Night Journal theme tokens active in dark mode
+#### Scenario: Night Journal tokens active in dark mode
 - **WHEN** the dark mode class (`.dark`) is toggled on the document root
-- **THEN** the desk backdrop shifts to `--night-desk` (`#080D17`), page sheets use `--night-page` (`#1A2234`), text ink uses `--night-gel-white` (`#F8FAFC`), and stamp colors switch to high-contrast dark-mode stamp inks (`#34D399`, `#F87171`, `#60A5FA`, `#FBBF24`).
+- **THEN** the base canvas shifts to deep espresso `--canvas-bg` (`#141312`), cards use roasted walnut `--canvas-card` (`#1F1D1A`), and borders use warm amber-stone `--border-stone` (`#2E2A26`).
 
-### Requirement: Editorial Typographic Hierarchy and 24px Baseline Grid
-The application SHALL load `Fraunces`, `Plus Jakarta Sans`, `Caveat`, and `JetBrains Mono` via preconnected web fonts, and SHALL provide CSS ruled background utility classes locked to a 24px pitch.
+#### Scenario: Toned complementary accents for status signaling (Sage & Slate Navy)
+- **WHEN** dynamic states are rendered
+- **THEN** running cycles and primary action triggers use refined slate navy (`#28415C`), clean/success states use calming sage green (`#3E6B52`), reset/dirty states use muted crimson (`#9B3B42`), and orange and purple hues are omitted.
 
-#### Scenario: Ruled paper line alignment
-- **WHEN** a container renders with `.notebook-ruled-surface`
-- **THEN** repeating horizontal rules with a 24px line-height and a vertical 2px red margin rule guideline at 42px left offset are displayed.
+### Requirement: Intentional Negative Space and Seamless Unified Canvas
+The application SHALL provide generous active white space (minimum 24px-32px section separation, 16px-24px card padding), SHALL render on a seamless unified canvas without vertical side borders (`border-x`) or artificial desk margin shading, and SHALL NOT render ruled notebook lines (`.notebook-ruled-surface`), faux red margin lines, spiral spines, or washi tape strips.
 
-#### Scenario: Typographic role mapping
-- **WHEN** headings, status badges, controls, and data codes are rendered
-- **THEN** view titles use `Fraunces`, rubber stamp badges use uppercase `Caveat`, buttons and body text use `Plus Jakarta Sans`, and invite/PIN codes use `JetBrains Mono`.
+#### Scenario: Clean card rendering on seamless canvas
+- **WHEN** the dashboard, appliance cards, or chore items render
+- **THEN** they render on soft porcelain card surfaces bounded by 1px muted stone hairlines floating naturally over the seamless canvas ground without vertical side border lines or desk margin shading.
 
-### Requirement: Reusable Stationery Primitives
-The application SHALL provide a dedicated suite of accessible React stationery primitives in `frontend/src/components/stationery/` comprising `PaperCard`, `RubberStampBadge`, `WashiTape`, `PaperclipFastener`, `ScribbleCheckbox`, `TallyCounter`, `SpiralSpine`, and `NotebookTab`.
+### Requirement: StatusStamp Primitive for System State Output
+The frontend SHALL provide a dedicated `StatusStamp` component for rendering dynamic appliance and duty states.
 
-#### Scenario: Rubber stamp badge rendering and rotation
-- **WHEN** a `RubberStampBadge` is rendered for an appliance state (`CLEAN`, `DIRTY`, `RUNNING`, `EMPTYING`)
-- **THEN** it renders with an uppercase distressed border, spring drop animation, and natural rotation between -4deg and +4deg, accompanied by semantic `role="status"` accessibility attributes.
+#### Scenario: StatusStamp visual attributes
+- **WHEN** a `StatusStamp` is rendered for an appliance state (`CLEAN`, `DIRTY`, `RUNNING`, `NEEDS EMPTYING`)
+- **THEN** it renders with an un-filled transparent interior, a 1.5px dashed or double border matching the state accent color, uppercase tabular monospace typography, and a subtle rotational angle within ±1.5°.
 
-#### Scenario: Scribble checkbox strikethrough animation
-- **WHEN** a user completes a single weekly chore
-- **THEN** the `ScribbleCheckbox` animates a hand-drawn SVG strikethrough path with CSS stroke-dashoffset interpolation over 320ms.
+#### Scenario: StatusStamp state transition animation
+- **WHEN** an appliance state transitions
+- **THEN** the stamp animates with an 180ms scale pulse (`scale(1.04) -> scale(1.0)`) and semantic `role="status"` accessibility attributes.
 
-#### Scenario: Continuous duty tally mark cluster rendering
-- **WHEN** continuous duty chore instances are logged
-- **THEN** `TallyCounter` renders individual instances as handwritten tally groups (4 vertical strokes plus a diagonal slash for 5-counts).
+### Requirement: IdentitySticker Primitive for Roommates and Chores
+The frontend SHALL provide an `IdentitySticker` component representing roommate avatars and domestic chore categories.
 
-#### Scenario: Paperclip fastener for modals and slips
-- **WHEN** a dialog modal such as `ChoreSwapModal` or `ChoreLogModal` is displayed
-- **THEN** it renders as an angled paper memo slip fastened with a metallic SVG `PaperclipFastener` marked `aria-hidden="true"`.
+#### Scenario: Roommate avatar sticker display
+- **WHEN** an active roommate is displayed in chore duties or appliance history logs
+- **THEN** their selected domestic glyph sticker (e.g., ☕, 🌿, 🐱, ☀️) renders with a rounded die-cut border, subtle micro-shadow, and a natural rotational tilt within ±2°.
 
-### Requirement: Velocity-Sensitive Multi-Sensory Audio
-The procedural sound engine SHALL modulate synthesized sound envelope, resonance, and filter frequencies based on user interaction velocity and action weight.
+### Requirement: 4-State Ergonomic Button System
+All primary action buttons on appliance and chore cards SHALL satisfy Fitts's law touch ergonomics and provide immediate 4-state sensory feedback.
 
-#### Scenario: Heavy action resonance modulation
-- **WHEN** a user triggers a major state change (e.g. stamping an appliance dirty or running)
-- **THEN** the sound engine synthesizes a deeper 65Hz desk-impact sub-bass layer and a distinct 1.6kHz rubber snap with ±5% procedural pitch jitter.
+#### Scenario: Primary button mobile thumb affordance
+- **WHEN** rendered on an appliance card
+- **THEN** the action button spans the full width of the card's lower boundary (`w-full`) with a minimum height of 46px and an explicit domestic verb label (e.g., "Start Cycle", "Mark Emptied").
 
-#### Scenario: Rapid sequential checkoff sound variation
-- **WHEN** multiple items are checked off in quick succession
-- **THEN** the sound engine dynamically modulates the noise filter cutoff and attack decay to prevent acoustic fatigue.
+#### Scenario: Button tactile depression on tap
+- **WHEN** a user taps an action button
+- **THEN** the button immediately depresses (`translate-y-[1px]`), collapses its contact shadow, triggers an 80ms synthesized wood-block click, and disables pointer events while awaiting API resolution.
+
+### Requirement: Zero-Dependency Web Audio Synthesizer
+The application SHALL synthesize subtle organic acoustic micro-feedback using the browser Web Audio API without downloading external audio files.
+
+#### Scenario: Audio click on primary completion
+- **WHEN** an appliance state change or chore completion occurs and audio is unmuted
+- **THEN** the sound engine synthesizes an ~80ms triangle-wave pitch decay impulse (140Hz to 40Hz) with exponential gain decay.
+
+#### Scenario: Audio muting control
+- **WHEN** a user toggles mute in the header or settings
+- **THEN** all audio synthesis is suppressed without impacting visual state transitions.
 
 ### Requirement: Micro-Haptic Signatures
 The application SHALL emit distinct vibration signatures for key physical actions on supported mobile browsers via `navigator.vibrate`.
