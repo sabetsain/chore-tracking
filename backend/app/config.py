@@ -2,7 +2,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
-    DATABASE_URL: str = "postgresql+asyncpg://chores:chores_secret@localhost:5432/chores_db"
+    DATABASE_URL: str = "postgresql+asyncpg://chores:chores_secret@localhost:5433/chores_db"
     JWT_SECRET: str = "dev_jwt_secret_key_change_in_production"
     JWT_ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_DAYS: int = 30
