@@ -1,184 +1,52 @@
 import { useState } from 'react';
-import { Sparkles, Hand, Star, Moon, AlertCircle, ArrowDown, Pencil, Trash2 } from 'lucide-react';
-import { motion, useMotionValue } from 'framer-motion';
+import { Sparkles, AlertCircle } from 'lucide-react';
 import { Chore, ChoreAssignment } from '../types';
 import { PaperCard } from './stationery/PaperCard';
-import { soundEngine } from '../utils/soundEngine';
-import { soundEffects } from '../utils/soundEffects';
+import { ChoreCard } from './ChoreCard';
+import { ChoreDomain, useChores } from '../hooks/useChores';
 
-interface UpForGrabsPoolProps {
-  chores: ChoreAssignment[];
-  onClaimChore: (assignmentId: string) => Promise<void>;
+export interface UpForGrabsPoolProps {
+  chores?: ChoreDomain | ChoreAssignment[];
+  onClaimChore?: (assignmentId: string) => Promise<void>;
   onEditChore?: (chore: Chore) => void;
   onDeleteChore?: (choreId: string) => Promise<void>;
 }
 
-interface DraggableMemoNoteProps {
-  assignment: ChoreAssignment;
-  idx: number;
-  claimingId: string | null;
-  onClaim: (id: string) => Promise<void>;
-  onEdit?: (chore: Chore) => void;
-  onDelete?: (choreId: string) => Promise<void>;
-}
-
-function DraggableMemoNote({
-  assignment,
-  idx,
-  claimingId,
-  onClaim,
-  onEdit,
-  onDelete,
-}: DraggableMemoNoteProps) {
-  const isAwayMember = assignment.member && assignment.member.status === 'away';
-  const isClaiming = claimingId === assignment.id;
-
-  const y = useMotionValue(0);
-
-  const handleDragEnd = (_: any, info: { offset: { y: number }; velocity: { y: number } }) => {
-    if (info.offset.y >= 80 || info.velocity.y > 400) {
-      onClaim(assignment.id);
-    }
-  };
-
-  return (
-    <div className="relative pt-2 select-none">
-      {/* Clean minimal pill badge */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 z-10 pointer-events-none">
-        <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase tracking-wider bg-stone-100 dark:bg-slate-800 text-ink-navy dark:text-slate-200 border border-border-stone dark:border-slate-700 shadow-sm">
-          Open Duty
-        </span>
-      </div>
-
-      <motion.div
-        drag={isClaiming ? false : 'y'}
-        dragConstraints={{ top: 0, bottom: 120 }}
-        dragElastic={0.25}
-        onDragEnd={handleDragEnd}
-        style={{ y }}
-        whileDrag={{ cursor: 'grabbing', scale: 1.02 }}
-        className="touch-pan-x"
-      >
-        <PaperCard
-          variant={idx % 2 === 0 ? 'postit' : 'manila'}
-          className="p-5 min-h-[220px] flex flex-col justify-between border border-border-stone dark:border-slate-600 shadow-paper-sm hover:shadow-paper-md transition-shadow cursor-grab active:cursor-grabbing"
-        >
-          <div>
-            <div className="flex items-start justify-between gap-2 mb-2 pt-1">
-              <h4 className="font-serif font-bold text-xl text-ink-navy dark:text-slate-100 leading-tight">
-                {assignment.chore.title}
-              </h4>
-              <div className="flex items-center gap-1 shrink-0">
-                {onEdit && (
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onEdit(assignment.chore);
-                    }}
-                    className="p-1 rounded text-ink-muted hover:text-ink-navy dark:text-slate-400 dark:hover:text-slate-200 hover:bg-stone-100 dark:hover:bg-slate-700 transition"
-                    title="Edit Chore"
-                    aria-label={`Edit ${assignment.chore.title}`}
-                  >
-                    <Pencil className="w-3.5 h-3.5" />
-                  </button>
-                )}
-                {onDelete && (
-                  <button
-                    type="button"
-                    onClick={async (e) => {
-                      e.stopPropagation();
-                      if (window.confirm(`Are you sure you want to delete "${assignment.chore.title}"?`)) {
-                        soundEngine.playEraserSound();
-                        await onDelete(assignment.chore.id);
-                      }
-                    }}
-                    className="p-1 rounded text-ink-muted hover:text-stamp-dirty dark:text-slate-400 dark:hover:text-red-300 hover:bg-stone-100 dark:hover:bg-slate-700 transition"
-                    title="Delete Chore"
-                    aria-label={`Delete ${assignment.chore.title}`}
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </button>
-                )}
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-stone-100 dark:bg-slate-800 text-ink-navy dark:text-slate-200 font-sans font-bold text-xs border border-border-stone dark:border-slate-700 shadow-sm">
-                  <Star className="w-3.5 h-3.5 fill-accent-slate text-accent-slate" />
-                  {assignment.chore.effort_weight} pts
-                </span>
-              </div>
-            </div>
-
-            {assignment.chore.description && (
-              <p className="text-xs text-ink-graphite dark:text-slate-400 mb-3 font-sans">
-                {assignment.chore.description}
-              </p>
-            )}
-
-            <div className="flex items-center gap-2 mb-4 flex-wrap">
-              {isAwayMember ? (
-                <span className="inline-flex items-center gap-1 text-xs font-sans font-semibold px-2 py-0.5 rounded bg-stone-100 dark:bg-slate-800 text-accent-slate dark:text-slate-300 border border-border-stone dark:border-slate-700">
-                  <Moon className="w-3 h-3" />
-                  {assignment.member!.nickname} (Away)
-                </span>
-              ) : (
-                <span className="text-xs font-mono font-medium px-2 py-0.5 rounded bg-paper-card dark:bg-slate-700 text-ink-graphite dark:text-slate-300 border border-stone-300 dark:border-slate-600">
-                  Unassigned
-                </span>
-              )}
-              <span className="text-xs font-mono font-medium px-2 py-0.5 rounded bg-paper-card dark:bg-slate-700 text-ink-graphite dark:text-slate-300 border border-stone-300 dark:border-slate-600">
-                {assignment.chore.completion_type === 'single_weekly'
-                  ? 'Weekly'
-                  : 'Continuous'}
-              </span>
-            </div>
-          </div>
-
-          <div>
-            <div className="text-[11px] font-sans text-ink-muted dark:text-slate-400 text-center mb-1.5 flex items-center justify-center gap-1 opacity-80">
-              <ArrowDown className="w-3 h-3 animate-bounce" />
-              <span>Drag down 80px to claim</span>
-            </div>
-            <button
-              type="button"
-              disabled={isClaiming}
-              onClick={() => onClaim(assignment.id)}
-              className="w-full py-2.5 px-4 bg-accent-slate hover:bg-[#1E334A] text-white text-sm font-sans font-bold rounded-lg shadow-paper-sm hover:shadow-paper-md transition-all flex items-center justify-center gap-2 disabled:opacity-50 active:scale-95"
-            >
-              <Hand className="w-4 h-4" />
-              <span>{isClaiming ? 'Claiming...' : 'Claim Chore'}</span>
-            </button>
-          </div>
-        </PaperCard>
-      </motion.div>
-    </div>
-  );
-}
-
-export function UpForGrabsPool({
+function UpForGrabsPoolView({
   chores,
   onClaimChore,
   onEditChore,
   onDeleteChore,
 }: UpForGrabsPoolProps) {
-  const [claimingId, setClaimingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
+  const isDomain = chores && !Array.isArray(chores) && 'upForGrabs' in chores;
+  const choreDomain = isDomain ? (chores as ChoreDomain) : null;
+
+  const choreList: ChoreAssignment[] = choreDomain
+    ? choreDomain.upForGrabs
+    : Array.isArray(chores)
+    ? chores
+    : [];
+
   const handleClaim = async (assignmentId: string) => {
-    setClaimingId(assignmentId);
     setError(null);
     try {
-      soundEffects.playWoodClick();
-      soundEngine.playTapePeelSound();
-      await onClaimChore(assignmentId);
+      if (onClaimChore) {
+        await onClaimChore(assignmentId);
+      } else if (choreDomain) {
+        await choreDomain.claimChore(assignmentId);
+      }
     } catch (err: any) {
       setError(err.message || 'Failed to claim chore');
-    } finally {
-      setClaimingId(null);
     }
   };
 
-  if (chores.length === 0) {
+  const handleDelete = onDeleteChore ?? (choreDomain ? choreDomain.deleteChore : undefined);
+
+  if (choreList.length === 0) {
     return (
-      <PaperCard variant="card" className="p-8 text-center border-dashed border-2 border-stone-300 dark:border-slate-700">
+      <PaperCard variant="card" className="p-8 text-center border-dashed border-2 border-stone-300 dark:border-slate-700 bg-[#FDFAF6] dark:bg-[#1F1D1A]">
         <Sparkles className="w-8 h-8 text-accent-slate mx-auto mb-2 opacity-80" />
         <h3 className="text-xl font-serif font-bold text-ink-navy dark:text-slate-100">No Chores Up for Grabs</h3>
         <p className="text-xs text-ink-muted dark:text-slate-400 mt-1 font-sans">
@@ -197,11 +65,11 @@ export function UpForGrabsPool({
             <span>Up for Grabs Pool</span>
           </h3>
           <p className="text-xs text-ink-graphite dark:text-slate-400 font-sans mt-0.5">
-            Pinned sticky memo notes: unassigned tasks and chores from roommates currently marked Away.
+            Open chores and duties available to be claimed by active roommates.
           </p>
         </div>
         <span className="px-3 py-1 rounded-lg bg-stone-100 dark:bg-slate-800 text-accent-slate dark:text-slate-200 text-xs font-sans font-bold border border-border-stone dark:border-slate-700 shadow-sm">
-          {chores.length} Available
+          {choreList.length} Available
         </span>
       </div>
 
@@ -213,18 +81,32 @@ export function UpForGrabsPool({
       )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5 pt-4">
-        {chores.map((assignment, idx) => (
-          <DraggableMemoNote
+        {choreList.map((assignment, idx) => (
+          <ChoreCard
             key={assignment.id}
+            variant="pool"
             assignment={assignment}
-            idx={idx}
-            claimingId={claimingId}
             onClaim={handleClaim}
             onEdit={onEditChore}
-            onDelete={onDeleteChore}
+            onDelete={handleDelete}
+            tilt={idx % 2 === 0 ? 'left' : 'right'}
           />
         ))}
       </div>
     </div>
   );
 }
+
+function UpForGrabsPoolConnected(props: UpForGrabsPoolProps) {
+  const chores = useChores();
+  return <UpForGrabsPoolView chores={chores} {...props} />;
+}
+
+export function UpForGrabsPool(props: UpForGrabsPoolProps) {
+  if (!props.chores) {
+    return <UpForGrabsPoolConnected {...props} />;
+  }
+  return <UpForGrabsPoolView {...props} />;
+}
+
+export default UpForGrabsPool;

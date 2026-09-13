@@ -1,11 +1,33 @@
 import uuid
-from datetime import date, timedelta
-from typing import Optional
+from datetime import date, datetime, timedelta, timezone
+from typing import Optional, Union
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models import Chore, ChoreAssignment, Household, Member
+from app.models import Chore, ChoreAssignment, ChoreLog, Household, Member
+from app.schemas import (
+    ChoreAssignmentOut,
+    ChoreCreate,
+    ChoreLogCreate,
+    ChoreLogOut,
+    ChoreOut,
+    ChoreSwapRequest,
+    ChoreUpdate,
+)
+from app.websocket import ws_manager
+
+
+class ChoreNotFoundError(Exception):
+    pass
+
+
+class ChoreValidationError(Exception):
+    pass
+
+
+class ChorePermissionError(Exception):
+    pass
 
 
 def get_current_week_start(d: Optional[date] = None) -> date:
@@ -52,6 +74,15 @@ def partition_chores_lpt(
     return chore_to_member
 
 
+async def _resolve_household(db: AsyncSession, household: Union[Household, uuid.UUID]) -> Household:
+    if isinstance(household, Household):
+        return household
+    hh = await db.get(Household, household)
+    if not hh:
+        raise ChoreNotFoundError("Household not found")
+    return hh
+
+
 async def get_or_generate_weekly_assignments(
     db: AsyncSession,
     household_id: uuid.UUID,
@@ -60,7 +91,6 @@ async def get_or_generate_weekly_assignments(
     household = await db.get(Household, household_id)
     is_rotation_active = household.chore_rotation_active if household else False
 
-    # 1. Fetch all active chores for the household
     chore_stmt = (
         select(Chore)
         .where(Chore.household_id == household_id, Chore.is_active == True)
@@ -69,7 +99,6 @@ async def get_or_generate_weekly_assignments(
     chore_res = await db.execute(chore_stmt)
     active_chores = list(chore_res.scalars().all())
 
-    # 2. Fetch all members for the household, sorted by created_at.asc(), id.asc()
     member_stmt = (
         select(Member)
         .where(Member.household_id == household_id)
@@ -80,7 +109,6 @@ async def get_or_generate_weekly_assignments(
     active_members = [m for m in all_members if m.status == "active"]
     N = len(active_members)
 
-    # 3. Fetch existing assignments for this week
     existing_stmt = (
         select(ChoreAssignment)
         .join(Chore, ChoreAssignment.chore_id == Chore.id)
@@ -130,7 +158,6 @@ async def get_or_generate_weekly_assignments(
         for mem_id, title in newly_assigned:
             await notify_member_chore_assignment(db=db, member_id=mem_id, chore_title=title)
 
-    # Return all weekly assignments ordered by Chore.created_at.asc(), Chore.id.asc()
     res_stmt = (
         select(ChoreAssignment)
         .options(
@@ -150,12 +177,463 @@ async def get_or_generate_weekly_assignments(
     return list(final_res.scalars().all())
 
 
+# --- Chore Template CRUD Operations ---
+
+
+async def list_chores(
+    db: AsyncSession,
+    household_id: uuid.UUID,
+    is_active: Optional[bool] = None,
+) -> list[Chore]:
+    stmt = select(Chore).where(Chore.household_id == household_id)
+    if is_active is not None:
+        stmt = stmt.where(Chore.is_active == is_active)
+    stmt = stmt.order_by(Chore.created_at.asc())
+    res = await db.execute(stmt)
+    return list(res.scalars().all())
+
+
+async def create_chore(
+    db: AsyncSession,
+    household_id: uuid.UUID,
+    data: ChoreCreate,
+) -> Chore:
+    chore = Chore(
+        household_id=household_id,
+        title=data.title,
+        description=data.description,
+        effort_weight=data.effort_weight,
+        completion_type=data.completion_type,
+        is_active=True,
+    )
+    db.add(chore)
+    await db.commit()
+    await db.refresh(chore)
+
+    # Auto-provision assignment for the active current week
+    await get_or_generate_weekly_assignments(
+        db=db,
+        household_id=chore.household_id,
+        week_start_date=get_current_week_start(),
+    )
+
+    await ws_manager.broadcast(
+        household_id=chore.household_id,
+        event="CHORE_UPDATED",
+        data={"action": "created", "chore": ChoreOut.model_validate(chore).model_dump(mode="json")},
+    )
+    return chore
+
+
+async def get_chore(
+    db: AsyncSession,
+    household_id: uuid.UUID,
+    chore_id: uuid.UUID,
+) -> Chore:
+    stmt = select(Chore).where(
+        Chore.id == chore_id,
+        Chore.household_id == household_id,
+    )
+    res = await db.execute(stmt)
+    chore = res.scalar_one_or_none()
+    if not chore:
+        raise ChoreNotFoundError("Chore not found in this household")
+    return chore
+
+
+async def update_chore(
+    db: AsyncSession,
+    household_id: uuid.UUID,
+    chore_id: uuid.UUID,
+    data: ChoreUpdate,
+) -> Chore:
+    chore = await get_chore(db, household_id, chore_id)
+
+    if data.title is not None:
+        chore.title = data.title
+    if data.description is not None:
+        chore.description = data.description
+    if data.effort_weight is not None:
+        chore.effort_weight = data.effort_weight
+    if data.completion_type is not None:
+        chore.completion_type = data.completion_type
+    if data.is_active is not None:
+        chore.is_active = data.is_active
+
+    await db.commit()
+    await db.refresh(chore)
+    await ws_manager.broadcast(
+        household_id=chore.household_id,
+        event="CHORE_UPDATED",
+        data={"action": "updated", "chore": ChoreOut.model_validate(chore).model_dump(mode="json")},
+    )
+    return chore
+
+
+async def delete_chore(
+    db: AsyncSession,
+    household_id: uuid.UUID,
+    chore_id: uuid.UUID,
+) -> None:
+    chore = await get_chore(db, household_id, chore_id)
+    await db.delete(chore)
+    await db.commit()
+    await ws_manager.broadcast(
+        household_id=household_id,
+        event="CHORE_UPDATED",
+        data={"action": "deleted", "chore_id": str(chore_id)},
+    )
+
+
+# --- Assignment Operations ---
+
+
+async def get_weekly_assignments(
+    db: AsyncSession,
+    household_id: uuid.UUID,
+    week_start_date: Optional[date] = None,
+) -> list[ChoreAssignment]:
+    target_date = get_current_week_start(week_start_date)
+    return await get_or_generate_weekly_assignments(
+        db=db,
+        household_id=household_id,
+        week_start_date=target_date,
+    )
+
+
+async def get_up_for_grabs_chores(
+    db: AsyncSession,
+    household_id: uuid.UUID,
+    week_start_date: Optional[date] = None,
+) -> list[ChoreAssignment]:
+    assignments = await get_weekly_assignments(db, household_id, week_start_date)
+    up_for_grabs: list[ChoreAssignment] = []
+    for a in assignments:
+        if a.status == "pending":
+            if a.member_id is None:
+                up_for_grabs.append(a)
+            elif a.member and a.member.status == "away":
+                up_for_grabs.append(a)
+    return up_for_grabs
+
+
+async def claim_chore(
+    db: AsyncSession,
+    household_id: uuid.UUID,
+    assignment_id: uuid.UUID,
+    member_id: uuid.UUID,
+) -> ChoreAssignment:
+    stmt = (
+        select(ChoreAssignment)
+        .join(Chore, ChoreAssignment.chore_id == Chore.id)
+        .where(
+            ChoreAssignment.id == assignment_id,
+            Chore.household_id == household_id,
+        )
+    )
+    res = await db.execute(stmt)
+    assignment = res.scalar_one_or_none()
+    if not assignment:
+        raise ChoreNotFoundError("Chore assignment not found in this household")
+
+    if assignment.status != "pending":
+        raise ChoreValidationError("Cannot claim a completed or non-pending chore")
+
+    assignment.member_id = member_id
+    await db.commit()
+    await db.refresh(assignment)
+    await ws_manager.broadcast(
+        household_id=household_id,
+        event="CHORE_UPDATED",
+        data={"action": "claimed", "assignment": ChoreAssignmentOut.model_validate(assignment).model_dump(mode="json")},
+    )
+    return assignment
+
+
+async def unclaim_chore(
+    db: AsyncSession,
+    household_id: uuid.UUID,
+    assignment_id: uuid.UUID,
+    current_member: Member,
+) -> ChoreAssignment:
+    stmt = (
+        select(ChoreAssignment)
+        .join(Chore, ChoreAssignment.chore_id == Chore.id)
+        .where(
+            ChoreAssignment.id == assignment_id,
+            Chore.household_id == household_id,
+        )
+    )
+    res = await db.execute(stmt)
+    assignment = res.scalar_one_or_none()
+    if not assignment:
+        raise ChoreNotFoundError("Chore assignment not found in this household")
+
+    if assignment.status != "pending":
+        raise ChoreValidationError("Cannot unclaim a completed or non-pending chore")
+
+    household = await db.get(Household, household_id)
+    if not household:
+        raise ChoreNotFoundError("Household not found")
+
+    if household.chore_rotation_active:
+        raise ChoreValidationError("Cannot unclaim chores when cyclical chore rotation is active; use reassignment or swap instead")
+
+    if assignment.member_id != current_member.id and current_member.role != "admin":
+        raise ChorePermissionError("Only assigned member or admin can unclaim this chore")
+
+    assignment.member_id = None
+    await db.commit()
+    await db.refresh(assignment)
+    await ws_manager.broadcast(
+        household_id=household_id,
+        event="CHORE_UPDATED",
+        data={"action": "unclaimed", "assignment": ChoreAssignmentOut.model_validate(assignment).model_dump(mode="json")},
+    )
+    return assignment
+
+
+async def complete_chore(
+    db: AsyncSession,
+    household_id: uuid.UUID,
+    assignment_id: uuid.UUID,
+    current_member: Member,
+) -> ChoreAssignment:
+    stmt = (
+        select(ChoreAssignment)
+        .join(Chore, ChoreAssignment.chore_id == Chore.id)
+        .where(
+            ChoreAssignment.id == assignment_id,
+            Chore.household_id == household_id,
+        )
+    )
+    res = await db.execute(stmt)
+    assignment = res.scalar_one_or_none()
+    if not assignment:
+        raise ChoreNotFoundError("Chore assignment not found in this household")
+
+    if assignment.member_id is not None and assignment.member_id != current_member.id and current_member.role != "admin":
+        raise ChorePermissionError("Only assigned member or admin can complete this chore")
+
+    assignment.status = "completed"
+    assignment.completed_at = datetime.now(timezone.utc)
+    assignment.completed_by_member_id = current_member.id
+
+    await db.commit()
+    await db.refresh(assignment)
+    await ws_manager.broadcast(
+        household_id=household_id,
+        event="CHORE_UPDATED",
+        data={"action": "completed", "assignment": ChoreAssignmentOut.model_validate(assignment).model_dump(mode="json")},
+    )
+    return assignment
+
+
+async def uncomplete_chore(
+    db: AsyncSession,
+    household_id: uuid.UUID,
+    assignment_id: uuid.UUID,
+    current_member: Member,
+) -> ChoreAssignment:
+    stmt = (
+        select(ChoreAssignment)
+        .join(Chore, ChoreAssignment.chore_id == Chore.id)
+        .where(
+            ChoreAssignment.id == assignment_id,
+            Chore.household_id == household_id,
+        )
+    )
+    res = await db.execute(stmt)
+    assignment = res.scalar_one_or_none()
+    if not assignment:
+        raise ChoreNotFoundError("Chore assignment not found in this household")
+
+    if assignment.member_id is not None and assignment.member_id != current_member.id and current_member.role != "admin":
+        raise ChorePermissionError("Only assigned member or admin can uncomplete this chore")
+
+    assignment.status = "pending"
+    assignment.completed_at = None
+    assignment.completed_by_member_id = None
+
+    await db.commit()
+    await db.refresh(assignment)
+    await ws_manager.broadcast(
+        household_id=household_id,
+        event="CHORE_UPDATED",
+        data={"action": "uncompleted", "assignment": ChoreAssignmentOut.model_validate(assignment).model_dump(mode="json")},
+    )
+    return assignment
+
+
+async def reassign_chore(
+    db: AsyncSession,
+    household_id: uuid.UUID,
+    assignment_id: uuid.UUID,
+    current_member: Member,
+    target_member_id: uuid.UUID,
+) -> ChoreAssignment:
+    stmt = (
+        select(ChoreAssignment)
+        .join(Chore, ChoreAssignment.chore_id == Chore.id)
+        .where(
+            ChoreAssignment.id == assignment_id,
+            Chore.household_id == household_id,
+        )
+    )
+    res = await db.execute(stmt)
+    assignment = res.scalar_one_or_none()
+    if not assignment:
+        raise ChoreNotFoundError("Chore assignment not found in this household")
+
+    target_member = await db.scalar(
+        select(Member).where(
+            Member.id == target_member_id,
+            Member.household_id == household_id,
+        )
+    )
+    if not target_member:
+        raise ChoreNotFoundError("Target member not found in this household")
+
+    assignment.member_id = target_member_id
+
+    await db.commit()
+    await db.refresh(assignment)
+    await ws_manager.broadcast(
+        household_id=household_id,
+        event="CHORE_UPDATED",
+        data={"action": "reassigned", "assignment": ChoreAssignmentOut.model_validate(assignment).model_dump(mode="json")},
+    )
+    return assignment
+
+
+async def swap_chore(
+    db: AsyncSession,
+    household_id: uuid.UUID,
+    assignment_id: uuid.UUID,
+    current_member: Member,
+    data: ChoreSwapRequest,
+) -> ChoreAssignment:
+    if assignment_id == data.target_assignment_id:
+        raise ChoreValidationError("Cannot swap an assignment with itself")
+
+    stmt1 = (
+        select(ChoreAssignment)
+        .join(Chore, ChoreAssignment.chore_id == Chore.id)
+        .where(
+            ChoreAssignment.id == assignment_id,
+            Chore.household_id == household_id,
+        )
+    )
+    res1 = await db.execute(stmt1)
+    assignment1 = res1.scalar_one_or_none()
+    if not assignment1:
+        raise ChoreNotFoundError("Source chore assignment not found in this household")
+
+    stmt2 = (
+        select(ChoreAssignment)
+        .join(Chore, ChoreAssignment.chore_id == Chore.id)
+        .where(
+            ChoreAssignment.id == data.target_assignment_id,
+            Chore.household_id == household_id,
+        )
+    )
+    res2 = await db.execute(stmt2)
+    assignment2 = res2.scalar_one_or_none()
+    if not assignment2:
+        raise ChoreNotFoundError("Target chore assignment not found in this household")
+
+    if assignment1.week_start_date != assignment2.week_start_date:
+        raise ChoreValidationError("Assignments must be in the same week to swap")
+
+    if assignment1.status != "pending" or assignment2.status != "pending":
+        raise ChoreValidationError("Cannot swap completed or non-pending chore assignments")
+
+    assignment1.member_id, assignment2.member_id = assignment2.member_id, assignment1.member_id
+
+    await db.commit()
+    await db.refresh(assignment1)
+    await db.refresh(assignment2)
+    await ws_manager.broadcast(
+        household_id=household_id,
+        event="CHORE_UPDATED",
+        data={"action": "swapped", "assignment": ChoreAssignmentOut.model_validate(assignment1).model_dump(mode="json")},
+    )
+    return assignment1
+
+
+async def log_duty(
+    db: AsyncSession,
+    household_id: uuid.UUID,
+    assignment_id: uuid.UUID,
+    current_member: Member,
+    data: ChoreLogCreate,
+) -> ChoreLog:
+    stmt = (
+        select(ChoreAssignment)
+        .join(Chore, ChoreAssignment.chore_id == Chore.id)
+        .where(
+            ChoreAssignment.id == assignment_id,
+            Chore.household_id == household_id,
+        )
+    )
+    res = await db.execute(stmt)
+    assignment = res.scalar_one_or_none()
+    if not assignment:
+        raise ChoreNotFoundError("Chore assignment not found in this household")
+
+    chore_log = ChoreLog(
+        assignment_id=assignment.id,
+        actor_member_id=current_member.id,
+        note=data.note,
+    )
+    db.add(chore_log)
+    await db.commit()
+    await db.refresh(chore_log)
+    await ws_manager.broadcast(
+        household_id=household_id,
+        event="CHORE_UPDATED",
+        data={"action": "logged", "log": ChoreLogOut.model_validate(chore_log).model_dump(mode="json")},
+    )
+    return chore_log
+
+
+async def get_chore_logs(
+    db: AsyncSession,
+    household_id: uuid.UUID,
+    assignment_id: uuid.UUID,
+) -> list[ChoreLog]:
+    stmt = (
+        select(ChoreAssignment)
+        .join(Chore, ChoreAssignment.chore_id == Chore.id)
+        .where(
+            ChoreAssignment.id == assignment_id,
+            Chore.household_id == household_id,
+        )
+    )
+    res = await db.execute(stmt)
+    assignment = res.scalar_one_or_none()
+    if not assignment:
+        raise ChoreNotFoundError("Chore assignment not found in this household")
+
+    log_stmt = (
+        select(ChoreLog)
+        .where(ChoreLog.assignment_id == assignment.id)
+        .order_by(ChoreLog.logged_at.desc())
+    )
+    log_res = await db.execute(log_stmt)
+    return list(log_res.scalars().all())
+
+
+# --- Rotation Operations ---
+
+
 async def activate_chore_rotation(
     db: AsyncSession,
-    household: Household,
+    household: Union[Household, uuid.UUID],
 ) -> list[ChoreAssignment]:
-    household_id = household.id
-    household.chore_rotation_active = True
+    household_obj = await _resolve_household(db, household)
+    household_id = household_obj.id
+    household_obj.chore_rotation_active = True
     week_start_date = get_current_week_start()
 
     chore_stmt = (
@@ -212,7 +690,6 @@ async def activate_chore_rotation(
     for mem_id, title in newly_assigned:
         await notify_member_chore_assignment(db=db, member_id=mem_id, chore_title=title)
 
-    from app.websocket import ws_manager
     await ws_manager.broadcast(
         household_id=household_id,
         event="CHORE_ROTATION_CHANGED",
@@ -245,10 +722,11 @@ async def activate_chore_rotation(
 
 async def deactivate_chore_rotation(
     db: AsyncSession,
-    household: Household,
+    household: Union[Household, uuid.UUID],
 ) -> list[ChoreAssignment]:
-    household_id = household.id
-    household.chore_rotation_active = False
+    household_obj = await _resolve_household(db, household)
+    household_id = household_obj.id
+    household_obj.chore_rotation_active = False
     week_start_date = get_current_week_start()
 
     existing_stmt = (
@@ -266,7 +744,6 @@ async def deactivate_chore_rotation(
 
     await db.commit()
 
-    from app.websocket import ws_manager
     await ws_manager.broadcast(
         household_id=household_id,
         event="CHORE_ROTATION_CHANGED",
@@ -299,10 +776,11 @@ async def deactivate_chore_rotation(
 
 async def reshuffle_chore_rotation(
     db: AsyncSession,
-    household: Household,
+    household: Union[Household, uuid.UUID],
 ) -> list[ChoreAssignment]:
-    household_id = household.id
-    is_active = household.chore_rotation_active
+    household_obj = await _resolve_household(db, household)
+    household_id = household_obj.id
+    is_active = household_obj.chore_rotation_active
     week_start_date = get_current_week_start()
 
     chore_stmt = (
@@ -350,7 +828,6 @@ async def reshuffle_chore_rotation(
 
     await db.commit()
 
-    from app.websocket import ws_manager
     await ws_manager.broadcast(
         household_id=household_id,
         event="CHORE_ROTATION_CHANGED",
@@ -379,5 +856,3 @@ async def reshuffle_chore_rotation(
     )
     final_res = await db.execute(res_stmt)
     return list(final_res.scalars().all())
-
-

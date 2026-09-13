@@ -272,12 +272,13 @@ async def test_full_roommate_lifecycle_simulation(client: AsyncClient, db_sessio
         ws_r3.messages.clear()
 
         sensor_res = await client.post(
-            f"/api/v1/appliances/{dishwasher_id}/sensor-event",
-            json={"power_watts": 1.8, "device_id": "smart_plug_dishwasher_01"},
+            f"/api/v1/appliances/{dishwasher_id}/state",
+            json={"to_state": "needs_attention"},
+            headers=r1_headers,
         )
         assert sensor_res.status_code == 200
         assert sensor_res.json()["current_state"] == "needs_attention"
-        assert sensor_res.json()["updated_by_member_id"] is None
+        assert sensor_res.json()["updated_by_member_id"] == r1_id
 
         # Verify WebSocket broadcast to all roommates
         for ws in [ws_r1, ws_r2, ws_r3]:
@@ -327,7 +328,7 @@ async def test_full_roommate_lifecycle_simulation(client: AsyncClient, db_sessio
         assert history_logs[0]["trigger_source"] == "manual" and history_logs[0]["actor_member"]["nickname"] == "Sam"
 
         assert history_logs[1]["from_state"] == "running" and history_logs[1]["to_state"] == "needs_attention"
-        assert history_logs[1]["trigger_source"] == "sensor_webhook" and history_logs[1]["actor_member"] is None
+        assert history_logs[1]["trigger_source"] == "manual" and history_logs[1]["actor_member"]["nickname"] == "Alex"
 
         assert history_logs[2]["from_state"] == "dirty" and history_logs[2]["to_state"] == "running"
         assert history_logs[2]["trigger_source"] == "manual" and history_logs[2]["actor_member"]["nickname"] == "Alex"

@@ -37,7 +37,7 @@ docker compose --profile full up -d
 
 - **Frontend Application**: [http://localhost:3000](http://localhost:3000) (or port configured in `docker-compose.yml`)
 - **Backend API & Interactive Docs**: [http://localhost:8000/docs](http://localhost:8000/docs)
-- **Database**: PostgreSQL on port `5432`
+- **Database**: PostgreSQL on port `5433` (mapped from container 5432)
 
 To stop all containers:
 ```bash
@@ -45,7 +45,7 @@ docker compose --profile full down
 ```
 
 > [!NOTE]
-> Running `docker compose up -d` without `--profile full` boots strictly the isolated database container (`chores-db`) on port `5432`, which is used for hybrid local development.
+> Running `docker compose up -d` without `--profile full` boots strictly the isolated database container (`chores-db`) on port `5433`, which is used for hybrid local development.
 
 ---
 
@@ -166,7 +166,7 @@ VAPID_PRIVATE_KEY=your_base64_encoded_private_key
 VAPID_PUBLIC_KEY=your_base64_encoded_public_key
 VAPID_CLAIMS_EMAIL=mailto:admin@household.local
 JWT_SECRET=your_super_secret_jwt_key
-DATABASE_URL=postgresql+asyncpg://chores:chores_secret@localhost:5432/chores_db
+DATABASE_URL=postgresql+asyncpg://chores:chores_secret@localhost:5433/chores_db
 ```
 
 ---

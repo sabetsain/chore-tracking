@@ -9,7 +9,7 @@ export interface ConfettiOptions {
  * Triggers an organic paper fleck and graphite dust celebration.
  * Respects prefers-reduced-motion to avoid unwanted motion.
  */
-export function triggerPaperDustCelebration(options?: ConfettiOptions): void {
+export function triggerPaperDustCelebration(options?: ConfettiOptions | React.MouseEvent | any): void {
   if (typeof window === 'undefined') return;
 
   // Check prefers-reduced-motion
@@ -22,8 +22,19 @@ export function triggerPaperDustCelebration(options?: ConfettiOptions): void {
   }
 
   try {
-    const count = options?.particleCount ?? 30;
-    const origin = options?.origin ?? { x: 0.5, y: 0.6 };
+    let count = 30;
+    let origin = { x: 0.5, y: 0.6 };
+
+    if (options) {
+      if (typeof options.clientX === 'number' && typeof options.clientY === 'number') {
+        const x = window.innerWidth > 0 ? options.clientX / window.innerWidth : 0.5;
+        const y = window.innerHeight > 0 ? options.clientY / window.innerHeight : 0.6;
+        origin = { x: Math.max(0, Math.min(1, x)), y: Math.max(0, Math.min(1, y)) };
+      } else {
+        if (options.particleCount !== undefined) count = options.particleCount;
+        if (options.origin !== undefined) origin = options.origin;
+      }
+    }
 
     confetti({
       particleCount: count,

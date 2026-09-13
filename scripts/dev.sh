@@ -52,18 +52,19 @@ cleanup() {
 }
 
 resolve_uvicorn() {
-    if [ -x "${REPO_ROOT}/backend/.venv/bin/uvicorn" ]; then
+    if [ -x "${REPO_ROOT}/backend/.venv/bin/uvicorn" ] && "${REPO_ROOT}/backend/.venv/bin/python3" -c "import uvicorn" >/dev/null 2>&1; then
         UVICORN_CMD=("${REPO_ROOT}/backend/.venv/bin/uvicorn")
-    elif [ -n "$VIRTUAL_ENV" ] && [ -x "${VIRTUAL_ENV}/bin/uvicorn" ]; then
+    elif [ -n "$VIRTUAL_ENV" ] && [ -x "${VIRTUAL_ENV}/bin/uvicorn" ] && "${VIRTUAL_ENV}/bin/python3" -c "import uvicorn" >/dev/null 2>&1; then
         UVICORN_CMD=("${VIRTUAL_ENV}/bin/uvicorn")
     elif command -v uvicorn >/dev/null 2>&1; then
         UVICORN_CMD=("uvicorn")
     elif python3 -m uvicorn --version >/dev/null 2>&1; then
         UVICORN_CMD=("python3" "-m" "uvicorn")
     else
-        echo "Error: Uvicorn not found in backend/.venv, active virtual environment, or system PATH." >&2
+        echo "Error: Uvicorn not found or backend/.venv has an invalid/cross-platform Python interpreter." >&2
         echo "" >&2
-        echo "To set up the backend virtual environment, run:" >&2
+        echo "If you are running on host macOS after using a container worktree, re-create the local venv:" >&2
+        echo "  rm -rf backend/.venv" >&2
         echo "  python3 -m venv backend/.venv" >&2
         echo "  backend/.venv/bin/pip install -r backend/requirements.txt" >&2
         echo "" >&2
@@ -164,7 +165,7 @@ case "$CMD" in
         ;;
     db)
         start_db
-        echo "Database is ready for connections on port 5432."
+        echo "Database is ready for connections on port 5433."
         ;;
     down)
         stop_db

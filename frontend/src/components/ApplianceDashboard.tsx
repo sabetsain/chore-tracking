@@ -18,28 +18,51 @@ import { formatDateTime } from '../utils/time';
 import { PaperCard } from './stationery/PaperCard';
 import { IdentitySticker } from './stationery/IdentitySticker';
 import { api } from '../api/client';
+import { ApplianceDomain, useAppliances } from '../hooks/useAppliances';
 
 export interface ApplianceDashboardProps {
-  appliances: Appliance[];
-  onUpdateState: (
+  appliances?: ApplianceDomain | Appliance[];
+  domain?: ApplianceDomain;
+  onUpdateState?: (
     applianceId: string,
     toState: ApplianceState,
     timerDurationMinutes?: number
   ) => Promise<void>;
-  onFetchHistory: (applianceId: string) => Promise<ApplianceStateLog[]>;
-  onCreateAppliance: (data: ApplianceCreate | any) => Promise<void>;
+  onFetchHistory?: (applianceId: string) => Promise<ApplianceStateLog[]>;
+  onCreateAppliance?: (data: ApplianceCreate | any) => Promise<void>;
   onUpdateAppliance?: (applianceId: string, data: ApplianceUpdate) => Promise<void>;
   onResetAppliance?: (applianceId: string) => Promise<void>;
 }
 
-export function ApplianceDashboard({
+function ApplianceDashboardView({
   appliances,
+  domain,
   onUpdateState,
   onFetchHistory,
   onCreateAppliance,
   onUpdateAppliance,
   onResetAppliance,
 }: ApplianceDashboardProps) {
+  const activeDomain = domain || (appliances && !Array.isArray(appliances) ? (appliances as ApplianceDomain) : null);
+
+  const applianceList: Appliance[] = activeDomain
+    ? activeDomain.appliances
+    : Array.isArray(appliances)
+    ? appliances
+    : [];
+
+  const handleUpdateState =
+    onUpdateState ||
+    (activeDomain
+      ? activeDomain.updateState
+      : async (id: string, toState: ApplianceState, timerDurationMinutes?: number) => {
+          await api.updateApplianceState(id, toState, timerDurationMinutes);
+        });
+  const handleFetchHistory = onFetchHistory || (activeDomain ? activeDomain.fetchHistory : (id: string) => api.getApplianceHistory(id));
+  const handleCreate = onCreateAppliance || (activeDomain ? activeDomain.createAppliance : (data: ApplianceCreate) => api.createAppliance(data));
+  const handleUpdate = onUpdateAppliance || (activeDomain ? activeDomain.updateAppliance : (id: string, data: ApplianceUpdate) => api.updateAppliance(id, data));
+  const handleReset = onResetAppliance || (activeDomain ? activeDomain.resetAppliance : (id: string) => api.resetAppliance(id));
+
   // History modal state
   const [selectedAppliance, setSelectedAppliance] = useState<Appliance | null>(null);
   const [historyLogs, setHistoryLogs] = useState<ApplianceStateLog[]>([]);
@@ -53,7 +76,7 @@ export function ApplianceDashboard({
     setSelectedAppliance(app);
     setLoadingHistory(true);
     try {
-      const logs = await onFetchHistory(app.id);
+      const logs = await handleFetchHistory(app.id);
       setHistoryLogs(logs);
     } catch {
       setHistoryLogs([]);
@@ -79,20 +102,20 @@ export function ApplianceDashboard({
 
   const handleSaveAppliance = async (data: ApplianceCreate | ApplianceUpdate) => {
     if (editingAppliance) {
-      if (onUpdateAppliance) {
-        await onUpdateAppliance(editingAppliance.id, data);
+      if (handleUpdate) {
+        await handleUpdate(editingAppliance.id, data);
       } else {
         await api.updateAppliance(editingAppliance.id, data);
       }
     } else {
-      await onCreateAppliance(data as ApplianceCreate);
+      await handleCreate(data as ApplianceCreate);
     }
     handleCloseModal();
   };
 
-  const handleResetAppliance = async (applianceId: string) => {
-    if (onResetAppliance) {
-      await onResetAppliance(applianceId);
+  const handleResetApplianceAction = async (applianceId: string) => {
+    if (handleReset) {
+      await handleReset(applianceId);
     } else {
       await api.resetAppliance(applianceId);
     }
@@ -121,7 +144,7 @@ export function ApplianceDashboard({
       </div>
 
       {/* Grid of Appliances */}
-      {appliances.length === 0 ? (
+      {applianceList.length === 0 ? (
         <PaperCard variant="card" className="p-8 text-center border-dashed border-2 border-stone-300 dark:border-slate-700 bg-canvas-card">
           <Sparkles className="w-8 h-8 text-accent-slate mx-auto mb-2 opacity-80" />
           <p className="text-base font-serif font-bold text-ink-navy dark:text-slate-200">No appliances added yet</p>
@@ -131,14 +154,14 @@ export function ApplianceDashboard({
         </PaperCard>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-          {appliances.map((app) => (
+          {applianceList.map((app) => (
             <ApplianceCard
               key={app.id}
               appliance={app}
-              onUpdateState={onUpdateState}
+              onUpdateState={handleUpdateState}
               onViewHistory={handleOpenHistory}
               onEdit={handleOpenEdit}
-              onReset={handleResetAppliance}
+              onReset={handleResetApplianceAction}
             />
           ))}
         </div>
@@ -249,6 +272,22 @@ export function ApplianceDashboard({
       />
     </div>
   );
+}
+
+function ApplianceDashboardConnected(props: ApplianceDashboardProps) {
+  const domain = useAppliances();
+  return <ApplianceDashboardView domain={domain} {...props} />;
+}
+
+export function ApplianceDashboard(props: ApplianceDashboardProps) {
+  if (
+    !props.domain &&
+    (!props.appliances ||
+      (!Array.isArray(props.appliances) && !('appliances' in (props.appliances as any))))
+  ) {
+    return <ApplianceDashboardConnected {...props} />;
+  }
+  return <ApplianceDashboardView {...props} />;
 }
 
 export default ApplianceDashboard;

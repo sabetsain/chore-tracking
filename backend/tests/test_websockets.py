@@ -131,12 +131,13 @@ async def test_ws_broadcast_sensor_event(client: AsyncClient):
     washer = next(a for a in appliances_res.json() if a["type"] == "washer")
     washer_id = washer["id"]
 
-    # Ingest power > 50W -> running
-    sensor_res = await client.post(
-        f"/api/v1/appliances/{washer_id}/sensor-event",
-        json={"power_watts": 120.0},
+    # Transition washer to running
+    state_res = await client.post(
+        f"/api/v1/appliances/{washer_id}/state",
+        headers=headers,
+        json={"to_state": "running", "timer_duration_minutes": 45},
     )
-    assert sensor_res.status_code == 200
+    assert state_res.status_code == 200
 
     assert len(mock_ws.messages) >= 1
     event = mock_ws.messages[-1]

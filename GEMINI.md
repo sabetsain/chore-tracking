@@ -21,3 +21,8 @@ When starting a session on this repository, please check the `~/.gemini/handoffs
 - Consult `ROADMAP.md` for long-term product vision, architectural specifications for future capabilities (such as the Custom Appliance Engine, E-Ink Kiosk hardware, Smart Plug power profiling, and Chore Karma economics), and upcoming roadmap priorities.
 - Keep `ROADMAP.md` updated whenever new ideas, advanced feature architectures, or deferred capabilities are identified.
 
+## 6. Git & Worktree Conventions
+- **Always git commit on completion**: After a set of tasks is completed according to an OpenSpec change, or after any plan gets implemented, always git commit the changes with a clear, descriptive message.
+- **Do not delete worktrees**: Never delete git worktrees. The user will delete worktrees manually.
+
+

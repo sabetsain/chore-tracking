@@ -307,10 +307,6 @@ class ApplianceStateLogOut(BaseModel):
     actor_member: Optional[MemberOut] = None
 
 
-class SensorEventCreate(BaseModel):
-    power_watts: float = Field(..., ge=0)
-    device_id: Optional[str] = None
-
 
 class PushSubscriptionKeys(BaseModel):
     p256dh: str
