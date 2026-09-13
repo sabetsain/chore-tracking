@@ -45,6 +45,13 @@ The system SHALL manage appliance lifecycles strictly along their configured lin
 - **WHEN** a member invokes the abort/reset action on a running or in-progress appliance
 - **THEN** the system resets `current_state` to `state_step_1`, clears any active countdown timers (`timer_started_at=None`, `timer_ends_at=None`), records an audit log entry with `trigger_source='reset'`, and broadcasts the update.
 
+### Requirement: Real-Time Elapsed Time and Activity Logging
+The system SHALL track the exact timestamp of each state change, compute elapsed time in the current state, and maintain an audit log of recent state transitions with actor metadata.
+
+#### Scenario: Viewing appliance status with duration
+- **WHEN** a member views an appliance that has been running for 45 minutes
+- **THEN** the system displays the active 'running' badge, calculates an elapsed duration of '45m', and shows the name of the roommate who started it.
+
 ### Requirement: Mandatory Run Timers and Human Confirmation
 The system SHALL support time-boxed appliance operations requiring duration entry on cycle start, emitting notifications upon timer completion, and requiring explicit human confirmation before advancing to the subsequent state.
 
@@ -64,17 +71,3 @@ The system SHALL support time-boxed appliance operations requiring duration entr
 - **WHEN** the current time passes `timer_ends_at` for an appliance in state `running`
 - **THEN** the system maintains `current_state` as `running`, displays the confirmation-needed alert, and enables an action button requiring a member to explicitly confirm the completion before transitioning to the next step.
 
-
-### Requirement: Real-Time Elapsed Time and Activity Logging
-The system SHALL track the exact timestamp of each state change, compute elapsed time in the current state, and maintain an audit log of recent state transitions with actor metadata.
-
-#### Scenario: Viewing appliance status with duration
-- **WHEN** a member views an appliance that has been running for 45 minutes
-- **THEN** the system displays the active 'running' badge, calculates an elapsed duration of '45m', and shows the name of the roommate who started it.
-
-### Requirement: Sensor-Ready Event Webhook
-The system SHALL provide a dedicated ingestion endpoint for IoT smart plug sensor telemetry (e.g., power draw in watts) that maps to state machine transitions without modifying database models.
-
-#### Scenario: Ingesting smart plug cycle completion event
-- **WHEN** an external sensor webhook sends a telemetry payload indicating power drop below 2W after a sustained running cycle
-- **THEN** the system automatically transitions the appliance from 'running' to 'clean_needs_emptying', tags the actor as 'sensor_webhook', and notifies the household.

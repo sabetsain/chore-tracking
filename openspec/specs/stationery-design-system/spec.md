@@ -1,7 +1,7 @@
 # stationery-design-system Specification
 
 ## Purpose
-Establishes the design tokens, typography, warm minimalist functionalism, tactile status stamps, community identity stickers, multi-sensory audio, micro-haptics, and ergonomic button interactions for the Household Coordination App.
+Modernizes the Household Coordination App design system from skeuomorphic paper notebook styling to warm minimalist functionalism, rooted in color wheel harmony, intentional negative space, tactile status stamps, community identity stickers, and ergonomic button interaction psychology.
 
 ## Requirements
 

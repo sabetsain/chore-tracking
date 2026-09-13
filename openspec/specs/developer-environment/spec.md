@@ -1,7 +1,7 @@
 # developer-environment Specification
 
 ## Purpose
-Establish an efficient local development workflow and deployment-ready migration pipeline decoupling containerized database dependencies from host application processes.
+Defines local development orchestration, containerized dependencies, database migration pipelines, and process lifecycle management for the Household Coordination App.
 
 ## Requirements
 
